@@ -1,0 +1,35 @@
+name: brainglobe-napari
+display_name: BrainGlobe Tools
+contributions:
+  commands:
+    - id: brainglobe-napari.get_reader
+      python_name: brainglobe_napari._reader:napari_get_reader
+      title: Open data with BrainGlobe Tools
+    - id: brainglobe-napari.make_sample_data
+      python_name: brainglobe_napari._sample_data:make_sample_data
+      title: Load sample data from BrainGlobe Tools
+    - id: brainglobe-napari.make_qwidget
+      python_name: brainglobe_napari._widget:ExampleQWidget
+      title: Make example QWidget
+    - id: brainglobe-napari.make_magic_widget
+      python_name: brainglobe_napari._widget:example_magic_widget
+      title: Make example magic widget
+    - id: brainglobe-napari.make_func_widget
+      python_name: brainglobe_napari._widget:example_function_widget
+      title: Make example function widget
+  readers:
+    - command: brainglobe-napari.get_reader
+      accepts_directories: false
+      filename_patterns: ['*.npy']
+  sample_data:
+    - command: brainglobe-napari.make_sample_data
+      display_name: BrainGlobe Tools
+      key: unique_id.1
+  widgets:
+    - command: brainglobe-napari.make_qwidget
+      display_name: Example QWidget
+    - command: brainglobe-napari.make_magic_widget
+      display_name: Example Magic Widget
+    - command: brainglobe-napari.make_func_widget
+      autogenerate: true
+      display_name: Example Function Widget
