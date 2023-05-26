@@ -20,12 +20,12 @@ def make_atlas_viewer(make_napari_viewer) -> Tuple[Viewer, AtlasViewerWidget]:
     "row,expected_atlas_name",
     [
         (0, "example_mouse_100um"),
-        (1, "allen_mouse_10um"),
         (4, "allen_mouse_100um"),
+        (14, "osten_mouse_100um"),
     ],
 )
 def test_add_annotation_button(make_atlas_viewer, row, expected_atlas_name):
-    """Check for a few random atlas selections that clicking the
+    """Check for a few low-res atlas selections that clicking the
     "Add Annotation" button adds a layer with the expected name."""
     viewer, atlas_viewer = make_atlas_viewer
 
