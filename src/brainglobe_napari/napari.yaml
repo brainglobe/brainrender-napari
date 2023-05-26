@@ -3,7 +3,7 @@ display_name: BrainGlobe Tools
 contributions:
   commands:
     - id: brainglobe-napari.make_atlas_viewer_widget
-      python_name: brainglobe_napari._atlas_viewer_widget:AtlasViewerWidget
+      python_name: brainglobe_napari.atlas_viewer_widget:AtlasViewerWidget
       title: Make Atlas Viewer Widget
   widgets:
     - command: brainglobe-napari.make_atlas_viewer_widget
