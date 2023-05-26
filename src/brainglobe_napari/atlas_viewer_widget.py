@@ -54,7 +54,7 @@ class AtlasTableModel(QtCore.QAbstractTableModel):
             if section == 0:
                 return "Atlas name"
             elif section == 1:
-                return "Version"
+                return "Latest Version"
             else:
                 raise ValueError("Unexpected horizontal header value.")
         else:
@@ -99,7 +99,7 @@ class AtlasViewerWidget(QWidget):
 
         # set up add button
         self.add_annotation_button = QPushButton()
-        self.add_annotation_button.setText("Add annotations layer")
+        self.add_annotation_button.setText("View annotations image")
 
         def _on_add_annotations_clicked():
             """Adds annotations as labels layer to the viewer."""
