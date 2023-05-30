@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     pass
 
-
 from bg_atlasapi import BrainGlobeAtlas
 from bg_atlasapi.list_atlases import get_all_atlases_lastversions
 from napari.viewer import Viewer
@@ -25,6 +24,10 @@ from qtpy.QtWidgets import (
     QTextEdit,
     QVBoxLayout,
     QWidget,
+)
+
+from brainglobe_napari.napari_atlas_representation import (
+    NapariAtlasRepresentation,
 )
 
 
@@ -98,18 +101,19 @@ class AtlasViewerWidget(QWidget):
         self._selected_atlas_name = None
 
         # set up add button
-        self.add_annotation_button = QPushButton()
-        self.add_annotation_button.setText("View annotations image")
+        self.show_in_viewer = QPushButton()
+        self.show_in_viewer.setText("Show in viewer")
 
-        def _on_add_annotations_clicked():
+        def _on_show_in_viewer_clicked():
             """Adds annotations as labels layer to the viewer."""
             if self._selected_atlas_row is not None:
                 selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
-                napari_viewer.add_labels(
-                    selected_atlas.annotation, name=self._selected_atlas_name
+                selected_atlas_representation = NapariAtlasRepresentation(
+                    selected_atlas
                 )
+                selected_atlas_representation.add_to_viewer(self._viewer)
 
-        self.add_annotation_button.clicked.connect(_on_add_annotations_clicked)
+        self.show_in_viewer.clicked.connect(_on_show_in_viewer_clicked)
 
         # set up atlas info display
         self.atlas_info = QTextEdit(self)
@@ -137,5 +141,5 @@ class AtlasViewerWidget(QWidget):
 
         # add sub-widgets to top-level widget
         self.layout().addWidget(self.atlas_table_view)
-        self.layout().addWidget(self.add_annotation_button)
+        self.layout().addWidget(self.show_in_viewer)
         self.layout().addWidget(self.atlas_info)
