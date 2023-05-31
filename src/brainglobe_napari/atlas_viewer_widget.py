@@ -101,10 +101,10 @@ class AtlasViewerWidget(QWidget):
         self._selected_atlas_name = None
 
         # set up add button
-        self.show_in_viewer = QPushButton()
-        self.show_in_viewer.setText("Show in viewer")
+        self.add_to_viewer = QPushButton()
+        self.add_to_viewer.setText("Add to viewer")
 
-        def _on_show_in_viewer_clicked():
+        def _on_add_to_viewer_clicked():
             """Adds annotations as labels layer to the viewer."""
             if self._selected_atlas_row is not None:
                 selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
@@ -113,7 +113,7 @@ class AtlasViewerWidget(QWidget):
                 )
                 selected_atlas_representation.add_to_viewer(self._viewer)
 
-        self.show_in_viewer.clicked.connect(_on_show_in_viewer_clicked)
+        self.add_to_viewer.clicked.connect(_on_add_to_viewer_clicked)
 
         # set up atlas info display
         self.atlas_info = QTextEdit(self)
@@ -141,5 +141,5 @@ class AtlasViewerWidget(QWidget):
 
         # add sub-widgets to top-level widget
         self.layout().addWidget(self.atlas_table_view)
-        self.layout().addWidget(self.show_in_viewer)
+        self.layout().addWidget(self.add_to_viewer)
         self.layout().addWidget(self.atlas_info)

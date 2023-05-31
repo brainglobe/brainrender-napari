@@ -30,7 +30,7 @@ def test_show_in_viewer_button(make_atlas_viewer, row, expected_atlas_name):
     viewer, atlas_viewer = make_atlas_viewer
 
     atlas_viewer.atlas_table_view.selectRow(row)
-    atlas_viewer.show_in_viewer.click()
+    atlas_viewer.add_to_viewer.click()
     assert len(viewer.layers) == 2
     assert viewer.layers[1].name == f"{expected_atlas_name}_annotation"
     assert viewer.layers[0].name == f"{expected_atlas_name}_reference"
@@ -41,5 +41,5 @@ def test_show_in_viewer_button_no_selection(make_atlas_viewer):
     a selection does not add a layer."""
     viewer, atlas_viewer = make_atlas_viewer
 
-    atlas_viewer.show_in_viewer.click()
+    atlas_viewer.add_to_viewer.click()
     assert len(viewer.layers) == 0
