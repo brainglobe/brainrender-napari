@@ -1,3 +1,4 @@
+import time
 from typing import Tuple
 
 import pytest
@@ -43,3 +44,23 @@ def test_show_in_viewer_button_no_selection(make_atlas_viewer):
 
     atlas_viewer.add_to_viewer.click()
     assert len(viewer.layers) == 0
+
+
+def test_atlas_caching(make_atlas_viewer):
+    viewer, atlas_viewer = make_atlas_viewer
+    start_no_cache = time.time()
+    # select example mouse atlas - this will require instantiation (but not download)
+    atlas_viewer.atlas_table_view.selectRow(0)  
+    end_no_cache = time.time()
+
+    atlas_viewer.atlas_table_view.selectRow(4)  # select another atlas
+
+    start_with_cache = time.time()
+    # select example mouse atlas again - this atlas should be cached now.
+    atlas_viewer.atlas_table_view.selectRow(0)
+    end_with_cache = time.time()
+
+    elapsed_no_cache = end_no_cache - start_no_cache
+    elapsed_with_cache = end_with_cache - start_with_cache
+
+    assert elapsed_with_cache < elapsed_no_cache

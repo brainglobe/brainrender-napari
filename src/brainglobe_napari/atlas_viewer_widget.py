@@ -99,6 +99,7 @@ class AtlasViewerWidget(QWidget):
 
         self._selected_atlas_row = None
         self._selected_atlas_name = None
+        self._cached_atlases = {}
 
         # set up add button
         self.add_to_viewer = QPushButton()
@@ -107,7 +108,10 @@ class AtlasViewerWidget(QWidget):
         def _on_add_to_viewer_clicked():
             """Adds annotations as labels layer to the viewer."""
             if self._selected_atlas_row is not None:
-                selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
+                # atlas was necessarily cached on change of selection
+                selected_atlas = self._cached_atlases[
+                    self._selected_atlas_name
+                ]
                 selected_atlas_representation = NapariAtlasRepresentation(
                     selected_atlas
                 )
@@ -130,7 +134,15 @@ class AtlasViewerWidget(QWidget):
                 self._selected_atlas_name = self._model.data(
                     self._model.index(self._selected_atlas_row, 0)
                 )
-                selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
+                if self._selected_atlas_name in self._cached_atlases:
+                    selected_atlas = self._cached_atlases[
+                        self._selected_atlas_name
+                    ]
+                else:
+                    selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
+                    self._cached_atlases[
+                        self._selected_atlas_name
+                    ] = selected_atlas
                 self.atlas_info.setText(str(selected_atlas))
             else:
                 self.atlas_info.setText("")
