@@ -24,21 +24,22 @@ def make_atlas_viewer(make_napari_viewer) -> Tuple[Viewer, AtlasViewerWidget]:
         (14, "osten_mouse_100um"),
     ],
 )
-def test_add_annotation_button(make_atlas_viewer, row, expected_atlas_name):
+def test_show_in_viewer_button(make_atlas_viewer, row, expected_atlas_name):
     """Check for a few low-res atlas selections that clicking the
-    "Add Annotation" button adds a layer with the expected name."""
+    "Show in Viewer" button adds a layer with the expected name."""
     viewer, atlas_viewer = make_atlas_viewer
 
     atlas_viewer.atlas_table_view.selectRow(row)
-    atlas_viewer.add_annotation_button.click()
-    assert len(viewer.layers) == 1
-    assert viewer.layers[0].name == expected_atlas_name
+    atlas_viewer.add_to_viewer.click()
+    assert len(viewer.layers) == 2
+    assert viewer.layers[1].name == f"{expected_atlas_name}_annotation"
+    assert viewer.layers[0].name == f"{expected_atlas_name}_reference"
 
 
-def test_add_annotations_button_no_selection(make_atlas_viewer):
-    """Check that clicking "Add Annotation" button without
+def test_show_in_viewer_button_no_selection(make_atlas_viewer):
+    """Check that clicking "Show in Viewer" button without
     a selection does not add a layer."""
     viewer, atlas_viewer = make_atlas_viewer
 
-    atlas_viewer.add_annotation_button.click()
+    atlas_viewer.add_to_viewer.click()
     assert len(viewer.layers) == 0
