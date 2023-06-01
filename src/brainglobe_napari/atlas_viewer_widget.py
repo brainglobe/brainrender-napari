@@ -69,6 +69,8 @@ class AtlasViewerWidget(QWidget):
     and other widgets to visualise atlases in napari.
 
     Internal state depends on currently selected row in the table view.
+
+    Previously selected atlases are cached to avoid slow re-instantiation.
     """
 
     def __init__(self, napari_viewer: Viewer):
