@@ -13,7 +13,10 @@ if TYPE_CHECKING:
     pass
 
 from bg_atlasapi import BrainGlobeAtlas
-from bg_atlasapi.list_atlases import get_all_atlases_lastversions, get_downloaded_atlases
+from bg_atlasapi.list_atlases import (
+    get_all_atlases_lastversions,
+    get_downloaded_atlases,
+)
 from napari.utils.notifications import show_info
 from napari.viewer import Viewer
 from qtpy import QtCore
@@ -106,15 +109,23 @@ class AtlasViewerWidget(QWidget):
         self.download_selected_atlas.setText("Download selected atlas")
 
         def _on_download_selected_atlas_clicked():
-            """Downloads the atlas currently selected in the table view, if it's not available locally. Show's an info message otherwise"""
+            """Downloads the atlas currently selected in the table view.
+
+            Download only happens if it's not available locally.
+            Show's an info message otherwise.
+            """
             if self._selected_atlas_row is not None:
-                if not self._selected_atlas_name in get_downloaded_atlases():
+                if self._selected_atlas_name not in get_downloaded_atlases():
                     # instantiation will trigger download
-                    selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
+                    selected_atlas = BrainGlobeAtlas(  # noqa: F841
+                        self._selected_atlas_name
+                    )
                 else:
                     show_info("Atlas already downloaded.")
 
-        self.download_selected_atlas.clicked.connect(_on_download_selected_atlas_clicked)
+        self.download_selected_atlas.clicked.connect(
+            _on_download_selected_atlas_clicked
+        )
 
         # set up add button
         self.add_to_viewer = QPushButton()
@@ -150,9 +161,17 @@ class AtlasViewerWidget(QWidget):
                     self._model.index(self._selected_atlas_row, 0)
                 )
                 if self._selected_atlas_name in get_downloaded_atlases():
-                    self.atlas_info.setText(f"Currently selected atlas: {self._selected_atlas_name} (available locally)")
+                    self.atlas_info.setText(
+                        f"Currently selected atlas: \
+                            {self._selected_atlas_name} \
+                            (available locally)"
+                    )
                 else:
-                    self.atlas_info.setText(f"Currently selected atlas: {self._selected_atlas_name} (not downloaded yet)")
+                    self.atlas_info.setText(
+                        f"Currently selected atlas: \
+                            {self._selected_atlas_name} \
+                            (not downloaded yet)"
+                    )
             else:
                 self.atlas_info.setText("")
 
