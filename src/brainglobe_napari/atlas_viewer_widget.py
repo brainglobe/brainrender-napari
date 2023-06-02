@@ -106,10 +106,13 @@ class AtlasViewerWidget(QWidget):
         self.download_selected_atlas.setText("Download selected atlas")
 
         def _on_download_selected_atlas_clicked():
-            """Downloads the atlas currently selected in the table view."""
+            """Downloads the atlas currently selected in the table view, if it's not available locally. Show's an info message otherwise"""
             if self._selected_atlas_row is not None:
-                # instantiation will trigger download
-                selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
+                if not self._selected_atlas_name in get_downloaded_atlases():
+                    # instantiation will trigger download
+                    selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
+                else:
+                    show_info("Atlas already downloaded.")
 
         self.download_selected_atlas.clicked.connect(_on_download_selected_atlas_clicked)
 
@@ -146,7 +149,10 @@ class AtlasViewerWidget(QWidget):
                 self._selected_atlas_name = self._model.data(
                     self._model.index(self._selected_atlas_row, 0)
                 )
-                self.atlas_info.setText(f"Currently selected atlas: {self._selected_atlas_name}")
+                if self._selected_atlas_name in get_downloaded_atlases():
+                    self.atlas_info.setText(f"Currently selected atlas: {self._selected_atlas_name} (available locally)")
+                else:
+                    self.atlas_info.setText(f"Currently selected atlas: {self._selected_atlas_name} (not downloaded yet)")
             else:
                 self.atlas_info.setText("")
 
