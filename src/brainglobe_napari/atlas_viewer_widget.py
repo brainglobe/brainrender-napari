@@ -100,6 +100,17 @@ class AtlasViewerWidget(QWidget):
         self._selected_atlas_row = None
         self._selected_atlas_name = None
 
+        # set up download button
+        self.download_selected_atlas = QPushButton()
+        self.download_selected_atlas.setText("Download selected atlas")
+
+        def _on_download_selected_atlas_clicked():
+            """Downloads the atlas currently selected in the table view."""
+            if self._selected_atlas_row is not None:
+                selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
+
+        self.add_to_viewer.clicked.connect(_on_add_to_viewer_clicked)
+
         # set up add button
         self.add_to_viewer = QPushButton()
         self.add_to_viewer.setText("Add to viewer")
@@ -141,5 +152,6 @@ class AtlasViewerWidget(QWidget):
 
         # add sub-widgets to top-level widget
         self.layout().addWidget(self.atlas_table_view)
+        self.layout().addWidget(self.download_selected_atlas)
         self.layout().addWidget(self.add_to_viewer)
         self.layout().addWidget(self.atlas_info)
