@@ -58,7 +58,7 @@ def test_download_button_already_downloaded(make_atlas_viewer, mocker):
     show_info_mock = mocker.patch(
         "brainglobe_napari.atlas_viewer_widget.show_info"
     )
-    atlas_constructor_mock = mocker.patch("bg_atlasapi.BrainGlobeAtlas")
+    atlas_constructor_mock = mocker.patch("brainglobe_napari.atlas_viewer_widget.BrainGlobeAtlas")
 
     atlas_viewer.download_selected_atlas.click()
 
