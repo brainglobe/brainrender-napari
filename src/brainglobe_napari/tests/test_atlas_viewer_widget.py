@@ -66,6 +66,12 @@ def test_download_button_already_downloaded(make_atlas_viewer, mocker):
     atlas_constructor_mock.assert_not_called()
 
 
+def test_download_button_no_selection(make_atlas_viewer):
+    """Smoke test to check downloading without selection doesn't crash"""
+    _, atlas_viewer = make_atlas_viewer
+    atlas_viewer.download_selected_atlas.click()
+
+
 @pytest.mark.parametrize(
     "row,expected_atlas_name",
     [
