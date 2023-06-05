@@ -47,6 +47,25 @@ def test_download_button(make_atlas_viewer):
         assert Path.exists(file)
 
 
+def test_download_button_already_downloaded(make_atlas_viewer, mocker):
+    """Check that hitting download a second time calls show_info.
+    and does not call the `BrainGlobeAtlas` constructor.
+    """
+    _, atlas_viewer = make_atlas_viewer
+    atlas_viewer.atlas_table_view.selectRow(0)
+    atlas_viewer.download_selected_atlas.click()
+
+    show_info_mock = mocker.patch(
+        "brainglobe_napari.atlas_viewer_widget.show_info"
+    )
+    atlas_constructor_mock = mocker.patch("bg_atlasapi.BrainGlobeAtlas")
+
+    atlas_viewer.download_selected_atlas.click()
+
+    show_info_mock.assert_called_once_with("Atlas already downloaded.")
+    atlas_constructor_mock.assert_not_called()
+
+
 @pytest.mark.parametrize(
     "row,expected_atlas_name",
     [
