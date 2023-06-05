@@ -1,6 +1,9 @@
+import shutil
+from pathlib import Path
 from typing import Tuple
 
 import pytest
+from bg_atlasapi import BrainGlobeAtlas
 from napari.viewer import Viewer
 
 from brainglobe_napari.atlas_viewer_widget import AtlasViewerWidget
@@ -14,6 +17,34 @@ def make_atlas_viewer(make_napari_viewer) -> Tuple[Viewer, AtlasViewerWidget]:
     viewer = make_napari_viewer()
     atlas_viewer = AtlasViewerWidget(viewer)
     return viewer, atlas_viewer
+
+
+def test_download_button(make_atlas_viewer):
+    """Checks that download button creates local copy of example atlas files.
+
+    Test setup consists of creating files by instantiating a `BrainGlobeAtlas`,
+    remembering the expected files and folders and then removing the local
+    copy. This allows checking that the button triggers the creation of the
+    same local copy of the atlas as the `bg_atlasapi` itself.
+    """
+    _ = BrainGlobeAtlas(
+        "example_mouse_100um"
+    )  # need a local copy to start with, so we know what files to expect
+    atlas_directory = Path.home() / ".brainglobe/example_mouse_100um_v1.2"
+    expected_filenames = atlas_directory.iterdir()
+    shutil.rmtree(
+        path=atlas_directory
+    )  # now remove local copy so button has to trigger download
+    assert not Path.exists(
+        atlas_directory
+    )  # sanity check that local copy is gone
+
+    _, atlas_viewer = make_atlas_viewer
+    atlas_viewer.atlas_table_view.selectRow(0)
+    atlas_viewer.download_selected_atlas.click()
+
+    for file in expected_filenames:
+        assert Path.exists(file)
 
 
 @pytest.mark.parametrize(
