@@ -12,9 +12,20 @@ from brainglobe_napari.atlas_viewer_widget import AtlasViewerWidget
 @pytest.fixture
 def make_atlas_viewer(make_napari_viewer) -> Tuple[Viewer, AtlasViewerWidget]:
     """Fixture to expose the atlas viewer widget to tests.
-    Simultaneously acts as a smoke test that the widget can
-    be instantiated without crashing."""
+
+    Downloads three atlases as test data, if not already there.
+
+    Simultaneously acts as a smoke test that the widget and
+    local atlas files can be instantiated without crashing."""
     viewer = make_napari_viewer()
+    preexisting_atlases = [
+        "example_mouse_100um_v1.2",
+        "allen_mouse_100um_v1.2",
+        "osten_mouse_100um_v1.1",
+    ]
+    for atlas in preexisting_atlases:
+        if not Path.exists(Path.home() / f".brainglobe/{atlas}"):
+            _ = BrainGlobeAtlas(atlas)
     atlas_viewer = AtlasViewerWidget(viewer)
     return viewer, atlas_viewer
 
@@ -22,14 +33,11 @@ def make_atlas_viewer(make_napari_viewer) -> Tuple[Viewer, AtlasViewerWidget]:
 def test_download_button(make_atlas_viewer):
     """Checks that download button creates local copy of example atlas files.
 
-    Test setup consists of creating files by instantiating a `BrainGlobeAtlas`,
-    remembering the expected files and folders and then removing the local
-    copy. This allows checking that the button triggers the creation of the
-    same local copy of the atlas as the `bg_atlasapi` itself.
+    Test setup consists of remembering the expected files and folders
+    of a preexisting atlas and then removing them.This allows checking
+    that the button triggers the creation of the same local copy
+    of the atlas as the `bg_atlasapi` itself.
     """
-    _ = BrainGlobeAtlas(
-        "example_mouse_100um"
-    )  # need a local copy to start with, so we know what files to expect
     atlas_directory = Path.home() / ".brainglobe/example_mouse_100um_v1.2"
     expected_filenames = atlas_directory.iterdir()
     shutil.rmtree(
@@ -58,7 +66,9 @@ def test_download_button_already_downloaded(make_atlas_viewer, mocker):
     show_info_mock = mocker.patch(
         "brainglobe_napari.atlas_viewer_widget.show_info"
     )
-    atlas_constructor_mock = mocker.patch("brainglobe_napari.atlas_viewer_widget.BrainGlobeAtlas")
+    atlas_constructor_mock = mocker.patch(
+        "brainglobe_napari.atlas_viewer_widget.BrainGlobeAtlas"
+    )
 
     atlas_viewer.download_selected_atlas.click()
 
