@@ -53,13 +53,12 @@ jobs:
           python -m pip install setuptools tox tox-gh-actions
 
 
-      # cache two largest out of the three atlases needed by the tests
+      # cache atlases needed by the tests
       - name: Cache Atlases
         uses: actions/cache@v3
         with:
           path: |
-            ~/.brainglobe/allen_mouse_100um*
-            ~/.brainglobe/osten_mouse_100um*
+            ~/.brainglobe/*
           key: cached-atlases
           enableCrossOsArchive: true
 

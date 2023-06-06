@@ -1,6 +1,9 @@
+import shutil
+from pathlib import Path
 from typing import Tuple
 
 import pytest
+from bg_atlasapi import BrainGlobeAtlas
 from napari.viewer import Viewer
 
 from brainglobe_napari.atlas_viewer_widget import AtlasViewerWidget
@@ -9,11 +12,74 @@ from brainglobe_napari.atlas_viewer_widget import AtlasViewerWidget
 @pytest.fixture
 def make_atlas_viewer(make_napari_viewer) -> Tuple[Viewer, AtlasViewerWidget]:
     """Fixture to expose the atlas viewer widget to tests.
-    Simultaneously acts as a smoke test that the widget can
-    be instantiated without crashing."""
+
+    Downloads three atlases as test data, if not already there.
+
+    Simultaneously acts as a smoke test that the widget and
+    local atlas files can be instantiated without crashing."""
     viewer = make_napari_viewer()
+    preexisting_atlases = [
+        ("example_mouse_100um","v1.2"),
+        ("allen_mouse_100um","v1.2"),
+        ("osten_mouse_100um","v1.1"),
+    ]
+    for atlas, version in preexisting_atlases:
+        if not Path.exists(Path.home() / f".brainglobe/{atlas}_{version}"):
+            _ = BrainGlobeAtlas(atlas)
     atlas_viewer = AtlasViewerWidget(viewer)
     return viewer, atlas_viewer
+
+
+def test_download_button(make_atlas_viewer):
+    """Checks that download button creates local copy of example atlas files.
+
+    Test setup consists of remembering the expected files and folders
+    of a preexisting atlas and then removing them.This allows checking
+    that the button triggers the creation of the same local copy
+    of the atlas as the `bg_atlasapi` itself.
+    """
+    atlas_directory = Path.home() / ".brainglobe/example_mouse_100um_v1.2"
+    expected_filenames = atlas_directory.iterdir()
+    shutil.rmtree(
+        path=atlas_directory
+    )  # now remove local copy so button has to trigger download
+    assert not Path.exists(
+        atlas_directory
+    )  # sanity check that local copy is gone
+
+    _, atlas_viewer = make_atlas_viewer
+    atlas_viewer.atlas_table_view.selectRow(0)
+    atlas_viewer.download_selected_atlas.click()
+
+    for file in expected_filenames:
+        assert Path.exists(file)
+
+
+def test_download_button_already_downloaded(make_atlas_viewer, mocker):
+    """Check that hitting download a second time calls show_info.
+    and does not call the `BrainGlobeAtlas` constructor.
+    """
+    _, atlas_viewer = make_atlas_viewer
+    atlas_viewer.atlas_table_view.selectRow(0)
+    atlas_viewer.download_selected_atlas.click()
+
+    show_info_mock = mocker.patch(
+        "brainglobe_napari.atlas_viewer_widget.show_info"
+    )
+    atlas_constructor_mock = mocker.patch(
+        "brainglobe_napari.atlas_viewer_widget.BrainGlobeAtlas"
+    )
+
+    atlas_viewer.download_selected_atlas.click()
+
+    show_info_mock.assert_called_once_with("Atlas already downloaded.")
+    atlas_constructor_mock.assert_not_called()
+
+
+def test_download_button_no_selection(make_atlas_viewer):
+    """Smoke test to check downloading without selection doesn't crash"""
+    _, atlas_viewer = make_atlas_viewer
+    atlas_viewer.download_selected_atlas.click()
 
 
 @pytest.mark.parametrize(
