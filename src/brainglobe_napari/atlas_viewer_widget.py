@@ -7,10 +7,13 @@ shown in a table view using the Qt model/view framework
 
 Users can download and add the atlas as layers to the viewer.
 """
+import json
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     pass
+
+from pathlib import Path
 
 from bg_atlasapi import BrainGlobeAtlas
 from bg_atlasapi.list_atlases import (
@@ -117,9 +120,15 @@ class AtlasViewerWidget(QWidget):
             if self._selected_atlas_row is not None:
                 if self._selected_atlas_name not in get_downloaded_atlases():
                     # instantiation will trigger download
-                    selected_atlas = BrainGlobeAtlas(  # noqa: F841
-                        self._selected_atlas_name
-                    )
+                    selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
+                    # cache the metadata
+                    with open(
+                        Path.home()
+                        / ".brainglobe"
+                        / f"{self._selected_atlas_name}-metadata.json",
+                        "w",
+                    ) as metadata_cache:
+                        json.dump(selected_atlas.metadata, metadata_cache)
                 else:
                     show_info("Atlas already downloaded.")
 
@@ -161,6 +170,12 @@ class AtlasViewerWidget(QWidget):
                     self._model.index(self._selected_atlas_row, 0)
                 )
                 if self._selected_atlas_name in get_downloaded_atlases():
+                    with open(
+                        Path.home()
+                        / ".brainglobe"
+                        / f"{self._selected_atlas_name}-metadata.json"
+                    ) as metadata_cache:
+                        metadata = json.loads(metadata_cache.read())
                     self.atlas_info.setText(
                         f"Currently selected atlas: \
                             {self._selected_atlas_name} \
