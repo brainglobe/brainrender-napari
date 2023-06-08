@@ -176,10 +176,16 @@ class AtlasViewerWidget(QWidget):
                         / f"{self._selected_atlas_name}-metadata.json"
                     ) as metadata_cache:
                         metadata = json.loads(metadata_cache.read())
+
+                    metadata_as_string = ""
+                    for key, value in metadata.items():
+                        metadata_as_string += f"{key}:\t{value}\n"
+
                     self.atlas_info.setText(
                         f"Currently selected atlas: \
                             {self._selected_atlas_name} \
-                            (available locally)"
+                            (available locally) \
+                            {metadata_as_string}\n"
                     )
                 else:
                     self.atlas_info.setText(
