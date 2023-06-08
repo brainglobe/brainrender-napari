@@ -7,13 +7,10 @@ shown in a table view using the Qt model/view framework
 
 Users can download and add the atlas as layers to the viewer.
 """
-import json
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     pass
-
-from pathlib import Path
 
 from bg_atlasapi import BrainGlobeAtlas
 from bg_atlasapi.list_atlases import (
@@ -33,6 +30,10 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from brainglobe_napari.atlas_viewer_utils import (
+    read_atlas_metadata_cache,
+    write_atlas_metadata_cache,
+)
 from brainglobe_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
 )
@@ -121,14 +122,8 @@ class AtlasViewerWidget(QWidget):
                 if self._selected_atlas_name not in get_downloaded_atlases():
                     # instantiation will trigger download
                     selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
-                    # cache the metadata
-                    with open(
-                        Path.home()
-                        / ".brainglobe"
-                        / f"{self._selected_atlas_name}-metadata.json",
-                        "w",
-                    ) as metadata_cache:
-                        json.dump(selected_atlas.metadata, metadata_cache)
+                    write_atlas_metadata_cache(selected_atlas)
+                    self.refresh_info_box()
                 else:
                     show_info("Atlas already downloaded.")
 
@@ -169,30 +164,7 @@ class AtlasViewerWidget(QWidget):
                 self._selected_atlas_name = self._model.data(
                     self._model.index(self._selected_atlas_row, 0)
                 )
-                if self._selected_atlas_name in get_downloaded_atlases():
-                    with open(
-                        Path.home()
-                        / ".brainglobe"
-                        / f"{self._selected_atlas_name}-metadata.json"
-                    ) as metadata_cache:
-                        metadata = json.loads(metadata_cache.read())
-
-                    metadata_as_string = ""
-                    for key, value in metadata.items():
-                        metadata_as_string += f"{key}:\t{value}\n"
-
-                    self.atlas_info.setText(
-                        f"Currently selected atlas: \
-                            {self._selected_atlas_name} \
-                            (available locally) \
-                            {metadata_as_string}\n"
-                    )
-                else:
-                    self.atlas_info.setText(
-                        f"Currently selected atlas: \
-                            {self._selected_atlas_name} \
-                            (not downloaded yet)"
-                    )
+                self.refresh_info_box()
             else:
                 self.atlas_info.setText("")
 
@@ -205,3 +177,23 @@ class AtlasViewerWidget(QWidget):
         self.layout().addWidget(self.download_selected_atlas)
         self.layout().addWidget(self.add_to_viewer)
         self.layout().addWidget(self.atlas_info)
+
+    def refresh_info_box(self):
+        if self._selected_atlas_name in get_downloaded_atlases():
+            metadata = read_atlas_metadata_cache(self._selected_atlas_name)
+            metadata_as_string = ""
+            for key, value in metadata.items():
+                metadata_as_string += f"{key}:\t{value}\n"
+
+            self.atlas_info.setText(
+                f"Currently selected atlas: \
+                    {self._selected_atlas_name} \
+                    (available locally) \
+                    {metadata_as_string}\n"
+            )
+        else:
+            self.atlas_info.setText(
+                f"Currently selected atlas: \
+                    {self._selected_atlas_name} \
+                    (not downloaded yet)"
+            )

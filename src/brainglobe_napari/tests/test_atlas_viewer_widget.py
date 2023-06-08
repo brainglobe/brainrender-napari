@@ -6,6 +6,7 @@ import pytest
 from bg_atlasapi import BrainGlobeAtlas
 from napari.viewer import Viewer
 
+from brainglobe_napari.atlas_viewer_utils import write_atlas_metadata_cache
 from brainglobe_napari.atlas_viewer_widget import AtlasViewerWidget
 
 
@@ -14,18 +15,23 @@ def make_atlas_viewer(make_napari_viewer) -> Tuple[Viewer, AtlasViewerWidget]:
     """Fixture to expose the atlas viewer widget to tests.
 
     Downloads three atlases as test data, if not already there.
+    Also, caches their metadata accordingly.
 
     Simultaneously acts as a smoke test that the widget and
     local atlas files can be instantiated without crashing."""
     viewer = make_napari_viewer()
     preexisting_atlases = [
-        ("example_mouse_100um","v1.2"),
-        ("allen_mouse_100um","v1.2"),
-        ("osten_mouse_100um","v1.1"),
+        ("example_mouse_100um", "v1.2"),
+        ("allen_mouse_100um", "v1.2"),
+        ("osten_mouse_100um", "v1.1"),
     ]
-    for atlas, version in preexisting_atlases:
-        if not Path.exists(Path.home() / f".brainglobe/{atlas}_{version}"):
-            _ = BrainGlobeAtlas(atlas)
+    for atlas_name, version in preexisting_atlases:
+        if not Path.exists(
+            Path.home() / f".brainglobe/{atlas_name}_{version}"
+        ):
+            atlas = BrainGlobeAtlas(atlas_name)
+            write_atlas_metadata_cache(atlas)
+
     atlas_viewer = AtlasViewerWidget(viewer)
     return viewer, atlas_viewer
 
