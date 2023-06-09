@@ -6,7 +6,6 @@ import pytest
 from bg_atlasapi import BrainGlobeAtlas
 from napari.viewer import Viewer
 
-from brainglobe_napari.atlas_viewer_utils import write_atlas_metadata_cache
 from brainglobe_napari.atlas_viewer_widget import AtlasViewerWidget
 
 
@@ -29,8 +28,7 @@ def make_atlas_viewer(make_napari_viewer) -> Tuple[Viewer, AtlasViewerWidget]:
         if not Path.exists(
             Path.home() / f".brainglobe/{atlas_name}_{version}"
         ):
-            atlas = BrainGlobeAtlas(atlas_name)
-            write_atlas_metadata_cache(atlas)
+            _ = BrainGlobeAtlas(atlas_name)
 
     atlas_viewer = AtlasViewerWidget(viewer)
     return viewer, atlas_viewer

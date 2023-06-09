@@ -30,10 +30,7 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from brainglobe_napari.atlas_viewer_utils import (
-    read_atlas_metadata_cache,
-    write_atlas_metadata_cache,
-)
+from brainglobe_napari.atlas_viewer_utils import read_atlas_metadata_from_file
 from brainglobe_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
 )
@@ -121,8 +118,7 @@ class AtlasViewerWidget(QWidget):
             if self._selected_atlas_row is not None:
                 if self._selected_atlas_name not in get_downloaded_atlases():
                     # instantiation will trigger download
-                    selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
-                    write_atlas_metadata_cache(selected_atlas)
+                    _ = BrainGlobeAtlas(self._selected_atlas_name)
                     self.refresh_info_box()
                 else:
                     show_info("Atlas already downloaded.")
@@ -180,7 +176,7 @@ class AtlasViewerWidget(QWidget):
 
     def refresh_info_box(self):
         if self._selected_atlas_name in get_downloaded_atlases():
-            metadata = read_atlas_metadata_cache(self._selected_atlas_name)
+            metadata = read_atlas_metadata_from_file(self._selected_atlas_name)
             metadata_as_string = ""
             for key, value in metadata.items():
                 metadata_as_string += f"{key}:\t{value}\n"

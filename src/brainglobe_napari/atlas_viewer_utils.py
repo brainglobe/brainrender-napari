@@ -1,27 +1,15 @@
 import json
 from pathlib import Path
 
-from bg_atlasapi import BrainGlobeAtlas
+from bg_atlasapi.list_atlases import get_local_atlas_version
 
 
-def write_atlas_metadata_cache(
-    atlas: BrainGlobeAtlas, brainglobe_dir: str = None
-):
-    """Caches the atlas metadata in a `.json` in the BrainGlobe directory."""
-    if not brainglobe_dir:
-        brainglobe_dir = Path.home() / ".brainglobe"
-    with open(
-        brainglobe_dir / f"{atlas.atlas_name}-metadata.json",
-        "w",
-    ) as metadata_cache:
-        json.dump(atlas.metadata, metadata_cache)
-
-
-def read_atlas_metadata_cache(atlas_name: str, brainglobe_dir: str = None):
+def read_atlas_metadata_from_file(atlas_name: str):
     """Reads atlas metadata cached in a `.json` in the BrainGlobe directory."""
-    if not brainglobe_dir:
-        brainglobe_dir = Path.home() / ".brainglobe"
+    brainglobe_dir = Path.home() / ".brainglobe"  # TODO use config here.
     with open(
-        brainglobe_dir / f"{atlas_name}-metadata.json",
-    ) as metadata_cache:
-        return json.loads(metadata_cache.read())
+        brainglobe_dir
+        / f"{atlas_name}_v{get_local_atlas_version(atlas_name)}"
+        / "metadata.json",
+    ) as metadata_file:
+        return json.loads(metadata_file.read())
