@@ -20,9 +20,9 @@ def mock_brainglobe_user_folders(monkeypatch):
     """
     if not os.getenv("GITHUB_ACTIONS"):
         home_path = Path.home()  # actual home path
-        mock_home_path = Path(home_path / ".brainglobe-tests")
-        if not Path.exists(mock_home_path):
-            Path.mkdir(mock_home_path)
+        mock_home_path = home_path / ".brainglobe-tests"
+        if not mock_home_path.exists():
+            mock_home_path.mkdir()
 
         def mock_home():
             return mock_home_path
