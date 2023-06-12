@@ -17,6 +17,7 @@ from bg_atlasapi.list_atlases import (
     get_all_atlases_lastversions,
     get_downloaded_atlases,
 )
+from bg_atlasapi.update_atlases import install_atlas
 from napari.utils.notifications import show_info
 from napari.viewer import Viewer
 from qtpy import QtCore
@@ -117,8 +118,7 @@ class AtlasViewerWidget(QWidget):
             """
             if self._selected_atlas_row is not None:
                 if self._selected_atlas_name not in get_downloaded_atlases():
-                    # instantiation will trigger download
-                    _ = BrainGlobeAtlas(self._selected_atlas_name)
+                    install_atlas(self._selected_atlas_name)
                     self.refresh_info_box()
                 else:
                     show_info("Atlas already downloaded.")
