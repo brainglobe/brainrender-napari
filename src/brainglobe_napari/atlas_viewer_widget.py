@@ -17,6 +17,7 @@ from bg_atlasapi.list_atlases import (
     get_all_atlases_lastversions,
     get_downloaded_atlases,
 )
+from bg_atlasapi.update_atlases import install_atlas
 from napari.utils.notifications import show_info
 from napari.viewer import Viewer
 from qtpy import QtCore
@@ -30,6 +31,7 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from brainglobe_napari.atlas_viewer_utils import read_atlas_metadata_from_file
 from brainglobe_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
 )
@@ -116,10 +118,8 @@ class AtlasViewerWidget(QWidget):
             """
             if self._selected_atlas_row is not None:
                 if self._selected_atlas_name not in get_downloaded_atlases():
-                    # instantiation will trigger download
-                    selected_atlas = BrainGlobeAtlas(  # noqa: F841
-                        self._selected_atlas_name
-                    )
+                    install_atlas(self._selected_atlas_name)
+                    self.refresh_info_box()
                 else:
                     show_info("Atlas already downloaded.")
 
@@ -160,18 +160,7 @@ class AtlasViewerWidget(QWidget):
                 self._selected_atlas_name = self._model.data(
                     self._model.index(self._selected_atlas_row, 0)
                 )
-                if self._selected_atlas_name in get_downloaded_atlases():
-                    self.atlas_info.setText(
-                        f"Currently selected atlas: \
-                            {self._selected_atlas_name} \
-                            (available locally)"
-                    )
-                else:
-                    self.atlas_info.setText(
-                        f"Currently selected atlas: \
-                            {self._selected_atlas_name} \
-                            (not downloaded yet)"
-                    )
+                self.refresh_info_box()
             else:
                 self.atlas_info.setText("")
 
@@ -184,3 +173,23 @@ class AtlasViewerWidget(QWidget):
         self.layout().addWidget(self.download_selected_atlas)
         self.layout().addWidget(self.add_to_viewer)
         self.layout().addWidget(self.atlas_info)
+
+    def refresh_info_box(self):
+        if self._selected_atlas_name in get_downloaded_atlases():
+            metadata = read_atlas_metadata_from_file(self._selected_atlas_name)
+            metadata_as_string = ""
+            for key, value in metadata.items():
+                metadata_as_string += f"{key}:\t{value}\n"
+
+            self.atlas_info.setText(
+                f"Currently selected atlas: \
+                    {self._selected_atlas_name} \
+                    (available locally) \
+                    {metadata_as_string}\n"
+            )
+        else:
+            self.atlas_info.setText(
+                f"Currently selected atlas: \
+                    {self._selected_atlas_name} \
+                    (not downloaded yet)"
+            )

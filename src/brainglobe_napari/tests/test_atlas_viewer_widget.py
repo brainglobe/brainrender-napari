@@ -19,13 +19,16 @@ def make_atlas_viewer(make_napari_viewer) -> Tuple[Viewer, AtlasViewerWidget]:
     local atlas files can be instantiated without crashing."""
     viewer = make_napari_viewer()
     preexisting_atlases = [
-        ("example_mouse_100um","v1.2"),
-        ("allen_mouse_100um","v1.2"),
-        ("osten_mouse_100um","v1.1"),
+        ("example_mouse_100um", "v1.2"),
+        ("allen_mouse_100um", "v1.2"),
+        ("osten_mouse_100um", "v1.1"),
     ]
-    for atlas, version in preexisting_atlases:
-        if not Path.exists(Path.home() / f".brainglobe/{atlas}_{version}"):
-            _ = BrainGlobeAtlas(atlas)
+    for atlas_name, version in preexisting_atlases:
+        if not Path.exists(
+            Path.home() / f".brainglobe/{atlas_name}_{version}"
+        ):
+            _ = BrainGlobeAtlas(atlas_name)
+
     atlas_viewer = AtlasViewerWidget(viewer)
     return viewer, atlas_viewer
 
