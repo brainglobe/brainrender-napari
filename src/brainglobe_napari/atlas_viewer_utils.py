@@ -5,8 +5,8 @@ from bg_atlasapi.list_atlases import get_local_atlas_version
 
 
 def read_atlas_metadata_from_file(atlas_name: str):
-    """Reads atlas metadata cached in a `.json` in the BrainGlobe directory."""
-    brainglobe_dir = Path.home() / ".brainglobe"  # TODO use config here.
+    """Reads atlas metadata stored in a `.json` in the BrainGlobe directory."""
+    brainglobe_dir = Path.home() / ".brainglobe"
     with open(
         brainglobe_dir
         / f"{atlas_name}_v{get_local_atlas_version(atlas_name)}"

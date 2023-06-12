@@ -14,7 +14,6 @@ def make_atlas_viewer(make_napari_viewer) -> Tuple[Viewer, AtlasViewerWidget]:
     """Fixture to expose the atlas viewer widget to tests.
 
     Downloads three atlases as test data, if not already there.
-    Also, caches their metadata accordingly.
 
     Simultaneously acts as a smoke test that the widget and
     local atlas files can be instantiated without crashing."""
