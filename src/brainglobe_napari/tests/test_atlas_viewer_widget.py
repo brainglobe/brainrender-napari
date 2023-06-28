@@ -93,14 +93,16 @@ def test_download_button_no_selection(make_atlas_viewer):
         (14, "osten_mouse_100um"),
     ],
 )
-def test_show_in_viewer_button(make_atlas_viewer, row, expected_atlas_name):
+def test_add_to_viewer_button(make_atlas_viewer, row, expected_atlas_name):
     """Check for a few low-res atlas selections that clicking the
-    "Show in Viewer" button adds a layer with the expected name."""
+    "Add to viewer" button adds the layers with their expected names."""
     viewer, atlas_viewer = make_atlas_viewer
 
     atlas_viewer.atlas_table_view.selectRow(row)
     atlas_viewer.add_to_viewer.click()
-    assert len(viewer.layers) == 2
+
+    assert len(viewer.layers) == 3
+    assert viewer.layers[2].name == f"{expected_atlas_name}_mesh"
     assert viewer.layers[1].name == f"{expected_atlas_name}_annotation"
     assert viewer.layers[0].name == f"{expected_atlas_name}_reference"
 
