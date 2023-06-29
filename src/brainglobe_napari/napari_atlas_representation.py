@@ -37,7 +37,9 @@ class NapariAtlasRepresentation:
         mesh: the mesh to add
         name: name for the surface layer
         """
-        points = mesh.points / self.bg_atlas.resolution
+        points = mesh.points
+        for i in range(3):
+            points[:, i] /= self.bg_atlas.resolution[i]
         cells = mesh.cells[0].data
         self.viewer.add_surface(
             (points, cells),
