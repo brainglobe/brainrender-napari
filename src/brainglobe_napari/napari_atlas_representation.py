@@ -37,13 +37,7 @@ class NapariAtlasRepresentation:
         mesh: the mesh to add
         name: name for the surface layer
         """
-        # assume local_full_name is a string
-        # structured like "allen_mouse_100um_v1.2"
-        # so we can split by '_' and 'um' to find scale.
-        scale_um = float(
-            self.bg_atlas.local_full_name.split("_")[-2].split("um")[0]
-        )
-        points = mesh.points / scale_um
+        points = mesh.points / self.bg_atlas.resolution
         cells = mesh.cells[0].data
         self.viewer.add_surface(
             (points, cells),
