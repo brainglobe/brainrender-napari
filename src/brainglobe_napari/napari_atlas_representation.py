@@ -20,11 +20,13 @@ class NapariAtlasRepresentation:
         """
         self.viewer.add_image(
             self.bg_atlas.reference,
+            scale=self.bg_atlas.resolution,
             name=f"{self.bg_atlas.atlas_name}_reference",
             visible=False,
         )
         self.viewer.add_labels(
             self.bg_atlas.annotation,
+            scale=self.bg_atlas.resolution,
             name=f"{self.bg_atlas.atlas_name}_annotation",
         )
 
@@ -38,8 +40,6 @@ class NapariAtlasRepresentation:
         name: name for the surface layer
         """
         points = mesh.points
-        for i in range(3):
-            points[:, i] /= self.bg_atlas.resolution[i]
         cells = mesh.cells[0].data
         self.viewer.add_surface(
             (points, cells),
