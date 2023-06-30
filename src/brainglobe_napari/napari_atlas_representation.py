@@ -11,6 +11,8 @@ class NapariAtlasRepresentation:
 
     bg_atlas: BrainGlobeAtlas
     viewer: Viewer
+    mesh_opacity: float = 0.4
+    mesh_blending: str = "translucent_no_depth"
 
     def add_to_viewer(self):
         """Adds the annotation and reference images,
@@ -44,6 +46,6 @@ class NapariAtlasRepresentation:
         self.viewer.add_surface(
             (points, cells),
             name=name,
-            opacity=0.4,
-            blending="translucent_no_depth",
+            opacity=self.mesh_opacity,
+            blending=self.mesh_blending,
         )
