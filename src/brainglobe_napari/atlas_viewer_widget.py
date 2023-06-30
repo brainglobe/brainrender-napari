@@ -137,9 +137,9 @@ class AtlasViewerWidget(QWidget):
                 if self._selected_atlas_name in get_downloaded_atlases():
                     selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
                     selected_atlas_representation = NapariAtlasRepresentation(
-                        selected_atlas
+                        selected_atlas, self._viewer
                     )
-                    selected_atlas_representation.add_to_viewer(self._viewer)
+                    selected_atlas_representation.add_to_viewer()
                 else:
                     show_info("Please download this atlas first.")
 
