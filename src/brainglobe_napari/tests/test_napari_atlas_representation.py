@@ -30,10 +30,10 @@ def test_add_to_viewer(make_napari_viewer, expected_atlas_name, anisotropic):
         atlas.metadata["resolution"][0] *= 3
         atlas.metadata["resolution"][1] *= 2
         atlas._annotation = atlas.annotation[
-            0:len(atlas.annotation):3, 0:len(atlas.annotation[0]):2,:
+            0 : len(atlas.annotation) : 3, 0 : len(atlas.annotation[0]) : 2, :
         ]
         atlas._reference = atlas.reference[
-            0:len(atlas.reference):3, 0:len(atlas.reference[0]):2,:
+            0 : len(atlas.reference) : 3, 0 : len(atlas.reference[0]) : 2, :
         ]
 
     atlas_representation = NapariAtlasRepresentation(atlas, viewer)
