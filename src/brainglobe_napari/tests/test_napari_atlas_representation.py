@@ -1,7 +1,7 @@
 import pytest
 from bg_atlasapi import BrainGlobeAtlas
 from napari.layers import Image, Labels, Surface
-from numpy import allclose
+from numpy import allclose, alltrue
 
 from brainglobe_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
@@ -42,3 +42,16 @@ def test_add_to_viewer(make_napari_viewer, expected_atlas_name):
     assert isinstance(reference, Image)
 
     assert allclose(annotation.extent.world, reference.extent.world)
+
+    # check that mesh is slightly smaller, but roughly the same size
+    # as the annotation.
+    assert alltrue(
+        mesh.extent.world[0] > annotation.extent.world[0] - atlas.resolution
+    )
+    assert alltrue(
+        mesh.extent.world[1] < annotation.extent.world[1] + atlas.resolution
+    )
+    assert alltrue(
+        mesh.extent.world[1] - mesh.extent.world[0]
+        > 0.75 * (annotation.extent.world[1] - annotation.extent.world[0])
+    )
