@@ -56,8 +56,10 @@ def test_add_to_viewer(make_napari_viewer, expected_atlas_name, anisotropic):
 
     assert allclose(annotation.extent.world, reference.extent.world)
 
-    # check that mesh is slightly smaller, but roughly the same size
-    # as the annotation.
+    # check that in world coordinates, the root mesh fits within
+    # a resolution step of the entire annotations image (not just
+    # the annotations themselves) but that the mesh extents are more
+    # than 75% of the annotation image extents.
     assert alltrue(
         mesh.extent.world[0] > annotation.extent.world[0] - atlas.resolution
     )
