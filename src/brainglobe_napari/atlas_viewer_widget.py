@@ -31,6 +31,8 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from superqt import QCollapsible
+
 from brainglobe_napari.atlas_viewer_utils import read_atlas_metadata_from_file
 from brainglobe_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
@@ -172,7 +174,10 @@ class AtlasViewerWidget(QWidget):
         self.layout().addWidget(self.atlas_table_view)
         self.layout().addWidget(self.download_selected_atlas)
         self.layout().addWidget(self.add_to_viewer)
-        self.layout().addWidget(self.atlas_info)
+        
+        atlas_info_collapsible = QCollapsible("Atlas info")
+        atlas_info_collapsible.addWidget(self.atlas_info)
+        self.layout().addWidget(atlas_info_collapsible)
 
     def refresh_info_box(self):
         if self._selected_atlas_name in get_downloaded_atlases():
