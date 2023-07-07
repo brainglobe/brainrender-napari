@@ -27,16 +27,20 @@ from qtpy.QtWidgets import (
     QPushButton,
     QTableView,
     QTextEdit,
+    QTreeView,
     QVBoxLayout,
     QWidget,
 )
-
 from superqt import QCollapsible
 
-from brainglobe_napari.atlas_viewer_utils import read_atlas_metadata_from_file
+from brainglobe_napari.atlas_viewer_utils import (
+    read_atlas_metadata_from_file,
+    read_atlas_structures_from_file,
+)
 from brainglobe_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
 )
+from brainglobe_napari.structure_tree_model import StructureTreeModel
 
 
 class AtlasTableModel(QtCore.QAbstractTableModel):
@@ -163,6 +167,7 @@ class AtlasViewerWidget(QWidget):
                     self._model.index(self._selected_atlas_row, 0)
                 )
                 self.refresh_info_box()
+                self.refresh_region_view()
             else:
                 self.atlas_info.setText("")
 
@@ -170,14 +175,45 @@ class AtlasViewerWidget(QWidget):
             _on_selection_changed
         )
 
+        self.structure_tree_view = QTreeView()
+        self.add_structure_button = QPushButton()
+        self.add_structure_button.setText("Add structure mesh")
+
+        def _on_add_structure_clicked():
+            selected_index = (
+                self.structure_tree_view.selectionModel().currentIndex()
+            )
+            if selected_index.isValid():
+                selected_structure_name = (
+                    self.structure_tree_view.model().data(selected_index)
+                )
+                print(selected_structure_name)
+                selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
+                selected_atlas_representation = NapariAtlasRepresentation(
+                    selected_atlas, self._viewer
+                )
+                selected_atlas_representation.add_structure_to_viewer(
+                    selected_structure_name
+                )
+            else:
+                show_info(
+                    "No structure selected. Select a structure first \
+                    to add it to napari."
+                )
+
+        self.add_structure_button.clicked.connect(_on_add_structure_clicked)
+
         # add sub-widgets to top-level widget
         self.layout().addWidget(self.atlas_table_view)
         self.layout().addWidget(self.download_selected_atlas)
         self.layout().addWidget(self.add_to_viewer)
-        
+
         atlas_info_collapsible = QCollapsible("Atlas info")
         atlas_info_collapsible.addWidget(self.atlas_info)
         self.layout().addWidget(atlas_info_collapsible)
+
+        self.layout().addWidget(self.structure_tree_view)
+        self.layout().addWidget(self.add_structure_button)
 
     def refresh_info_box(self):
         if self._selected_atlas_name in get_downloaded_atlases():
@@ -198,3 +234,16 @@ class AtlasViewerWidget(QWidget):
                     {self._selected_atlas_name} \
                     (not downloaded yet)"
             )
+
+    def refresh_region_view(self):
+        if self._selected_atlas_name in get_downloaded_atlases():
+            structures = read_atlas_structures_from_file(
+                self._selected_atlas_name
+            )
+            region_model = StructureTreeModel(structures)
+            self.structure_tree_view.setModel(region_model)
+            self.structure_tree_view.hideColumn(1)
+            self.structure_tree_view.setExpandsOnDoubleClick(False)
+            self.structure_tree_view.setHeaderHidden(True)
+            self.structure_tree_view.setWordWrap(False)
+            self.structure_tree_view.expandToDepth(2)

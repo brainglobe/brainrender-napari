@@ -35,6 +35,12 @@ class NapariAtlasRepresentation:
         root_mesh = self.bg_atlas.mesh_from_structure("root")
         self._add_mesh(root_mesh, name=f"{self.bg_atlas.atlas_name}_mesh")
 
+    def add_structure_to_viewer(self, structure_name: str):
+        mesh = self.bg_atlas.mesh_from_structure(structure_name)
+        self._add_mesh(
+            mesh, name=f"{self.bg_atlas.atlas_name}_{structure_name}_mesh"
+        )
+
     def _add_mesh(self, mesh: Mesh, name: str = None):
         """Helper function to add a mesh as a surface layer to the viewer.
 
