@@ -113,3 +113,32 @@ def test_show_in_viewer_button_no_selection(make_atlas_viewer):
 
     atlas_viewer.add_to_viewer.click()
     assert len(viewer.layers) == 0
+
+
+def test_add_structure_button(make_atlas_viewer, mocker):
+    """Checks that clicking the add_structure_button with
+    the allen_mouse_100um atlas and its VS submesh selected
+    in the widget views calls the NapariAtlasRepresentation
+    function in the expected way.
+    """
+    _, atlas_viewer = make_atlas_viewer
+    add_structure_to_viewer_mock = mocker.patch(
+        "brainglobe_napari.atlas_viewer_widget"
+        ".NapariAtlasRepresentation.add_structure_to_viewer"
+    )
+    atlas_viewer.atlas_table_view.selectRow(4)  # allen_mouse_100um is in row 4
+
+    # find and select first sub-item of root mesh in structure tree view
+    root_index = atlas_viewer.structure_tree_view.rootIndex()
+    root_mesh_index = atlas_viewer.structure_tree_view.model().index(
+        0, 0, root_index
+    )
+    vs_mesh_index = atlas_viewer.structure_tree_view.model().index(
+        0, 0, root_mesh_index
+    )
+    assert vs_mesh_index.isValid()
+    atlas_viewer.structure_tree_view.setCurrentIndex(vs_mesh_index)
+
+    # First sub-item in tree view expected to be "VS"
+    atlas_viewer.add_structure_button.click()
+    add_structure_to_viewer_mock.assert_called_once_with("VS")
