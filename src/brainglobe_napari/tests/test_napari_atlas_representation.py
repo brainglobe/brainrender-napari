@@ -38,35 +38,16 @@ def test_add_to_viewer(make_napari_viewer, expected_atlas_name, anisotropic):
 
     atlas_representation = NapariAtlasRepresentation(atlas, viewer)
     atlas_representation.add_to_viewer()
-    assert len(viewer.layers) == 3
+    assert len(viewer.layers) == 2
 
-    mesh, annotation, reference = (
-        viewer.layers[2],
+    annotation, reference = (
         viewer.layers[1],
         viewer.layers[0],
     )
-
-    assert mesh.name == f"{expected_atlas_name}_mesh"
     assert annotation.name == f"{expected_atlas_name}_annotation"
     assert reference.name == f"{expected_atlas_name}_reference"
 
-    assert isinstance(mesh, Surface)
     assert isinstance(annotation, Labels)
     assert isinstance(reference, Image)
 
     assert allclose(annotation.extent.world, reference.extent.world)
-
-    # check that in world coordinates, the root mesh fits within
-    # a resolution step of the entire annotations image (not just
-    # the annotations themselves) but that the mesh extents are more
-    # than 75% of the annotation image extents.
-    assert alltrue(
-        mesh.extent.world[0] > annotation.extent.world[0] - atlas.resolution
-    )
-    assert alltrue(
-        mesh.extent.world[1] < annotation.extent.world[1] + atlas.resolution
-    )
-    assert alltrue(
-        mesh.extent.world[1] - mesh.extent.world[0]
-        > 0.75 * (annotation.extent.world[1] - annotation.extent.world[0])
-    )

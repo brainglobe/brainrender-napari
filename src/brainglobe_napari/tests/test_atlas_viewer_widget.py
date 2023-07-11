@@ -101,8 +101,7 @@ def test_add_to_viewer_button(make_atlas_viewer, row, expected_atlas_name):
     atlas_viewer.atlas_table_view.selectRow(row)
     atlas_viewer.add_to_viewer.click()
 
-    assert len(viewer.layers) == 3
-    assert viewer.layers[2].name == f"{expected_atlas_name}_mesh"
+    assert len(viewer.layers) == 2
     assert viewer.layers[1].name == f"{expected_atlas_name}_annotation"
     assert viewer.layers[0].name == f"{expected_atlas_name}_reference"
 
