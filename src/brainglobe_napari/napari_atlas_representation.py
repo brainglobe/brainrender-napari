@@ -33,9 +33,6 @@ class NapariAtlasRepresentation:
             name=f"{self.bg_atlas.atlas_name}_annotation",
         )
 
-        root_mesh = self.bg_atlas.mesh_from_structure("root")
-        self._add_mesh(root_mesh, name=f"{self.bg_atlas.atlas_name}_mesh")
-
     def add_structure_to_viewer(self, structure_name: str):
         mesh = self.bg_atlas.mesh_from_structure(structure_name)
         color = self.bg_atlas.structures[structure_name]["rgb_triplet"]
