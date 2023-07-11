@@ -78,13 +78,6 @@ class StructureTreeModel(QAbstractItemModel):
 
         return item.data(index.column())
 
-    def flags(self, index):
-        """Make read-only, but selectable"""
-        if not index.isValid():
-            return Qt.NoItemFlags
-
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
-
     def rowCount(self, parent: StructureTreeItem):
         if parent.column() > 0:
             return 0
@@ -102,14 +95,6 @@ class StructureTreeModel(QAbstractItemModel):
         else:
             return self.root_item.columnCount()
 
-    def headerData(
-        self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole
-    ):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self.root_item.data(section)
-
-        return None
-
     def parent(self, index: QModelIndex):
         if not index.isValid():
             return QModelIndex()
@@ -122,7 +107,7 @@ class StructureTreeModel(QAbstractItemModel):
 
         return self.createIndex(parent_item.row(), 0, parent_item)
 
-    def index(self, row, column, parent):
+    def index(self, row, column, parent=QModelIndex()):
         if not self.hasIndex(row, column, parent):
             return QModelIndex()
 
