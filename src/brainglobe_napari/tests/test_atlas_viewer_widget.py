@@ -142,3 +142,20 @@ def test_add_structure_button(make_atlas_viewer, mocker):
     # First sub-item in tree view expected to be "VS"
     atlas_viewer.add_structure_button.click()
     add_structure_to_viewer_mock.assert_called_once_with("VS")
+
+
+@pytest.mark.parametrize(
+    "row, expected_visibility",
+    [
+        (4, True),  # allen_mouse_100um is part of downloaded test data
+        (5, False),  # mpin_fish_1um is not part of download test data
+    ],
+)
+def test_add_structure_visibility(make_atlas_viewer, row, expected_visibility):
+    """Checks that the structure tree view and add structure buttons
+    are visible iff atlas has previously been downloaded."""
+    _, atlas_viewer = make_atlas_viewer
+    atlas_viewer.show()  # show tree view ancestor for sensible check
+    atlas_viewer.atlas_table_view.selectRow(row)
+    assert atlas_viewer.structure_tree_view.isVisible() == expected_visibility
+    assert atlas_viewer.add_structure_button.isVisible() == expected_visibility
