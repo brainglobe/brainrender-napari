@@ -167,7 +167,7 @@ class AtlasViewerWidget(QWidget):
                     self._model.index(self._selected_atlas_row, 0)
                 )
                 self.refresh_info_box()
-                self.refresh_region_view()
+                self.refresh_structure_tree_view()
             else:
                 self.atlas_info.setText("")
 
@@ -176,8 +176,11 @@ class AtlasViewerWidget(QWidget):
         )
 
         self.structure_tree_view = QTreeView()
+        self.structure_tree_view.hide()
+
         self.add_structure_button = QPushButton()
         self.add_structure_button.setText("Add structure mesh")
+        self.add_structure_button.hide()
 
         def _on_add_structure_clicked():
             selected_index = (
@@ -187,7 +190,6 @@ class AtlasViewerWidget(QWidget):
                 selected_structure_name = (
                     self.structure_tree_view.model().data(selected_index)
                 )
-                print(selected_structure_name)
                 selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
                 selected_atlas_representation = NapariAtlasRepresentation(
                     selected_atlas, self._viewer
@@ -235,15 +237,20 @@ class AtlasViewerWidget(QWidget):
                     (not downloaded yet)"
             )
 
-    def refresh_region_view(self):
+    def refresh_structure_tree_view(self):
         if self._selected_atlas_name in get_downloaded_atlases():
             structures = read_atlas_structures_from_file(
                 self._selected_atlas_name
             )
             region_model = StructureTreeModel(structures)
             self.structure_tree_view.setModel(region_model)
-            self.structure_tree_view.hideColumn(1)
+            self.structure_tree_view.hideColumn(1) # don't show structure id
             self.structure_tree_view.setExpandsOnDoubleClick(False)
             self.structure_tree_view.setHeaderHidden(True)
             self.structure_tree_view.setWordWrap(False)
             self.structure_tree_view.expandToDepth(2)
+            self.structure_tree_view.show()
+            self.add_structure_button.show()
+        else:
+            self.structure_tree_view.hide()
+            self.add_structure_button.hide()
