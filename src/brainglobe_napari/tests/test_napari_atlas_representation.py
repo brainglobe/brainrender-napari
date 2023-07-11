@@ -1,6 +1,6 @@
 import pytest
 from bg_atlasapi import BrainGlobeAtlas
-from napari.layers import Image, Labels, Surface
+from napari.layers import Image, Labels
 from numpy import allclose, alltrue
 
 from brainglobe_napari.napari_atlas_representation import (
@@ -51,3 +51,39 @@ def test_add_to_viewer(make_napari_viewer, expected_atlas_name, anisotropic):
     assert isinstance(reference, Image)
 
     assert allclose(annotation.extent.world, reference.extent.world)
+
+
+@pytest.mark.parametrize(
+    "expected_atlas_name",
+    [
+        ("example_mouse_100um"),
+        ("allen_mouse_100um"),
+        ("osten_mouse_100um"),
+    ],
+)
+def test_add_structure_to_viewer(make_napari_viewer, expected_atlas_name):
+    viewer = make_napari_viewer()
+    atlas = BrainGlobeAtlas(atlas_name=expected_atlas_name)
+
+    atlas_representation = NapariAtlasRepresentation(atlas, viewer)
+    atlas_representation.add_structure_to_viewer("root")
+    assert len(viewer.layers) == 1
+    mesh = viewer.layers[0]
+
+    atlas_representation.add_to_viewer()  # add other images so we can check mesh extents
+    annotation = viewer.layers[1]
+
+    # check that in world coordinates, the root mesh fits within
+    # a resolution step of the entire annotations image (not just
+    # the annotations themselves) but that the mesh extents are more
+    # than 75% of the annotation image extents.
+    assert alltrue(
+        mesh.extent.world[0] > annotation.extent.world[0] - atlas.resolution
+    )
+    assert alltrue(
+        mesh.extent.world[1] < annotation.extent.world[1] + atlas.resolution
+    )
+    assert alltrue(
+        mesh.extent.world[1] - mesh.extent.world[0]
+        > 0.75 * (annotation.extent.world[1] - annotation.extent.world[0])
+    )
