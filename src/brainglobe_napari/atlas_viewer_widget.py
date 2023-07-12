@@ -244,7 +244,7 @@ class AtlasViewerWidget(QWidget):
             )
             region_model = StructureTreeModel(structures)
             self.structure_tree_view.setModel(region_model)
-            self.structure_tree_view.hideColumn(1) # don't show structure id
+            self.structure_tree_view.hideColumn(1)  # don't show structure id
             self.structure_tree_view.setExpandsOnDoubleClick(False)
             self.structure_tree_view.setHeaderHidden(True)
             self.structure_tree_view.setWordWrap(False)
