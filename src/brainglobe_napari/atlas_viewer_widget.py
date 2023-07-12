@@ -255,7 +255,7 @@ class AtlasViewerWidget(QWidget):
             self.structure_tree_view.setExpandsOnDoubleClick(False)
             self.structure_tree_view.setHeaderHidden(True)
             self.structure_tree_view.setWordWrap(False)
-            self.structure_tree_view.expandToDepth(2)
+            self.structure_tree_view.expandToDepth(0)
             self.structure_tree_view.show()
             self.add_structure_button.show()
         else:
