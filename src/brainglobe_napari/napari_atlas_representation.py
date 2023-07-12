@@ -16,10 +16,9 @@ class NapariAtlasRepresentation:
     mesh_blending: str = "translucent_no_depth"
 
     def add_to_viewer(self):
-        """Adds the annotation and reference images,
-        and the top-level "root" mesh, to the viewer, in that order.
+        """Adds the reference and annotation images to the viewer.
 
-        The reference image's visibility is off, the others' is on.
+        The reference image's visibility is off, the annotation's is on.
         """
         self.viewer.add_image(
             self.bg_atlas.reference,
@@ -34,6 +33,10 @@ class NapariAtlasRepresentation:
         )
 
     def add_structure_to_viewer(self, structure_name: str):
+        """Adds the mesh of a structure to the viewer
+
+        structure_name: the id or acronym of the structure.
+        """
         mesh = self.bg_atlas.mesh_from_structure(structure_name)
         color = self.bg_atlas.structures[structure_name]["rgb_triplet"]
         self._add_mesh(
