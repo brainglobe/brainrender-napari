@@ -5,7 +5,7 @@ Atlases that are exposed by the Brainglobe atlas API are
 shown in a table view using the Qt model/view framework
 [Qt Model/View framework](https://doc.qt.io/qt-6/model-view-programming.html)
 
-Users can download and add the atlas as layers to the viewer.
+Users can download and add the atlas images/structures as layers to the viewer.
 """
 from typing import TYPE_CHECKING
 
@@ -27,14 +27,20 @@ from qtpy.QtWidgets import (
     QPushButton,
     QTableView,
     QTextEdit,
+    QTreeView,
     QVBoxLayout,
     QWidget,
 )
+from superqt import QCollapsible
 
-from brainglobe_napari.atlas_viewer_utils import read_atlas_metadata_from_file
+from brainglobe_napari.atlas_viewer_utils import (
+    read_atlas_metadata_from_file,
+    read_atlas_structures_from_file,
+)
 from brainglobe_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
 )
+from brainglobe_napari.structure_tree_model import StructureTreeModel
 
 
 class AtlasTableModel(QtCore.QAbstractTableModel):
@@ -114,7 +120,7 @@ class AtlasViewerWidget(QWidget):
             """Downloads the atlas currently selected in the table view.
 
             Download only happens if it's not available locally.
-            Show's an info message otherwise.
+            Shows an info message otherwise.
             """
             if self._selected_atlas_row is not None:
                 if self._selected_atlas_name not in get_downloaded_atlases():
@@ -132,7 +138,7 @@ class AtlasViewerWidget(QWidget):
         self.add_to_viewer.setText("Add to viewer")
 
         def _on_add_to_viewer_clicked():
-            """Adds annotations as labels layer to the viewer."""
+            """Adds annotation and reference to the viewer."""
             if self._selected_atlas_row is not None:
                 if self._selected_atlas_name in get_downloaded_atlases():
                     selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
@@ -151,7 +157,7 @@ class AtlasViewerWidget(QWidget):
 
         # implement logic to update state when selection changes.
         def _on_selection_changed():
-            """Updates the internally stored info about selected row."""
+            """Updates the internal state and widgets about selected row."""
             selected_index = (
                 self.atlas_table_view.selectionModel().currentIndex()
             )
@@ -161,6 +167,7 @@ class AtlasViewerWidget(QWidget):
                     self._model.index(self._selected_atlas_row, 0)
                 )
                 self.refresh_info_box()
+                self.refresh_structure_tree_view()
             else:
                 self.atlas_info.setText("")
 
@@ -168,13 +175,53 @@ class AtlasViewerWidget(QWidget):
             _on_selection_changed
         )
 
+        # show structures in a tree view
+        self.structure_tree_view = QTreeView()
+        self.structure_tree_view.hide()
+
+        self.add_structure_button = QPushButton()
+        self.add_structure_button.setText("Add structure mesh")
+        self.add_structure_button.hide()
+
+        def _on_add_structure_clicked():
+            """Links add structure button to selected row
+            in the structure tree view"""
+            selected_index = (
+                self.structure_tree_view.selectionModel().currentIndex()
+            )
+            if selected_index.isValid():
+                selected_structure_name = (
+                    self.structure_tree_view.model().data(selected_index)
+                )
+                selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
+                selected_atlas_representation = NapariAtlasRepresentation(
+                    selected_atlas, self._viewer
+                )
+                selected_atlas_representation.add_structure_to_viewer(
+                    selected_structure_name
+                )
+            else:
+                show_info(
+                    "No structure selected. Select a structure first \
+                    to add it to napari."
+                )
+
+        self.add_structure_button.clicked.connect(_on_add_structure_clicked)
+
         # add sub-widgets to top-level widget
         self.layout().addWidget(self.atlas_table_view)
         self.layout().addWidget(self.download_selected_atlas)
         self.layout().addWidget(self.add_to_viewer)
-        self.layout().addWidget(self.atlas_info)
+
+        atlas_info_collapsible = QCollapsible("Atlas info")
+        atlas_info_collapsible.addWidget(self.atlas_info)
+        self.layout().addWidget(atlas_info_collapsible)
+
+        self.layout().addWidget(self.structure_tree_view)
+        self.layout().addWidget(self.add_structure_button)
 
     def refresh_info_box(self):
+        """Updates the information box about the currently selected atlas."""
         if self._selected_atlas_name in get_downloaded_atlases():
             metadata = read_atlas_metadata_from_file(self._selected_atlas_name)
             metadata_as_string = ""
@@ -193,3 +240,24 @@ class AtlasViewerWidget(QWidget):
                     {self._selected_atlas_name} \
                     (not downloaded yet)"
             )
+
+    def refresh_structure_tree_view(self):
+        """Updates the structure tree view with the currently selected atlas.
+        The view is only visible if the selected atlas has been downloaded.
+        """
+        if self._selected_atlas_name in get_downloaded_atlases():
+            structures = read_atlas_structures_from_file(
+                self._selected_atlas_name
+            )
+            region_model = StructureTreeModel(structures)
+            self.structure_tree_view.setModel(region_model)
+            self.structure_tree_view.hideColumn(1)  # don't show structure id
+            self.structure_tree_view.setExpandsOnDoubleClick(False)
+            self.structure_tree_view.setHeaderHidden(True)
+            self.structure_tree_view.setWordWrap(False)
+            self.structure_tree_view.expandToDepth(0)
+            self.structure_tree_view.show()
+            self.add_structure_button.show()
+        else:
+            self.structure_tree_view.hide()
+            self.add_structure_button.hide()

@@ -101,8 +101,7 @@ def test_add_to_viewer_button(make_atlas_viewer, row, expected_atlas_name):
     atlas_viewer.atlas_table_view.selectRow(row)
     atlas_viewer.add_to_viewer.click()
 
-    assert len(viewer.layers) == 3
-    assert viewer.layers[2].name == f"{expected_atlas_name}_mesh"
+    assert len(viewer.layers) == 2
     assert viewer.layers[1].name == f"{expected_atlas_name}_annotation"
     assert viewer.layers[0].name == f"{expected_atlas_name}_reference"
 
@@ -114,3 +113,49 @@ def test_show_in_viewer_button_no_selection(make_atlas_viewer):
 
     atlas_viewer.add_to_viewer.click()
     assert len(viewer.layers) == 0
+
+
+def test_add_structure_button(make_atlas_viewer, mocker):
+    """Checks that clicking the add_structure_button with
+    the allen_mouse_100um atlas and its VS submesh selected
+    in the widget views calls the NapariAtlasRepresentation
+    function in the expected way.
+    """
+    _, atlas_viewer = make_atlas_viewer
+    add_structure_to_viewer_mock = mocker.patch(
+        "brainglobe_napari.atlas_viewer_widget"
+        ".NapariAtlasRepresentation.add_structure_to_viewer"
+    )
+    atlas_viewer.atlas_table_view.selectRow(4)  # allen_mouse_100um is in row 4
+
+    # find and select first sub-item of root mesh in structure tree view
+    root_index = atlas_viewer.structure_tree_view.rootIndex()
+    root_mesh_index = atlas_viewer.structure_tree_view.model().index(
+        0, 0, root_index
+    )
+    vs_mesh_index = atlas_viewer.structure_tree_view.model().index(
+        0, 0, root_mesh_index
+    )
+    assert vs_mesh_index.isValid()
+    atlas_viewer.structure_tree_view.setCurrentIndex(vs_mesh_index)
+
+    # First sub-item in tree view expected to be "VS"
+    atlas_viewer.add_structure_button.click()
+    add_structure_to_viewer_mock.assert_called_once_with("VS")
+
+
+@pytest.mark.parametrize(
+    "row, expected_visibility",
+    [
+        (4, True),  # allen_mouse_100um is part of downloaded test data
+        (5, False),  # mpin_fish_1um is not part of download test data
+    ],
+)
+def test_add_structure_visibility(make_atlas_viewer, row, expected_visibility):
+    """Checks that the structure tree view and add structure buttons
+    are visible iff atlas has previously been downloaded."""
+    _, atlas_viewer = make_atlas_viewer
+    atlas_viewer.show()  # show tree view ancestor for sensible check
+    atlas_viewer.atlas_table_view.selectRow(row)
+    assert atlas_viewer.structure_tree_view.isVisible() == expected_visibility
+    assert atlas_viewer.add_structure_button.isVisible() == expected_visibility

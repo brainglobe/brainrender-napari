@@ -1,6 +1,6 @@
 import pytest
 from bg_atlasapi import BrainGlobeAtlas
-from napari.layers import Image, Labels, Surface
+from napari.layers import Image, Labels
 from numpy import allclose, alltrue
 
 from brainglobe_napari.napari_atlas_representation import (
@@ -38,23 +38,40 @@ def test_add_to_viewer(make_napari_viewer, expected_atlas_name, anisotropic):
 
     atlas_representation = NapariAtlasRepresentation(atlas, viewer)
     atlas_representation.add_to_viewer()
-    assert len(viewer.layers) == 3
+    assert len(viewer.layers) == 2
 
-    mesh, annotation, reference = (
-        viewer.layers[2],
+    annotation, reference = (
         viewer.layers[1],
         viewer.layers[0],
     )
-
-    assert mesh.name == f"{expected_atlas_name}_mesh"
     assert annotation.name == f"{expected_atlas_name}_annotation"
     assert reference.name == f"{expected_atlas_name}_reference"
 
-    assert isinstance(mesh, Surface)
     assert isinstance(annotation, Labels)
     assert isinstance(reference, Image)
 
     assert allclose(annotation.extent.world, reference.extent.world)
+
+
+@pytest.mark.parametrize(
+    "expected_atlas_name",
+    [
+        ("example_mouse_100um"),
+        ("allen_mouse_100um"),
+        ("osten_mouse_100um"),
+    ],
+)
+def test_add_structure_to_viewer(make_napari_viewer, expected_atlas_name):
+    viewer = make_napari_viewer()
+    atlas = BrainGlobeAtlas(atlas_name=expected_atlas_name)
+
+    atlas_representation = NapariAtlasRepresentation(atlas, viewer)
+    atlas_representation.add_structure_to_viewer("root")
+    assert len(viewer.layers) == 1
+    mesh = viewer.layers[0]
+
+    atlas_representation.add_to_viewer()  # add other images so we can check mesh extents
+    annotation = viewer.layers[1]
 
     # check that in world coordinates, the root mesh fits within
     # a resolution step of the entire annotations image (not just
