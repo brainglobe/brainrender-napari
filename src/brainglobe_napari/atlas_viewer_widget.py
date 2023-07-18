@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 from bg_atlasapi import BrainGlobeAtlas
 from bg_atlasapi.list_atlases import (
     get_all_atlases_lastversions,
+    get_atlases_lastversions,
     get_downloaded_atlases,
 )
 from bg_atlasapi.update_atlases import install_atlas
@@ -69,7 +70,11 @@ class AtlasTableModel(QtCore.QAbstractTableModel):
             if section == 0:
                 return "Atlas name"
             elif section == 1:
-                return "Latest Version"
+                return "Local version"
+            elif section == 2:
+                return "Latest version"
+            elif section == 3:
+                return "Available locally"
             else:
                 raise ValueError("Unexpected horizontal header value.")
         else:
@@ -93,8 +98,17 @@ class AtlasViewerWidget(QWidget):
 
         # setup atlas view
         self.atlas_table_view = QTableView()
-        atlases = get_all_atlases_lastversions()
-        data = [[name, version] for name, version in atlases.items()]
+        local_atlases = get_atlases_lastversions()
+        all_atlases = get_all_atlases_lastversions()
+        data = [
+            [name, info["version"], info["latest_version"], info["downloaded"]]
+            for name, info in local_atlases.items()
+        ]
+        data += [
+            [name, "-", latest_version, False]
+            for name, latest_version in all_atlases.items()
+            if name not in local_atlases.keys()
+        ]
 
         self._model = AtlasTableModel(data)
         self.atlas_table_view.setModel(self._model)
@@ -126,6 +140,7 @@ class AtlasViewerWidget(QWidget):
                 if self._selected_atlas_name not in get_downloaded_atlases():
                     install_atlas(self._selected_atlas_name)
                     self.refresh_info_box()
+                    self.refresh_structure_tree_view()
                 else:
                     show_info("Atlas already downloaded.")
 
@@ -141,7 +156,9 @@ class AtlasViewerWidget(QWidget):
             """Adds annotation and reference to the viewer."""
             if self._selected_atlas_row is not None:
                 if self._selected_atlas_name in get_downloaded_atlases():
-                    selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
+                    selected_atlas = BrainGlobeAtlas(
+                        self._selected_atlas_name, False
+                    )
                     selected_atlas_representation = NapariAtlasRepresentation(
                         selected_atlas, self._viewer
                     )
@@ -193,7 +210,9 @@ class AtlasViewerWidget(QWidget):
                 selected_structure_name = (
                     self.structure_tree_view.model().data(selected_index)
                 )
-                selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
+                selected_atlas = BrainGlobeAtlas(
+                    self._selected_atlas_name, False
+                )
                 selected_atlas_representation = NapariAtlasRepresentation(
                     selected_atlas, self._viewer
                 )
