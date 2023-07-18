@@ -133,11 +133,7 @@ class AtlasViewerWidget(QWidget):
             _on_download_selected_atlas_clicked
         )
 
-        # set up add button
-        self.add_to_viewer = QPushButton()
-        self.add_to_viewer.setText("Add to viewer")
-
-        def _on_add_to_viewer_clicked():
+        def on_row_double_clicked():
             """Adds annotation and reference to the viewer."""
             if self._selected_atlas_row is not None:
                 if self._selected_atlas_name in get_downloaded_atlases():
@@ -149,7 +145,7 @@ class AtlasViewerWidget(QWidget):
                 else:
                     show_info("Please download this atlas first.")
 
-        self.add_to_viewer.clicked.connect(_on_add_to_viewer_clicked)
+        self.atlas_table_view.doubleClicked.connect(on_row_double_clicked)
 
         # set up atlas info display
         self.atlas_info = QTextEdit(self)
@@ -211,7 +207,6 @@ class AtlasViewerWidget(QWidget):
         # add sub-widgets to top-level widget
         self.layout().addWidget(self.atlas_table_view)
         self.layout().addWidget(self.download_selected_atlas)
-        self.layout().addWidget(self.add_to_viewer)
 
         atlas_info_collapsible = QCollapsible("Atlas info")
         atlas_info_collapsible.addWidget(self.atlas_info)
