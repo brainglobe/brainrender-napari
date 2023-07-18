@@ -5,6 +5,7 @@ from typing import Tuple
 import pytest
 from bg_atlasapi import BrainGlobeAtlas
 from napari.viewer import Viewer
+from qtpy.QtCore import Qt
 
 from brainglobe_napari.atlas_viewer_widget import AtlasViewerWidget
 
@@ -93,26 +94,38 @@ def test_download_button_no_selection(make_atlas_viewer):
         (14, "osten_mouse_100um"),
     ],
 )
-def test_add_to_viewer_button(make_atlas_viewer, row, expected_atlas_name):
-    """Check for a few low-res atlas selections that clicking the
-    "Add to viewer" button adds the layers with their expected names."""
+def test_double_click_on_atlas_view(
+    make_atlas_viewer, row, expected_atlas_name, qtbot
+):
+    """Check for a few locally available low-res atlases that double-clicking
+    them on the atlas table view adds the layers with their expected names.
+    """
     viewer, atlas_viewer = make_atlas_viewer
 
-    atlas_viewer.atlas_table_view.selectRow(row)
-    atlas_viewer.add_to_viewer.click()
+    model_index = atlas_viewer.atlas_table_view.model().index(row, 0)
+    atlas_viewer.atlas_table_view.setCurrentIndex(model_index)
+
+    viewport_index = atlas_viewer.atlas_table_view.visualRect(
+        model_index
+    ).center()
+
+    # weirdly, to correctly emulate a double-click
+    # you need to click first. Also, note that the view
+    # needs to be interacted with via its viewport
+    qtbot.mouseClick(
+        atlas_viewer.atlas_table_view.viewport(),
+        Qt.MouseButton.LeftButton,
+        pos=viewport_index,
+    )
+    qtbot.mouseDClick(
+        atlas_viewer.atlas_table_view.viewport(),
+        Qt.MouseButton.LeftButton,
+        pos=viewport_index,
+    )
 
     assert len(viewer.layers) == 2
     assert viewer.layers[1].name == f"{expected_atlas_name}_annotation"
     assert viewer.layers[0].name == f"{expected_atlas_name}_reference"
-
-
-def test_show_in_viewer_button_no_selection(make_atlas_viewer):
-    """Check that clicking "Show in Viewer" button without
-    a selection does not add a layer."""
-    viewer, atlas_viewer = make_atlas_viewer
-
-    atlas_viewer.add_to_viewer.click()
-    assert len(viewer.layers) == 0
 
 
 def test_add_structure_button(make_atlas_viewer, mocker):
