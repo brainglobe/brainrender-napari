@@ -26,12 +26,10 @@ from qtpy.QtWidgets import (
     QAbstractItemView,
     QPushButton,
     QTableView,
-    QTextEdit,
     QTreeView,
     QVBoxLayout,
     QWidget,
 )
-from superqt import QCollapsible
 
 from brainglobe_napari.atlas_viewer_utils import (
     read_atlas_metadata_from_file,
@@ -53,6 +51,9 @@ class AtlasTableModel(QtCore.QAbstractTableModel):
     def data(self, index: QModelIndex, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
             return self._data[index.row()][index.column()]
+        if role == Qt.ToolTipRole:
+            hovered_atlas_name = self._data[index.row()][0]
+            return AtlasViewerWidget.get_tooltip_text(hovered_atlas_name)
 
     def rowCount(self, index: QModelIndex):
         return len(self._data)
@@ -125,7 +126,6 @@ class AtlasViewerWidget(QWidget):
             if self._selected_atlas_row is not None:
                 if self._selected_atlas_name not in get_downloaded_atlases():
                     install_atlas(self._selected_atlas_name)
-                    self.refresh_info_box()
                 else:
                     show_info("Atlas already downloaded.")
 
@@ -149,10 +149,6 @@ class AtlasViewerWidget(QWidget):
             on_atlas_row_double_clicked
         )
 
-        # set up atlas info display
-        self.atlas_info = QTextEdit(self)
-        self.atlas_info.setReadOnly(True)
-
         # implement logic to update state when selection changes.
         def _on_selection_changed():
             """Updates the internal state and widgets about selected row."""
@@ -164,10 +160,7 @@ class AtlasViewerWidget(QWidget):
                 self._selected_atlas_name = self._model.data(
                     self._model.index(self._selected_atlas_row, 0)
                 )
-                self.refresh_info_box()
                 self.refresh_structure_tree_view()
-            else:
-                self.atlas_info.setText("")
 
         self.atlas_table_view.selectionModel().selectionChanged.connect(
             _on_selection_changed
@@ -202,33 +195,22 @@ class AtlasViewerWidget(QWidget):
         # add sub-widgets to top-level widget
         self.layout().addWidget(self.atlas_table_view)
         self.layout().addWidget(self.download_selected_atlas)
-
-        atlas_info_collapsible = QCollapsible("Atlas info")
-        atlas_info_collapsible.addWidget(self.atlas_info)
-        self.layout().addWidget(atlas_info_collapsible)
-
         self.layout().addWidget(self.structure_tree_view)
 
-    def refresh_info_box(self):
-        """Updates the information box about the currently selected atlas."""
-        if self._selected_atlas_name in get_downloaded_atlases():
-            metadata = read_atlas_metadata_from_file(self._selected_atlas_name)
+    @classmethod
+    def get_tooltip_text(cls, atlas_name: str):
+        if atlas_name in get_downloaded_atlases():
+            metadata = read_atlas_metadata_from_file(atlas_name)
             metadata_as_string = ""
             for key, value in metadata.items():
                 metadata_as_string += f"{key}:\t{value}\n"
 
-            self.atlas_info.setText(
-                f"Currently selected atlas: \
-                    {self._selected_atlas_name} \
-                    (available locally) \
-                    {metadata_as_string}\n"
+            tooltip_text = (
+                f"{atlas_name} (available locally)\n {metadata_as_string}"
             )
         else:
-            self.atlas_info.setText(
-                f"Currently selected atlas: \
-                    {self._selected_atlas_name} \
-                    (not downloaded yet)"
-            )
+            tooltip_text = f"{atlas_name} (not downloaded yet)"
+        return tooltip_text
 
     def refresh_structure_tree_view(self):
         """Updates the structure tree view with the currently selected atlas.
