@@ -133,7 +133,7 @@ class AtlasViewerWidget(QWidget):
             _on_download_selected_atlas_clicked
         )
 
-        def on_row_double_clicked():
+        def on_atlas_row_double_clicked():
             """Adds annotation and reference to the viewer."""
             if self._selected_atlas_row is not None:
                 if self._selected_atlas_name in get_downloaded_atlases():
@@ -145,7 +145,9 @@ class AtlasViewerWidget(QWidget):
                 else:
                     show_info("Please download this atlas first.")
 
-        self.atlas_table_view.doubleClicked.connect(on_row_double_clicked)
+        self.atlas_table_view.doubleClicked.connect(
+            on_atlas_row_double_clicked
+        )
 
         # set up atlas info display
         self.atlas_info = QTextEdit(self)
@@ -175,11 +177,7 @@ class AtlasViewerWidget(QWidget):
         self.structure_tree_view = QTreeView()
         self.structure_tree_view.hide()
 
-        self.add_structure_button = QPushButton()
-        self.add_structure_button.setText("Add structure mesh")
-        self.add_structure_button.hide()
-
-        def _on_add_structure_clicked():
+        def on_structure_row_double_clicked():
             """Links add structure button to selected row
             in the structure tree view"""
             selected_index = (
@@ -196,13 +194,10 @@ class AtlasViewerWidget(QWidget):
                 selected_atlas_representation.add_structure_to_viewer(
                     selected_structure_name
                 )
-            else:
-                show_info(
-                    "No structure selected. Select a structure first \
-                    to add it to napari."
-                )
 
-        self.add_structure_button.clicked.connect(_on_add_structure_clicked)
+        self.structure_tree_view.doubleClicked.connect(
+            on_structure_row_double_clicked
+        )
 
         # add sub-widgets to top-level widget
         self.layout().addWidget(self.atlas_table_view)
@@ -213,7 +208,6 @@ class AtlasViewerWidget(QWidget):
         self.layout().addWidget(atlas_info_collapsible)
 
         self.layout().addWidget(self.structure_tree_view)
-        self.layout().addWidget(self.add_structure_button)
 
     def refresh_info_box(self):
         """Updates the information box about the currently selected atlas."""
@@ -252,7 +246,5 @@ class AtlasViewerWidget(QWidget):
             self.structure_tree_view.setWordWrap(False)
             self.structure_tree_view.expandToDepth(0)
             self.structure_tree_view.show()
-            self.add_structure_button.show()
         else:
             self.structure_tree_view.hide()
-            self.add_structure_button.hide()

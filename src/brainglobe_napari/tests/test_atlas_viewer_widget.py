@@ -128,13 +128,13 @@ def test_double_click_on_atlas_view(
     assert viewer.layers[0].name == f"{expected_atlas_name}_reference"
 
 
-def test_add_structure_button(make_atlas_viewer, mocker):
+def test_structure_row_double_clicked(make_atlas_viewer, mocker, qtbot):
     """Checks that clicking the add_structure_button with
     the allen_mouse_100um atlas and its VS submesh selected
     in the widget views calls the NapariAtlasRepresentation
     function in the expected way.
     """
-    _, atlas_viewer = make_atlas_viewer
+    viewer, atlas_viewer = make_atlas_viewer
     add_structure_to_viewer_mock = mocker.patch(
         "brainglobe_napari.atlas_viewer_widget"
         ".NapariAtlasRepresentation.add_structure_to_viewer"
@@ -153,7 +153,24 @@ def test_add_structure_button(make_atlas_viewer, mocker):
     atlas_viewer.structure_tree_view.setCurrentIndex(vs_mesh_index)
 
     # First sub-item in tree view expected to be "VS"
-    atlas_viewer.add_structure_button.click()
+    viewport_index = atlas_viewer.structure_tree_view.visualRect(
+        vs_mesh_index
+    ).center()
+
+    # weirdly, to correctly emulate a double-click
+    # you need to click first. Also, note that the view
+    # needs to be interacted with via its viewport
+    qtbot.mouseClick(
+        atlas_viewer.structure_tree_view.viewport(),
+        Qt.MouseButton.LeftButton,
+        pos=viewport_index,
+    )
+    qtbot.mouseDClick(
+        atlas_viewer.structure_tree_view.viewport(),
+        Qt.MouseButton.LeftButton,
+        pos=viewport_index,
+    )
+
     add_structure_to_viewer_mock.assert_called_once_with("VS")
 
 
@@ -171,4 +188,3 @@ def test_add_structure_visibility(make_atlas_viewer, row, expected_visibility):
     atlas_viewer.show()  # show tree view ancestor for sensible check
     atlas_viewer.atlas_table_view.selectRow(row)
     assert atlas_viewer.structure_tree_view.isVisible() == expected_visibility
-    assert atlas_viewer.add_structure_button.isVisible() == expected_visibility
