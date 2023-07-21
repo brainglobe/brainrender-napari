@@ -18,19 +18,18 @@ from bg_atlasapi.list_atlases import (
     get_downloaded_atlases,
 )
 from bg_atlasapi.update_atlases import install_atlas
-from napari.utils.notifications import show_info
 from napari.viewer import Viewer
 from qtpy import QtCore
 from qtpy.QtCore import QModelIndex, Qt
 from qtpy.QtWidgets import (
     QAbstractItemView,
-    QPushButton,
     QTableView,
     QTreeView,
     QVBoxLayout,
     QWidget,
 )
 
+from brainglobe_napari.atlas_download_dialog import AtlasDownloadDialog
 from brainglobe_napari.atlas_viewer_utils import (
     read_atlas_metadata_from_file,
     read_atlas_structures_from_file,
@@ -113,28 +112,10 @@ class AtlasViewerWidget(QWidget):
         self._selected_atlas_row = None
         self._selected_atlas_name = None
 
-        # set up download button
-        self.download_selected_atlas = QPushButton()
-        self.download_selected_atlas.setText("Download selected atlas")
-
-        def _on_download_selected_atlas_clicked():
-            """Downloads the atlas currently selected in the table view.
-
-            Download only happens if it's not available locally.
-            Shows an info message otherwise.
-            """
-            if self._selected_atlas_row is not None:
-                if self._selected_atlas_name not in get_downloaded_atlases():
-                    install_atlas(self._selected_atlas_name)
-                else:
-                    show_info("Atlas already downloaded.")
-
-        self.download_selected_atlas.clicked.connect(
-            _on_download_selected_atlas_clicked
-        )
-
         def on_atlas_row_double_clicked():
-            """Adds annotation and reference to the viewer."""
+            """Adds annotation and reference to the viewer if the currently
+            selected atlas is available locally. Asks the user to confirm
+            they'd like to download the atlas otherwise."""
             if self._selected_atlas_row is not None:
                 if self._selected_atlas_name in get_downloaded_atlases():
                     selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
@@ -143,7 +124,13 @@ class AtlasViewerWidget(QWidget):
                     )
                     selected_atlas_representation.add_to_viewer()
                 else:
-                    show_info("Please download this atlas first.")
+                    self.download_dialog = AtlasDownloadDialog(
+                        self._selected_atlas_name
+                    )
+                    self.download_dialog.ok_button.clicked.connect(
+                        self._on_download_atlas_confirmed
+                    )
+                    self.download_dialog.exec()
 
         self.atlas_table_view.doubleClicked.connect(
             on_atlas_row_double_clicked
@@ -194,7 +181,6 @@ class AtlasViewerWidget(QWidget):
 
         # add sub-widgets to top-level widget
         self.layout().addWidget(self.atlas_table_view)
-        self.layout().addWidget(self.download_selected_atlas)
         self.layout().addWidget(self.structure_tree_view)
 
     @classmethod
@@ -229,3 +215,9 @@ class AtlasViewerWidget(QWidget):
             self.structure_tree_view.show()
         else:
             self.structure_tree_view.hide()
+
+    def _on_download_atlas_confirmed(self):
+        """Downloads the selected atlas."""
+        if self._selected_atlas_row is not None:
+            if self._selected_atlas_name not in get_downloaded_atlases():
+                install_atlas(self._selected_atlas_name)
