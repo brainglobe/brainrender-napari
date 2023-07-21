@@ -205,11 +205,10 @@ class AtlasViewerWidget(QWidget):
             for key, value in metadata.items():
                 metadata_as_string += f"{key}:\t{value}\n"
 
-            tooltip_text = (
-                f"{atlas_name} (available locally)\n {metadata_as_string}"
-            )
+            tooltip_text = f"{atlas_name} (double-click to add to viewer)\
+            \n{metadata_as_string}"
         else:
-            tooltip_text = f"{atlas_name} (not downloaded yet)"
+            tooltip_text = f"{atlas_name} (double-click to download)"
         return tooltip_text
 
     def refresh_structure_tree_view(self):
