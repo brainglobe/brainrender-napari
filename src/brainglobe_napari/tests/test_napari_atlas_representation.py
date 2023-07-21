@@ -1,7 +1,7 @@
 import pytest
 from bg_atlasapi import BrainGlobeAtlas
 from napari.layers import Image, Labels
-from numpy import allclose, alltrue
+from numpy import all, allclose
 
 from brainglobe_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
@@ -80,13 +80,13 @@ def test_add_structure_to_viewer(make_napari_viewer, expected_atlas_name):
     # a resolution step of the entire annotations image (not just
     # the annotations themselves) but that the mesh extents are more
     # than 75% of the annotation image extents.
-    assert alltrue(
+    assert all(
         mesh.extent.world[0] > annotation.extent.world[0] - atlas.resolution
     )
-    assert alltrue(
+    assert all(
         mesh.extent.world[1] < annotation.extent.world[1] + atlas.resolution
     )
-    assert alltrue(
+    assert all(
         mesh.extent.world[1] - mesh.extent.world[0]
         > 0.75 * (annotation.extent.world[1] - annotation.extent.world[0])
     )
