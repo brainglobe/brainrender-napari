@@ -193,8 +193,10 @@ class AtlasViewerWidget(QWidget):
 
             tooltip_text = f"{atlas_name} (double-click to add to viewer)\
             \n{metadata_as_string}"
-        else:
+        elif atlas_name in get_all_atlases_lastversions().keys():
             tooltip_text = f"{atlas_name} (double-click to download)"
+        else:
+            raise ValueError("Tooltip text called with invalid atlas name.")
         return tooltip_text
 
     def refresh_structure_tree_view(self):
