@@ -5,6 +5,7 @@ from typing import Tuple
 import pytest
 from bg_atlasapi import BrainGlobeAtlas
 from napari.viewer import Viewer
+from qtpy.QtCore import Qt
 
 from brainglobe_napari.atlas_viewer_widget import AtlasViewerWidget
 
@@ -159,3 +160,36 @@ def test_add_structure_visibility(make_atlas_viewer, row, expected_visibility):
     atlas_viewer.show()  # show tree view ancestor for sensible check
     atlas_viewer.atlas_table_view.selectRow(row)
     assert atlas_viewer.structure_tree_view.isVisible() == expected_visibility
+
+
+def test_get_tooltip_downloaded():
+    tooltip_text = AtlasViewerWidget.get_tooltip_text("example_mouse_100um")
+    assert "example_mouse" in tooltip_text
+    assert "add to viewer" in tooltip_text
+
+
+def test_get_tooltip_not_locally_available():
+    tooltip_text = AtlasViewerWidget.get_tooltip_text("mpin_zfish_1um")
+    assert "mpin_zfish_1um" in tooltip_text
+    assert "double-click to download" in tooltip_text
+
+
+def test_get_tooltip_invalid_name():
+    with pytest.raises(ValueError) as e:
+        _ = AtlasViewerWidget.get_tooltip_text("wrong_atlas_name")
+        assert "invalid atlas name" in e
+
+
+def test_hover_atlas_table_view(make_atlas_viewer, mocker, qtbot):
+    _, atlas_viewer = make_atlas_viewer
+    view = atlas_viewer.atlas_table_view
+    index = view.model().index(2, 1)
+
+    get_tooltip_text_mock = mocker.patch(
+        "brainglobe_napari.atlas_viewer_widget"
+        ".AtlasViewerWidget.get_tooltip_text"
+    )
+
+    view.model().data(index, Qt.ToolTipRole)
+
+    get_tooltip_text_mock.assert_called_once()
