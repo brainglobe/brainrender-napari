@@ -60,6 +60,6 @@ class NapariAtlasRepresentation:
         )
         if color:
             viewer_kwargs["vertex_colors"] = np.repeat(
-                [color], len(points), axis=0
+                [[float(c) / 255 for c in color]], len(points), axis=0
             )
         self.viewer.add_surface((points, cells), **viewer_kwargs)
