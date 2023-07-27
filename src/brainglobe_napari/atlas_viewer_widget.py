@@ -38,7 +38,7 @@ from brainglobe_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
 )
 from brainglobe_napari.structure_tree_model import StructureTreeModel
-
+from brainglobe_napari.surface_color_editor import SurfaceColorEditor
 
 class AtlasTableModel(QtCore.QAbstractTableModel):
     """A table data model for atlases."""
@@ -164,23 +164,28 @@ class AtlasViewerWidget(QWidget):
                 self.structure_tree_view.selectionModel().currentIndex()
             )
             if selected_index.isValid():
-                selected_structure_name = (
-                    self.structure_tree_view.model().data(selected_index)
+                acronym_index = selected_index.sibling(selected_index.row(), 0) # acronym is column 0
+                selected_structure_acronym = (
+                    self.structure_tree_view.model().data(acronym_index)
                 )
                 selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
                 selected_atlas_representation = NapariAtlasRepresentation(
                     selected_atlas, self._viewer
                 )
                 selected_atlas_representation.add_structure_to_viewer(
-                    selected_structure_name
+                    selected_structure_acronym
                 )
 
         self.structure_tree_view.doubleClicked.connect(
             on_structure_row_double_clicked
         )
 
+        # color editing functionality
+        self.surface_color_editor = SurfaceColorEditor(self.structure_tree_view)
+
         # add sub-widgets to top-level widget
         self.layout().addWidget(self.atlas_table_view)
+        self.layout().addWidget(self.surface_color_editor)
         self.layout().addWidget(self.structure_tree_view)
 
     @classmethod
@@ -209,14 +214,16 @@ class AtlasViewerWidget(QWidget):
             )
             region_model = StructureTreeModel(structures)
             self.structure_tree_view.setModel(region_model)
-            self.structure_tree_view.hideColumn(1)  # don't show structure id
             self.structure_tree_view.setExpandsOnDoubleClick(False)
             self.structure_tree_view.setHeaderHidden(True)
             self.structure_tree_view.setWordWrap(False)
             self.structure_tree_view.expandToDepth(0)
             self.structure_tree_view.show()
+            self.surface_color_editor = SurfaceColorEditor(self.structure_tree_view)
+            self.surface_color_editor.show()
         else:
             self.structure_tree_view.hide()
+            self.surface_color_editor.hide()
 
     def _on_download_atlas_confirmed(self):
         """Downloads the selected atlas."""

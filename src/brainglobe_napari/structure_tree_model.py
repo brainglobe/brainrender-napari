@@ -45,7 +45,7 @@ class StructureTreeModel(QAbstractItemModel):
 
     def __init__(self, data: List, parent=None):
         super().__init__()
-        self.root_item = StructureTreeItem(data=("Atlas regions", "-1"))
+        self.root_item = StructureTreeItem(data=("acronym", "name", "rgb", "id"))
         self.build_structure_tree(data, self.root_item)
 
     def build_structure_tree(
@@ -63,6 +63,8 @@ class StructureTreeModel(QAbstractItemModel):
             # before their children
             node = tree.get_node(n_id)
             acronym = structure_id_dict[node.identifier]["acronym"]
+            name = structure_id_dict[node.identifier]["name"]
+            rgb = structure_id_dict[node.identifier]["rgb_triplet"]
             if (
                 len(structure_id_dict[node.identifier]["structure_id_path"])
                 == 1
@@ -73,7 +75,7 @@ class StructureTreeModel(QAbstractItemModel):
                 parent_item = inserted_items[parent_id]
 
             item = StructureTreeItem(
-                data=(acronym, node.identifier), parent=parent_item
+                data=(acronym, name, rgb, node.identifier), parent=parent_item
             )
             parent_item.appendChild(item)
             inserted_items[node.identifier] = item
