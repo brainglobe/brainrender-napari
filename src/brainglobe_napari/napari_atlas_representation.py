@@ -50,6 +50,7 @@ class NapariAtlasRepresentation:
 
         mesh: the mesh to add
         name: name for the surface layer
+        color: RGB values (0-255) as a list to colour mesh with
         """
         points = mesh.points
         cells = mesh.cells[0].data
@@ -59,6 +60,7 @@ class NapariAtlasRepresentation:
             blending=self.mesh_blending,
         )
         if color:
+            # convert RGB (0-255) to rgb (0.0-1.0)
             viewer_kwargs["vertex_colors"] = np.repeat(
                 [[float(c) / 255 for c in color]], len(points), axis=0
             )
