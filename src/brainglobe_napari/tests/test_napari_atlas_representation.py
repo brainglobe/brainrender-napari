@@ -62,6 +62,8 @@ def test_add_to_viewer(make_napari_viewer, expected_atlas_name, anisotropic):
     ],
 )
 def test_add_structure_to_viewer(make_napari_viewer, expected_atlas_name):
+    """Check that the root mesh extents __roughly__ match the size
+    of the annnotations image."""
     viewer = make_napari_viewer()
     atlas = BrainGlobeAtlas(atlas_name=expected_atlas_name)
 
@@ -70,7 +72,8 @@ def test_add_structure_to_viewer(make_napari_viewer, expected_atlas_name):
     assert len(viewer.layers) == 1
     mesh = viewer.layers[0]
 
-    atlas_representation.add_to_viewer()  # add other images so we can check mesh extents
+    # add other images so we can check mesh extents
+    atlas_representation.add_to_viewer()
     annotation = viewer.layers[1]
 
     # check that in world coordinates, the root mesh fits within
@@ -87,3 +90,20 @@ def test_add_structure_to_viewer(make_napari_viewer, expected_atlas_name):
         mesh.extent.world[1] - mesh.extent.world[0]
         > 0.75 * (annotation.extent.world[1] - annotation.extent.world[0])
     )
+
+
+def test_structure_color(make_napari_viewer):
+    """Checks that the default colour of a structure
+    is propagated correctly to the corresponding napari layer
+    """
+    viewer = make_napari_viewer()
+    atlas = BrainGlobeAtlas(atlas_name="allen_mouse_100um")
+
+    atlas_representation = NapariAtlasRepresentation(atlas, viewer)
+    atlas_representation.add_structure_to_viewer("CTXsp")
+
+    expected_RGB = atlas.structures["CTXsp"]["rgb_triplet"]
+    actual_rgb = viewer.layers[0].vertex_colors[0]
+
+    for a, e in zip(actual_rgb, expected_RGB):
+        assert a * 255 == e
