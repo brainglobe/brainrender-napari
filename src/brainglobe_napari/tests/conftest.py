@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from bg_atlasapi import config
+from qtpy.QtCore import Qt
 
 
 @pytest.fixture(autouse=True)
@@ -46,3 +47,25 @@ def mock_brainglobe_user_folders(monkeypatch):
             }
         }
         monkeypatch.setattr(config, "TEMPLATE_CONF_DICT", mock_default_dirs)
+
+
+@pytest.fixture
+def double_click_on_view(qtbot):
+    def inner_double_click_on_view(view, index):
+        viewport_index = view.visualRect(index).center()
+
+        # weirdly, to correctly emulate a double-click
+        # you need to click first. Also, note that the view
+        # needs to be interacted with via its viewport
+        qtbot.mouseClick(
+            view.viewport(),
+            Qt.MouseButton.LeftButton,
+            pos=viewport_index,
+        )
+        qtbot.mouseDClick(
+            view.viewport(),
+            Qt.MouseButton.LeftButton,
+            pos=viewport_index,
+        )
+
+    return inner_double_click_on_view

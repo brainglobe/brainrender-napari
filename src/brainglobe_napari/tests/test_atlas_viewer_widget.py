@@ -5,6 +5,7 @@ from typing import Tuple
 import pytest
 from bg_atlasapi import BrainGlobeAtlas
 from napari.viewer import Viewer
+from qtpy.QtCore import Qt
 
 from brainglobe_napari.atlas_viewer_widget import AtlasViewerWidget
 
@@ -33,12 +34,13 @@ def make_atlas_viewer(make_napari_viewer) -> Tuple[Viewer, AtlasViewerWidget]:
     return viewer, atlas_viewer
 
 
-def test_download_button(make_atlas_viewer):
-    """Checks that download button creates local copy of example atlas files.
+def test_download_confirmed_callback(make_atlas_viewer):
+    """Checks that confirming atlas download creates local copy of
+    example atlas files.
 
     Test setup consists of remembering the expected files and folders
-    of a preexisting atlas and then removing them.This allows checking
-    that the button triggers the creation of the same local copy
+    of a preexisting atlas and then removing them. This allows checking
+    that the function triggers the creation of the same local copy
     of the atlas as the `bg_atlasapi` itself.
     """
     atlas_directory = Path.home() / ".brainglobe/example_mouse_100um_v1.2"
@@ -52,37 +54,10 @@ def test_download_button(make_atlas_viewer):
 
     _, atlas_viewer = make_atlas_viewer
     atlas_viewer.atlas_table_view.selectRow(0)
-    atlas_viewer.download_selected_atlas.click()
+    atlas_viewer._on_download_atlas_confirmed()
 
     for file in expected_filenames:
         assert Path.exists(file)
-
-
-def test_download_button_already_downloaded(make_atlas_viewer, mocker):
-    """Check that hitting download a second time calls show_info.
-    and does not call the `BrainGlobeAtlas` constructor.
-    """
-    _, atlas_viewer = make_atlas_viewer
-    atlas_viewer.atlas_table_view.selectRow(0)
-    atlas_viewer.download_selected_atlas.click()
-
-    show_info_mock = mocker.patch(
-        "brainglobe_napari.atlas_viewer_widget.show_info"
-    )
-    atlas_constructor_mock = mocker.patch(
-        "brainglobe_napari.atlas_viewer_widget.BrainGlobeAtlas"
-    )
-
-    atlas_viewer.download_selected_atlas.click()
-
-    show_info_mock.assert_called_once_with("Atlas already downloaded.")
-    atlas_constructor_mock.assert_not_called()
-
-
-def test_download_button_no_selection(make_atlas_viewer):
-    """Smoke test to check downloading without selection doesn't crash"""
-    _, atlas_viewer = make_atlas_viewer
-    atlas_viewer.download_selected_atlas.click()
 
 
 @pytest.mark.parametrize(
@@ -93,29 +68,55 @@ def test_download_button_no_selection(make_atlas_viewer):
         (14, "osten_mouse_100um"),
     ],
 )
-def test_add_to_viewer_button(make_atlas_viewer, row, expected_atlas_name):
-    """Check for a few low-res atlas selections that clicking the
-    "Add to viewer" button adds the layers with their expected names."""
+def test_double_click_on_locally_available_atlas_row(
+    make_atlas_viewer, double_click_on_view, row, expected_atlas_name
+):
+    """Check for a few locally available low-res atlases that double-clicking
+    them on the atlas table view adds the layers with their expected names.
+    """
     viewer, atlas_viewer = make_atlas_viewer
 
-    atlas_viewer.atlas_table_view.selectRow(row)
-    atlas_viewer.add_to_viewer.click()
+    model_index = atlas_viewer.atlas_table_view.model().index(row, 0)
+    atlas_viewer.atlas_table_view.setCurrentIndex(model_index)
+
+    double_click_on_view(atlas_viewer.atlas_table_view, model_index)
 
     assert len(viewer.layers) == 2
     assert viewer.layers[1].name == f"{expected_atlas_name}_annotation"
     assert viewer.layers[0].name == f"{expected_atlas_name}_reference"
 
 
-def test_show_in_viewer_button_no_selection(make_atlas_viewer):
-    """Check that clicking "Show in Viewer" button without
-    a selection does not add a layer."""
-    viewer, atlas_viewer = make_atlas_viewer
+@pytest.mark.parametrize(
+    "row, expected_atlas_name",
+    [
+        (1, "allen_mouse_100um"),  # not part of downloaded test data
+        (5, "mpin_zfish_1um"),  # not part of downloaded test data
+    ],
+)
+def test_double_click_on_not_yet_downloaded_atlas_row(
+    make_atlas_viewer, mocker, double_click_on_view, row, expected_atlas_name
+):
+    """Check for a few yet-to-be-downloaded atlases that double-clicking
+    them on the atlas table view executes the download dialog.
+    """
+    _, atlas_viewer = make_atlas_viewer
 
-    atlas_viewer.add_to_viewer.click()
-    assert len(viewer.layers) == 0
+    model_index = atlas_viewer.atlas_table_view.model().index(row, 0)
+    atlas_viewer.atlas_table_view.setCurrentIndex(model_index)
+
+    dialog_exec_mock = mocker.patch(
+        "brainglobe_napari.atlas_viewer_widget.AtlasDownloadDialog.exec"
+    )
+    # weirdly, to correctly emulate a double-click
+    # you need to click first. Also, note that the view
+    # needs to be interacted with via its viewport
+    double_click_on_view(atlas_viewer.atlas_table_view, model_index)
+    dialog_exec_mock.assert_called_once()
 
 
-def test_add_structure_button(make_atlas_viewer, mocker):
+def test_structure_row_double_clicked(
+    make_atlas_viewer, mocker, double_click_on_view
+):
     """Checks that clicking the add_structure_button with
     the allen_mouse_100um atlas and its VS submesh selected
     in the widget views calls the NapariAtlasRepresentation
@@ -139,8 +140,9 @@ def test_add_structure_button(make_atlas_viewer, mocker):
     assert vs_mesh_index.isValid()
     atlas_viewer.structure_tree_view.setCurrentIndex(vs_mesh_index)
 
+    double_click_on_view(atlas_viewer.structure_tree_view, vs_mesh_index)
+
     # First sub-item in tree view expected to be "VS"
-    atlas_viewer.add_structure_button.click()
     add_structure_to_viewer_mock.assert_called_once_with("VS")
 
 
@@ -158,4 +160,36 @@ def test_add_structure_visibility(make_atlas_viewer, row, expected_visibility):
     atlas_viewer.show()  # show tree view ancestor for sensible check
     atlas_viewer.atlas_table_view.selectRow(row)
     assert atlas_viewer.structure_tree_view.isVisible() == expected_visibility
-    assert atlas_viewer.add_structure_button.isVisible() == expected_visibility
+
+
+def test_get_tooltip_downloaded():
+    tooltip_text = AtlasViewerWidget.get_tooltip_text("example_mouse_100um")
+    assert "example_mouse" in tooltip_text
+    assert "add to viewer" in tooltip_text
+
+
+def test_get_tooltip_not_locally_available():
+    tooltip_text = AtlasViewerWidget.get_tooltip_text("mpin_zfish_1um")
+    assert "mpin_zfish_1um" in tooltip_text
+    assert "double-click to download" in tooltip_text
+
+
+def test_get_tooltip_invalid_name():
+    with pytest.raises(ValueError) as e:
+        _ = AtlasViewerWidget.get_tooltip_text("wrong_atlas_name")
+        assert "invalid atlas name" in e
+
+
+def test_hover_atlas_table_view(make_atlas_viewer, mocker, qtbot):
+    _, atlas_viewer = make_atlas_viewer
+    view = atlas_viewer.atlas_table_view
+    index = view.model().index(2, 1)
+
+    get_tooltip_text_mock = mocker.patch(
+        "brainglobe_napari.atlas_viewer_widget"
+        ".AtlasViewerWidget.get_tooltip_text"
+    )
+
+    view.model().data(index, Qt.ToolTipRole)
+
+    get_tooltip_text_mock.assert_called_once()

@@ -18,21 +18,18 @@ from bg_atlasapi.list_atlases import (
     get_downloaded_atlases,
 )
 from bg_atlasapi.update_atlases import install_atlas
-from napari.utils.notifications import show_info
 from napari.viewer import Viewer
 from qtpy import QtCore
 from qtpy.QtCore import QModelIndex, Qt
 from qtpy.QtWidgets import (
     QAbstractItemView,
-    QPushButton,
     QTableView,
-    QTextEdit,
     QTreeView,
     QVBoxLayout,
     QWidget,
 )
-from superqt import QCollapsible
 
+from brainglobe_napari.atlas_download_dialog import AtlasDownloadDialog
 from brainglobe_napari.atlas_viewer_utils import (
     read_atlas_metadata_from_file,
     read_atlas_structures_from_file,
@@ -53,6 +50,9 @@ class AtlasTableModel(QtCore.QAbstractTableModel):
     def data(self, index: QModelIndex, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
             return self._data[index.row()][index.column()]
+        if role == Qt.ToolTipRole:
+            hovered_atlas_name = self._data[index.row()][0]
+            return AtlasViewerWidget.get_tooltip_text(hovered_atlas_name)
 
     def rowCount(self, index: QModelIndex):
         return len(self._data)
@@ -112,33 +112,10 @@ class AtlasViewerWidget(QWidget):
         self._selected_atlas_row = None
         self._selected_atlas_name = None
 
-        # set up download button
-        self.download_selected_atlas = QPushButton()
-        self.download_selected_atlas.setText("Download selected atlas")
-
-        def _on_download_selected_atlas_clicked():
-            """Downloads the atlas currently selected in the table view.
-
-            Download only happens if it's not available locally.
-            Shows an info message otherwise.
-            """
-            if self._selected_atlas_row is not None:
-                if self._selected_atlas_name not in get_downloaded_atlases():
-                    install_atlas(self._selected_atlas_name)
-                    self.refresh_info_box()
-                else:
-                    show_info("Atlas already downloaded.")
-
-        self.download_selected_atlas.clicked.connect(
-            _on_download_selected_atlas_clicked
-        )
-
-        # set up add button
-        self.add_to_viewer = QPushButton()
-        self.add_to_viewer.setText("Add to viewer")
-
-        def _on_add_to_viewer_clicked():
-            """Adds annotation and reference to the viewer."""
+        def on_atlas_row_double_clicked():
+            """Adds annotation and reference to the viewer if the currently
+            selected atlas is available locally. Asks the user to confirm
+            they'd like to download the atlas otherwise."""
             if self._selected_atlas_row is not None:
                 if self._selected_atlas_name in get_downloaded_atlases():
                     selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
@@ -147,13 +124,17 @@ class AtlasViewerWidget(QWidget):
                     )
                     selected_atlas_representation.add_to_viewer()
                 else:
-                    show_info("Please download this atlas first.")
+                    self.download_dialog = AtlasDownloadDialog(
+                        self._selected_atlas_name
+                    )
+                    self.download_dialog.ok_button.clicked.connect(
+                        self._on_download_atlas_confirmed
+                    )
+                    self.download_dialog.exec()
 
-        self.add_to_viewer.clicked.connect(_on_add_to_viewer_clicked)
-
-        # set up atlas info display
-        self.atlas_info = QTextEdit(self)
-        self.atlas_info.setReadOnly(True)
+        self.atlas_table_view.doubleClicked.connect(
+            on_atlas_row_double_clicked
+        )
 
         # implement logic to update state when selection changes.
         def _on_selection_changed():
@@ -166,10 +147,7 @@ class AtlasViewerWidget(QWidget):
                 self._selected_atlas_name = self._model.data(
                     self._model.index(self._selected_atlas_row, 0)
                 )
-                self.refresh_info_box()
                 self.refresh_structure_tree_view()
-            else:
-                self.atlas_info.setText("")
 
         self.atlas_table_view.selectionModel().selectionChanged.connect(
             _on_selection_changed
@@ -179,11 +157,7 @@ class AtlasViewerWidget(QWidget):
         self.structure_tree_view = QTreeView()
         self.structure_tree_view.hide()
 
-        self.add_structure_button = QPushButton()
-        self.add_structure_button.setText("Add structure mesh")
-        self.add_structure_button.hide()
-
-        def _on_add_structure_clicked():
+        def on_structure_row_double_clicked():
             """Links add structure button to selected row
             in the structure tree view"""
             selected_index = (
@@ -200,46 +174,30 @@ class AtlasViewerWidget(QWidget):
                 selected_atlas_representation.add_structure_to_viewer(
                     selected_structure_name
                 )
-            else:
-                show_info(
-                    "No structure selected. Select a structure first \
-                    to add it to napari."
-                )
 
-        self.add_structure_button.clicked.connect(_on_add_structure_clicked)
+        self.structure_tree_view.doubleClicked.connect(
+            on_structure_row_double_clicked
+        )
 
         # add sub-widgets to top-level widget
         self.layout().addWidget(self.atlas_table_view)
-        self.layout().addWidget(self.download_selected_atlas)
-        self.layout().addWidget(self.add_to_viewer)
-
-        atlas_info_collapsible = QCollapsible("Atlas info")
-        atlas_info_collapsible.addWidget(self.atlas_info)
-        self.layout().addWidget(atlas_info_collapsible)
-
         self.layout().addWidget(self.structure_tree_view)
-        self.layout().addWidget(self.add_structure_button)
 
-    def refresh_info_box(self):
-        """Updates the information box about the currently selected atlas."""
-        if self._selected_atlas_name in get_downloaded_atlases():
-            metadata = read_atlas_metadata_from_file(self._selected_atlas_name)
+    @classmethod
+    def get_tooltip_text(cls, atlas_name: str):
+        if atlas_name in get_downloaded_atlases():
+            metadata = read_atlas_metadata_from_file(atlas_name)
             metadata_as_string = ""
             for key, value in metadata.items():
                 metadata_as_string += f"{key}:\t{value}\n"
 
-            self.atlas_info.setText(
-                f"Currently selected atlas: \
-                    {self._selected_atlas_name} \
-                    (available locally) \
-                    {metadata_as_string}\n"
-            )
+            tooltip_text = f"{atlas_name} (double-click to add to viewer)\
+            \n{metadata_as_string}"
+        elif atlas_name in get_all_atlases_lastversions().keys():
+            tooltip_text = f"{atlas_name} (double-click to download)"
         else:
-            self.atlas_info.setText(
-                f"Currently selected atlas: \
-                    {self._selected_atlas_name} \
-                    (not downloaded yet)"
-            )
+            raise ValueError("Tooltip text called with invalid atlas name.")
+        return tooltip_text
 
     def refresh_structure_tree_view(self):
         """Updates the structure tree view with the currently selected atlas.
@@ -257,7 +215,11 @@ class AtlasViewerWidget(QWidget):
             self.structure_tree_view.setWordWrap(False)
             self.structure_tree_view.expandToDepth(0)
             self.structure_tree_view.show()
-            self.add_structure_button.show()
         else:
             self.structure_tree_view.hide()
-            self.add_structure_button.hide()
+
+    def _on_download_atlas_confirmed(self):
+        """Downloads the selected atlas."""
+        if self._selected_atlas_row is not None:
+            if self._selected_atlas_name not in get_downloaded_atlases():
+                install_atlas(self._selected_atlas_name)
