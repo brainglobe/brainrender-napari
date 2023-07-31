@@ -234,7 +234,10 @@ class AtlasViewerWidget(QWidget):
     def _on_context_menu_requested(self, position):
         if self._selected_atlas_name in get_downloaded_atlases():
             metadata = read_atlas_metadata_from_file(self._selected_atlas_name)
-            if metadata["additional_references"]:
+            if (
+                "additional_references" in metadata.keys()
+                and metadata["additional_references"]
+            ):
                 global_position = self.atlas_table_view.viewport().mapToGlobal(
                     position
                 )
