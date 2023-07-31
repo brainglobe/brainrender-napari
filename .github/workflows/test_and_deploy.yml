@@ -1,22 +1,15 @@
-# This workflows will upload a Python Package using Twine when a release is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
-
 name: tests
 
 on:
   push:
     branches:
       - main
-      - npe2
     tags:
       - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
   pull_request:
     branches:
       - main
-      - npe2
   workflow_dispatch:
-
-jobs:
   test:
     name: ${{ matrix.platform }} py${{ matrix.python-version }}
     runs-on: ${{ matrix.platform }}
@@ -53,14 +46,6 @@ jobs:
           python -m pip install setuptools tox tox-gh-actions
 
 
-      # cache atlases needed by the tests
-      - name: Cache Atlases
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.brainglobe/*
-          key: cached-atlases
-          enableCrossOsArchive: true
 
       # this runs the platform-specific tests declared in tox.ini
       - name: Test with tox
@@ -98,3 +83,88 @@ jobs:
           git tag
           python -m build .
           twine upload dist/*
+      - '*'
+    tags:
+      - '*'
+  pull_request:
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: neuroinformatics-unit/actions/lint@v2
+
+  manifest:
+    name: Check Manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: neuroinformatics-unit/actions/check_manifest@v2
+
+  test:
+    needs: [linting, manifest]
+    name: ${{ matrix.os }} py${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # Run all supported Python versions on linux
+        python-version: ["3.8", "3.9", "3.10"]
+        os: [ubuntu-latest]
+        # Include one windows and macos run
+        include:
+        - os: macos-latest
+          python-version: "3.10"
+        - os: windows-latest
+          python-version: "3.10"
+
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # these libraries enable testing on Qt on linux
+      - uses: tlambert03/setup-qt-libs@v1
+
+      # strategy borrowed from vispy for installing opengl libs on windows
+      - name: Install Windows OpenGL
+        if: runner.os == 'Windows'
+        run: |
+          git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
+          powershell gl-ci-helpers/appveyor/install_opengl.ps1
+
+      # cache atlases needed by the tests
+      - name: Cache Atlases
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.brainglobe/*
+          key: cached-atlases
+          enableCrossOsArchive: true
+
+      # Run tests
+      - uses: neuroinformatics-unit/actions/test@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+  build_sdist_wheels:
+    name: Build source distribution
+    needs: [test]
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: neuroinformatics-unit/actions/build_sdist_wheels@v2
+
+
+  upload_all:
+    name: Publish build distributions
+    needs: [build_sdist_wheels]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: artifact
+        path: dist
+    - uses: pypa/gh-action-pypi-publish@v1.5.0
+      with:
+        user: __token__
+        password: ${{ secrets.TWINE_API_KEY }}
