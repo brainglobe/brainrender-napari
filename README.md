@@ -1,11 +1,11 @@
-# brainglobe-napari
+# brainrender-napari
 
-[![License BSD-3](https://img.shields.io/pypi/l/brainglobe-napari.svg?color=green)](https://github.com/brainglobe/brainglobe-napari/raw/main/LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/brainglobe-napari.svg?color=green)](https://pypi.org/project/brainglobe-napari)
-[![Python Version](https://img.shields.io/pypi/pyversions/brainglobe-napari.svg?color=green)](https://python.org)
-[![tests](https://github.com/brainglobe/brainglobe-napari/workflows/tests/badge.svg)](https://github.com/brainglobe/brainglobe-napari/actions)
-[![codecov](https://codecov.io/gh/brainglobe/brainglobe-napari/branch/main/graph/badge.svg)](https://codecov.io/gh/brainglobe/brainglobe-napari)
-[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/brainglobe-napari)](https://napari-hub.org/plugins/brainglobe-napari)
+[![License BSD-3](https://img.shields.io/pypi/l/brainrender-napari.svg?color=green)](https://github.com/brainglobe/brainrender-napari/raw/main/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/brainrender-napari.svg?color=green)](https://pypi.org/project/brainrender-napari)
+[![Python Version](https://img.shields.io/pypi/pyversions/brainrender-napari.svg?color=green)](https://python.org)
+[![tests](https://github.com/brainglobe/brainrender-napari/workflows/tests/badge.svg)](https://github.com/brainglobe/brainrender-napari/actions)
+[![codecov](https://codecov.io/gh/brainglobe/brainrender-napari/branch/main/graph/badge.svg)](https://codecov.io/gh/brainglobe/brainrender-napari)
+[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/brainrender-napari)](https://napari-hub.org/plugins/brainrender-napari)
 
 BrainGlobe Tools for computational neuroanatomy
 
@@ -23,15 +23,15 @@ https://napari.org/stable/plugins/index.html
 
 ## Installation
 
-You can install `brainglobe-napari` via [pip]:
+You can install `brainrender-napari` via [pip]:
 
-    pip install brainglobe-napari
+    pip install brainrender-napari
 
 
 
 To install latest development version :
 
-    pip install git+https://github.com/brainglobe/brainglobe-napari.git
+    pip install git+https://github.com/brainglobe/brainrender-napari.git
 
 
 ## Contributing
@@ -42,7 +42,7 @@ the coverage at least stays the same before you submit a pull request.
 ## License
 
 Distributed under the terms of the [BSD-3] license,
-"brainglobe-napari" is free and open source software
+"brainrender-napari" is free and open source software
 
 ## Issues
 
@@ -59,7 +59,7 @@ If you encounter any problems, please [file an issue] along with a detailed desc
 [Mozilla Public License 2.0]: https://www.mozilla.org/media/MPL/2.0/index.txt
 [cookiecutter-napari-plugin]: https://github.com/napari/cookiecutter-napari-plugin
 
-[file an issue]: https://github.com/brainglobe/brainglobe-napari/issues
+[file an issue]: https://github.com/brainglobe/brainrender-napari/issues
 
 [napari]: https://github.com/napari/napari
 [tox]: https://tox.readthedocs.io/en/latest/
