@@ -65,3 +65,10 @@ class NapariAtlasRepresentation:
                 [[float(c) / 255 for c in color]], len(points), axis=0
             )
         self.viewer.add_surface((points, cells), **viewer_kwargs)
+
+    def add_additional_reference(self, additional_reference_key: str):
+        self.viewer.add_image(
+            self.bg_atlas.additional_references[additional_reference_key],
+            scale=self.bg_atlas.resolution,
+            name=f"{self.bg_atlas.atlas_name}_{additional_reference_key}_reference",
+        )

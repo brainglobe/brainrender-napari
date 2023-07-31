@@ -23,6 +23,7 @@ from qtpy import QtCore
 from qtpy.QtCore import QModelIndex, Qt
 from qtpy.QtWidgets import (
     QAbstractItemView,
+    QMenu,
     QTableView,
     QTreeView,
     QVBoxLayout,
@@ -135,6 +136,12 @@ class AtlasViewerWidget(QWidget):
         self.atlas_table_view.doubleClicked.connect(
             on_atlas_row_double_clicked
         )
+        self.atlas_table_view.setContextMenuPolicy(
+            Qt.ContextMenuPolicy.CustomContextMenu
+        )
+        self.atlas_table_view.customContextMenuRequested.connect(
+            self._on_context_menu_requested
+        )
 
         # implement logic to update state when selection changes.
         def _on_selection_changed():
@@ -223,3 +230,30 @@ class AtlasViewerWidget(QWidget):
         if self._selected_atlas_row is not None:
             if self._selected_atlas_name not in get_downloaded_atlases():
                 install_atlas(self._selected_atlas_name)
+
+    def _on_context_menu_requested(self, position):
+        if self._selected_atlas_name in get_downloaded_atlases():
+            metadata = read_atlas_metadata_from_file(self._selected_atlas_name)
+            if metadata["additional_references"]:
+                global_position = self.atlas_table_view.viewport().mapToGlobal(
+                    position
+                )
+                additional_reference_menu = QMenu()
+
+                for additional_reference in metadata["additional_references"]:
+                    additional_reference_menu.addAction(additional_reference)
+
+                selected_item = additional_reference_menu.exec(global_position)
+                if selected_item:
+                    atlas = BrainGlobeAtlas(self._selected_atlas_name)
+                    atlas_representation = NapariAtlasRepresentation(
+                        atlas, self._viewer
+                    )
+                    atlas_representation.add_additional_reference(
+                        selected_item.text()
+                    )
+                    print(selected_item.text())
+                else:
+                    print("menu action cancelled")
+            else:
+                pass  # don't show a menu if there are no additional references
