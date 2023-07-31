@@ -52,7 +52,7 @@ def mock_brainglobe_user_folders(monkeypatch):
 @pytest.fixture
 def double_click_on_view(qtbot):
     def inner_double_click_on_view(view, index):
-        viewport_index = view.visualRect(index).center()
+        viewport_index_position = view.visualRect(index).center()
 
         # weirdly, to correctly emulate a double-click
         # you need to click first. Also, note that the view
@@ -60,12 +60,12 @@ def double_click_on_view(qtbot):
         qtbot.mouseClick(
             view.viewport(),
             Qt.MouseButton.LeftButton,
-            pos=viewport_index,
+            pos=viewport_index_position,
         )
         qtbot.mouseDClick(
             view.viewport(),
             Qt.MouseButton.LeftButton,
-            pos=viewport_index,
+            pos=viewport_index_position,
         )
 
     return inner_double_click_on_view

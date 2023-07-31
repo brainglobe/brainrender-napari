@@ -89,8 +89,8 @@ def test_double_click_on_locally_available_atlas_row(
 @pytest.mark.parametrize(
     "row, expected_atlas_name",
     [
-        (1, "allen_mouse_100um"),  # not part of downloaded test data
-        (5, "mpin_zfish_1um"),  # not part of downloaded test data
+        (1, "allen_mouse_100um"),  # part of downloaded test data
+        (6, "allen_human_500um"),  # not part of downloaded test data
     ],
 )
 def test_double_click_on_not_yet_downloaded_atlas_row(
@@ -150,7 +150,7 @@ def test_structure_row_double_clicked(
     "row, expected_visibility",
     [
         (4, True),  # allen_mouse_100um is part of downloaded test data
-        (5, False),  # mpin_fish_1um is not part of download test data
+        (6, False),  # allen_human_500um is not part of download test data
     ],
 )
 def test_add_structure_visibility(make_atlas_viewer, row, expected_visibility):
@@ -163,24 +163,28 @@ def test_add_structure_visibility(make_atlas_viewer, row, expected_visibility):
 
 
 def test_get_tooltip_downloaded():
+    """Check tooltip on an example in the downloaded test data"""
     tooltip_text = AtlasViewerWidget.get_tooltip_text("example_mouse_100um")
     assert "example_mouse" in tooltip_text
     assert "add to viewer" in tooltip_text
 
 
 def test_get_tooltip_not_locally_available():
-    tooltip_text = AtlasViewerWidget.get_tooltip_text("mpin_zfish_1um")
-    assert "mpin_zfish_1um" in tooltip_text
+    """Check tooltip on an example in not-downloaded test data"""
+    tooltip_text = AtlasViewerWidget.get_tooltip_text("allen_human_500um")
+    assert "allen_human_500um" in tooltip_text
     assert "double-click to download" in tooltip_text
 
 
 def test_get_tooltip_invalid_name():
+    """Check tooltip on non-existent test data"""
     with pytest.raises(ValueError) as e:
         _ = AtlasViewerWidget.get_tooltip_text("wrong_atlas_name")
         assert "invalid atlas name" in e
 
 
 def test_hover_atlas_table_view(make_atlas_viewer, mocker, qtbot):
+    """Check tooltip is called when hovering over view"""
     _, atlas_viewer = make_atlas_viewer
     view = atlas_viewer.atlas_table_view
     index = view.model().index(2, 1)

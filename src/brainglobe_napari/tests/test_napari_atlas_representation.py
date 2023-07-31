@@ -107,3 +107,19 @@ def test_structure_color(make_napari_viewer):
 
     for a, e in zip(actual_rgb, expected_RGB):
         assert a * 255 == e
+
+
+def test_add_additional_reference(make_napari_viewer, mocker):
+    viewer = make_napari_viewer()
+    atlas_name = "mpin_zfish_1um"
+    additional_reference_name = "GAD1b"
+    atlas = BrainGlobeAtlas(atlas_name=atlas_name)
+
+    atlas_representation = NapariAtlasRepresentation(atlas, viewer)
+    atlas_representation.add_additional_reference(additional_reference_name)
+
+    assert len(viewer.layers) == 1
+    assert (
+        viewer.layers[0].name
+        == f"{atlas_name}_{additional_reference_name}_reference"
+    )
