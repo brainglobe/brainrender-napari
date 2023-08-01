@@ -2,9 +2,10 @@ from typing import List
 
 from bg_atlasapi.structure_tree_util import get_structures_tree
 from qtpy.QtCore import QAbstractItemModel, QModelIndex, Qt
+from qtpy.QtGui import QStandardItem
 
 
-class StructureTreeItem:
+class StructureTreeItem(QStandardItem):
     """A class to hold items in a tree model."""
 
     def __init__(self, data, parent=None):
@@ -48,16 +49,16 @@ class StructureTreeModel(QAbstractItemModel):
         self.root_item = StructureTreeItem(data=("Atlas regions", "-1"))
         self.build_structure_tree(data, self.root_item)
 
-    def build_structure_tree(
-        self, structures: List, root: StructureTreeItem = None
-    ):
+    def build_structure_tree(self, structures: List, root: StructureTreeItem):
         """Build the structure tree given a list of structures."""
         tree = get_structures_tree(structures)
         structure_id_dict = {}
         for structure in structures:
             structure_id_dict[structure["id"]] = structure
 
-        inserted_items = {}
+        from typing import Dict
+
+        inserted_items: Dict[int, StructureTreeItem] = {}
         for n_id in tree.expand_tree():  # sorts nodes by default,
             # so parents will always be already in the QAbstractItemModel
             # before their children

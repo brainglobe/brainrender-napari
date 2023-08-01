@@ -45,7 +45,7 @@ class NapariAtlasRepresentation:
             color=color,
         )
 
-    def _add_mesh(self, mesh: Mesh, name: str = None, color=None):
+    def _add_mesh(self, mesh: Mesh, name: str, color=None):
         """Helper function to add a mesh as a surface layer to the viewer.
 
         mesh: the mesh to add
