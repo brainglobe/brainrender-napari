@@ -1,6 +1,6 @@
 import pytest
 
-from brainglobe_napari.atlas_download_dialog import AtlasDownloadDialog
+from brainrender_napari.atlas_download_dialog import AtlasDownloadDialog
 
 
 def test_download_dialog(qtbot):

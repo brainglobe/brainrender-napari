@@ -7,7 +7,7 @@ from bg_atlasapi import BrainGlobeAtlas
 from napari.viewer import Viewer
 from qtpy.QtCore import Qt
 
-from brainglobe_napari.atlas_viewer_widget import AtlasViewerWidget
+from brainrender_napari.atlas_viewer_widget import AtlasViewerWidget
 
 
 @pytest.fixture
@@ -105,7 +105,7 @@ def test_double_click_on_not_yet_downloaded_atlas_row(
     atlas_viewer.atlas_table_view.setCurrentIndex(model_index)
 
     dialog_exec_mock = mocker.patch(
-        "brainglobe_napari.atlas_viewer_widget.AtlasDownloadDialog.exec"
+        "brainrender_napari.atlas_viewer_widget.AtlasDownloadDialog.exec"
     )
     # weirdly, to correctly emulate a double-click
     # you need to click first. Also, note that the view
@@ -124,7 +124,7 @@ def test_structure_row_double_clicked(
     """
     _, atlas_viewer = make_atlas_viewer
     add_structure_to_viewer_mock = mocker.patch(
-        "brainglobe_napari.atlas_viewer_widget"
+        "brainrender_napari.atlas_viewer_widget"
         ".NapariAtlasRepresentation.add_structure_to_viewer"
     )
     atlas_viewer.atlas_table_view.selectRow(4)  # allen_mouse_100um is in row 4
@@ -190,7 +190,7 @@ def test_hover_atlas_table_view(make_atlas_viewer, mocker, qtbot):
     index = view.model().index(2, 1)
 
     get_tooltip_text_mock = mocker.patch(
-        "brainglobe_napari.atlas_viewer_widget"
+        "brainrender_napari.atlas_viewer_widget"
         ".AtlasViewerWidget.get_tooltip_text"
     )
 

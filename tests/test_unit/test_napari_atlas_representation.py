@@ -3,7 +3,7 @@ from bg_atlasapi import BrainGlobeAtlas
 from napari.layers import Image, Labels
 from numpy import all, allclose
 
-from brainglobe_napari.napari_atlas_representation import (
+from brainrender_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
 )
 

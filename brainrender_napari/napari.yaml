@@ -1,0 +1,10 @@
+name: brainrender-napari
+display_name: BrainGlobe Tools
+contributions:
+  commands:
+    - id: brainrender-napari.make_atlas_viewer_widget
+      python_name: brainrender_napari.atlas_viewer_widget:AtlasViewerWidget
+      title: Make Brainrender Napari
+  widgets:
+    - command: brainrender-napari.make_atlas_viewer_widget
+      display_name: Brainrender Napari

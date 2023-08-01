@@ -30,15 +30,15 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from brainglobe_napari.atlas_download_dialog import AtlasDownloadDialog
-from brainglobe_napari.atlas_viewer_utils import (
+from brainrender_napari.atlas_download_dialog import AtlasDownloadDialog
+from brainrender_napari.atlas_viewer_utils import (
     read_atlas_metadata_from_file,
     read_atlas_structures_from_file,
 )
-from brainglobe_napari.napari_atlas_representation import (
+from brainrender_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
 )
-from brainglobe_napari.structure_tree_model import StructureTreeModel
+from brainrender_napari.structure_tree_model import StructureTreeModel
 
 
 class AtlasTableModel(QtCore.QAbstractTableModel):
@@ -255,8 +255,3 @@ class AtlasViewerWidget(QWidget):
                     atlas_representation.add_additional_reference(
                         selected_item.text()
                     )
-                    print(selected_item.text())
-                else:
-                    print("menu action cancelled")
-            else:
-                pass  # don't show a menu if there are no additional references

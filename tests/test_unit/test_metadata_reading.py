@@ -1,6 +1,6 @@
 from bg_atlasapi import BrainGlobeAtlas
 
-from brainglobe_napari.atlas_viewer_utils import read_atlas_metadata_from_file
+from brainrender_napari.atlas_viewer_utils import read_atlas_metadata_from_file
 
 
 def test_metadata_reading():
