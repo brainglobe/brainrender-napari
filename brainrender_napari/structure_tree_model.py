@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from bg_atlasapi.structure_tree_util import get_structures_tree
 from qtpy.QtCore import QAbstractItemModel, QModelIndex, Qt
@@ -55,8 +55,6 @@ class StructureTreeModel(QAbstractItemModel):
         structure_id_dict = {}
         for structure in structures:
             structure_id_dict[structure["id"]] = structure
-
-        from typing import Dict
 
         inserted_items: Dict[int, StructureTreeItem] = {}
         for n_id in tree.expand_tree():  # sorts nodes by default,
