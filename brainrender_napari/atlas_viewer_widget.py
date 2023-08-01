@@ -255,8 +255,3 @@ class AtlasViewerWidget(QWidget):
                     atlas_representation.add_additional_reference(
                         selected_item.text()
                     )
-                    print(selected_item.text())
-                else:
-                    print("menu action cancelled")
-            else:
-                pass  # don't show a menu if there are no additional references
