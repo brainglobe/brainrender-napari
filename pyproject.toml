@@ -23,6 +23,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "napari>=0.4.18",
     "bg-atlasapi",
     "numpy",
     "qtpy",
@@ -52,7 +53,6 @@ dev = [
   "pre-commit",
   "ruff",
   "setuptools_scm",
-  "napari",
   "pyqt5"
 ]
 
