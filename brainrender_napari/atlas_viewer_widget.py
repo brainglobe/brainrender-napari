@@ -24,6 +24,7 @@ from qtpy.QtCore import QModelIndex, Qt
 from qtpy.QtWidgets import (
     QAbstractItemView,
     QMenu,
+    QPushButton,
     QTableView,
     QTreeView,
     QVBoxLayout,
@@ -163,6 +164,10 @@ class AtlasViewerWidget(QWidget):
         # show structures in a tree view
         self.structure_tree_view = QTreeView()
         self.structure_tree_view.hide()
+        self.structure_tree_view_toggle = QPushButton()
+        self.structure_tree_view_toggle.setText("Show structure names")
+        self.structure_tree_view_toggle.hide()
+        self.structure_tree_view_displayed_column = "acronym"
 
         def on_structure_row_double_clicked():
             """Links add structure button to selected row
@@ -171,23 +176,29 @@ class AtlasViewerWidget(QWidget):
                 self.structure_tree_view.selectionModel().currentIndex()
             )
             if selected_index.isValid():
-                selected_structure_name = (
-                    self.structure_tree_view.model().data(selected_index)
+                id_index = selected_index.siblingAtColumn(1)
+                selected_structure_id = self.structure_tree_view.model().data(
+                    id_index
                 )
                 selected_atlas = BrainGlobeAtlas(self._selected_atlas_name)
                 selected_atlas_representation = NapariAtlasRepresentation(
                     selected_atlas, self._viewer
                 )
                 selected_atlas_representation.add_structure_to_viewer(
-                    selected_structure_name
+                    selected_structure_id
                 )
 
         self.structure_tree_view.doubleClicked.connect(
             on_structure_row_double_clicked
         )
 
+        self.structure_tree_view_toggle.clicked.connect(
+            self._on_structure_tree_view_toggled
+        )
+
         # add sub-widgets to top-level widget
         self.layout().addWidget(self.atlas_table_view)
+        self.layout().addWidget(self.structure_tree_view_toggle)
         self.layout().addWidget(self.structure_tree_view)
 
     @classmethod
@@ -214,16 +225,20 @@ class AtlasViewerWidget(QWidget):
             structures = read_atlas_structures_from_file(
                 self._selected_atlas_name
             )
-            region_model = StructureTreeModel(structures)
+            region_model = StructureTreeModel(
+                structures, self.structure_tree_view_displayed_column
+            )
             self.structure_tree_view.setModel(region_model)
             self.structure_tree_view.hideColumn(1)  # don't show structure id
             self.structure_tree_view.setExpandsOnDoubleClick(False)
             self.structure_tree_view.setHeaderHidden(True)
             self.structure_tree_view.setWordWrap(False)
-            self.structure_tree_view.expandToDepth(0)
+            # self.structure_tree_view.expandToDepth(0)
             self.structure_tree_view.show()
+            self.structure_tree_view_toggle.show()
         else:
             self.structure_tree_view.hide()
+            self.structure_tree_view_toggle.hide()
 
     def _on_download_atlas_confirmed(self):
         """Downloads the selected atlas."""
@@ -255,3 +270,25 @@ class AtlasViewerWidget(QWidget):
                     atlas_representation.add_additional_reference(
                         selected_item.text()
                     )
+
+    def _on_structure_tree_view_toggled(self):
+        expanded_ids = []
+        for index in self.structure_tree_view.model().persistentIndexList():
+            if self.structure_tree_view.isExpanded(index):
+                id_index = index.siblingAtColumn(1)
+                expanded_id = self.structure_tree_view.model().data(id_index)
+                expanded_ids.append(expanded_id)
+
+        if self.structure_tree_view_displayed_column == "acronym":
+            self.structure_tree_view_displayed_column = "name"
+            self.structure_tree_view_toggle.setText("Show structure acronyms")
+        else:
+            self.structure_tree_view_displayed_column = "acronym"
+            self.structure_tree_view_toggle.setText("Show structure name")
+        self.refresh_structure_tree_view()
+
+        for index in self.structure_tree_view.model().persistentIndexList():
+            id_index = index.siblingAtColumn(1)
+            id = self.structure_tree_view.model().data(id_index)
+            if id in expanded_ids:
+                self.structure_tree_view.setExpanded(id_index, True)

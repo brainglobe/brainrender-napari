@@ -44,12 +44,16 @@ class StructureTreeModel(QAbstractItemModel):
     """Implementation of a read-only QAbstractItemModel to hold
     the structure tree information provided by the Atlas API in a Qt Model"""
 
-    def __init__(self, data: List, parent=None):
+    def __init__(
+        self, data: List, displayed_column: str = "acronym", parent=None
+    ):
         super().__init__()
-        self.root_item = StructureTreeItem(data=("Atlas regions", "-1"))
-        self.build_structure_tree(data, self.root_item)
+        self.root_item = StructureTreeItem(data=("bla", "Atlas regions", "-1"))
+        self.build_structure_tree(data, displayed_column, self.root_item)
 
-    def build_structure_tree(self, structures: List, root: StructureTreeItem):
+    def build_structure_tree(
+        self, structures: List, displayed_column: str, root: StructureTreeItem
+    ):
         """Build the structure tree given a list of structures."""
         tree = get_structures_tree(structures)
         structure_id_dict = {}
@@ -61,7 +65,12 @@ class StructureTreeModel(QAbstractItemModel):
             # so parents will always be already in the QAbstractItemModel
             # before their children
             node = tree.get_node(n_id)
-            acronym = structure_id_dict[node.identifier]["acronym"]
+            assert (
+                displayed_column in structure_id_dict[node.identifier].keys()
+            )
+            displayed_data = structure_id_dict[node.identifier][
+                displayed_column
+            ]
             if (
                 len(structure_id_dict[node.identifier]["structure_id_path"])
                 == 1
@@ -72,7 +81,7 @@ class StructureTreeModel(QAbstractItemModel):
                 parent_item = inserted_items[parent_id]
 
             item = StructureTreeItem(
-                data=(acronym, node.identifier), parent=parent_item
+                data=("", displayed_data, node.identifier), parent=parent_item
             )
             parent_item.appendChild(item)
             inserted_items[node.identifier] = item
