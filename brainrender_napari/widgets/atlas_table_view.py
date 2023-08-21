@@ -13,13 +13,14 @@ from brainrender_napari.widgets.atlas_download_dialog import (
     AtlasDownloadDialog,
 )
 
-"""The purpose of this file is to provide interactive model and view classes for a table holding atlases.
-Users interacting with the table can request to
-* download an atlas (by double-clicking on a row containing a non-yet downloaded atlas)
-* add annotation and reference images (by double-clicking on a row of a locally available atlas)
-* add additional reference images (by right-clicking on a row and selecting from a context menu)
+"""The purpose of this file is to provide interactive model and view classes
+for a table holding atlases. Users interacting with the table can request to
+* download an atlas (double-click on row of a not-yet downloaded atlas)
+* add annotation and reference images (double-click on row of local atlas)
+* add additional references (right-click on a row and select from  menu)
 
-It is designed to be agnostic from the viewer framework by emitting signals that any interested observers can connect to.
+It is designed to be agnostic from the viewer framework by emitting signals
+that any interested observers can connect to.
 """
 
 
@@ -110,9 +111,9 @@ class AtlasTableView(QTableView):
         return selected_atlas_name
 
     def _on_context_menu_requested(self, position):
-        """Returns a context menu with a list of additional references for the currently selected atlas
-        if the atlas is downloaded and there are any.
-        If the user selects one of the additional references, this is signalled.
+        """Returns a context menu with a list of additional references for the
+        currently selected atlas if the atlas is downloaded and has any. If the
+        user selects one of the additional references, this is signalled.
         """
         selected_atlas_name = self.selected_atlas_name()
         if selected_atlas_name in get_downloaded_atlases():

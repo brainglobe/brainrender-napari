@@ -10,7 +10,8 @@ from brainrender_napari.utils.load_user_data import (
     read_atlas_structures_from_file,
 )
 
-"""The purpose of this file is to provide interactive item, model and view classes for the structures that form part of an atlas.
+"""The purpose of this file is to provide interactive item,
+model and view classes for the structures that form part of an atlas.
 The view is only visible if the atlas is downloaded."""
 
 

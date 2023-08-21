@@ -24,7 +24,9 @@ from brainrender_napari.widgets.structure_view import StructureView
 class BrainrenderWidget(QWidget):
     """The purpose of this class is
     * to hold atlas visualisation widgets for napari
-    * coordinate between these widgets and napari by creating appropriate connections and napari representations
+    * coordinate between these widgets and napari by
+        * creating appropriate signal-slot connections
+        * creating napari representations as requested
     """
 
     def __init__(self, napari_viewer: Viewer):
@@ -61,11 +63,11 @@ class BrainrenderWidget(QWidget):
         )
 
     def _on_download_atlas_confirmed(self, atlas_name):
-        """Ensures the structure view is displayed if an atlas is newly downloaded."""
+        """Ensure structure view is displayed if new atlas downloaded."""
         self.structure_view.refresh(atlas_name)
 
     def _on_add_structure_requested(self, structure_name: str):
-        """Creates a napari atlas representation and asks it to add a given structure to the viewer."""
+        """Add given structure as napari atlas representation"""
         selected_atlas = BrainGlobeAtlas(
             self.atlas_table_view.selected_atlas_name()
         )
@@ -77,7 +79,7 @@ class BrainrenderWidget(QWidget):
     def _on_additional_reference_requested(
         self, additional_reference_name: str
     ):
-        """Creates a napari atlas representation and asks it to add a given additional reference to the viewer"""
+        """Add additional reference as napari atlas representation"""
         atlas = BrainGlobeAtlas(self.atlas_table_view.selected_atlas_name())
         atlas_representation = NapariAtlasRepresentation(atlas, self._viewer)
         atlas_representation.add_additional_reference(
@@ -89,7 +91,7 @@ class BrainrenderWidget(QWidget):
         self.structure_view.refresh(atlas_name)
 
     def _on_add_atlas_requested(self, atlas_name: str):
-        """Creates a napari atlas representation and asks it to add the reference and annotation images for the given atlas to the viewer."""
+        """Add reference and annotation as napari atlas representation"""
         selected_atlas = BrainGlobeAtlas(atlas_name)
         selected_atlas_representation = NapariAtlasRepresentation(
             selected_atlas, self._viewer

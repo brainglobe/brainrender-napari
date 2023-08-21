@@ -9,7 +9,8 @@ def structure_view(qtbot) -> StructureView:
 
 
 def test_structure_view_valid_selection(structure_view):
-    """Checks that the correct structure name is returned if a valid structure view index is selected."""
+    """Checks that the correct structure name is returned
+    if a valid structure view index is selected."""
     structure_view.refresh("allen_mouse_100um")
 
     root_index = structure_view.rootIndex()
@@ -21,7 +22,8 @@ def test_structure_view_valid_selection(structure_view):
 
 
 def test_structure_view_invalid_selection(structure_view):
-    """Checks that selected_structure_name throws an assertion error if current index is invalid."""
+    """Checks that selected_structure_name throws an assertion error
+    if current index is invalid."""
     structure_view.refresh("allen_mouse_100um")
     with pytest.raises(AssertionError):
         structure_view.selected_structure_name()
@@ -37,7 +39,8 @@ def test_structure_view_invalid_selection(structure_view):
 def test_structure_view_visibility(
     atlas_name, expected_visibility, structure_view
 ):
-    """Checks that the structure view is visible iff atlas has previously been downloaded."""
+    """Checks that the structure view is visible
+    iff atlas has previously been downloaded."""
     structure_view.refresh(atlas_name)
     assert structure_view.isVisible() == expected_visibility
 
@@ -45,7 +48,8 @@ def test_structure_view_visibility(
 def test_double_click_on_structure_row(
     structure_view, double_click_on_view, qtbot
 ):
-    """Checks that expected signal is emitted when double-clicking on a row in the structure view"""
+    """Checks that expected signal is emitted when
+    double-clicking on a row in the structure view"""
     structure_view.refresh("allen_mouse_100um")
 
     root_index = structure_view.rootIndex()
