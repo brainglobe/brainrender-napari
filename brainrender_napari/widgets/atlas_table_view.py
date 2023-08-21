@@ -60,6 +60,8 @@ class AtlasTableModel(QAbstractTableModel):
 
     @classmethod
     def _get_tooltip_text(cls, atlas_name: str):
+        """Returns the atlas metadata as a formatted string,
+        as well as instructions on how to interact with the atlas."""
         if atlas_name in get_downloaded_atlases():
             metadata = read_atlas_metadata_from_file(atlas_name)
             metadata_as_string = ""
@@ -82,6 +84,11 @@ class AtlasTableView(QTableView):
     selected_atlas_changed = Signal(str)
 
     def __init__(self, parent: QWidget = None):
+        """Initialises an atlas table view with latest atlas versions.
+
+        Also responsible for appearance, behaviour on selection, and
+        setting up signal-slot connections.
+        """
         super().__init__(parent)
         atlases = get_all_atlases_lastversions()
         data = [[name, version] for name, version in atlases.items()]
@@ -132,7 +139,7 @@ class AtlasTableView(QTableView):
                     self.additional_reference_requested(selected_item.text())
 
     def _on_row_double_clicked(self):
-        """Adds annotation and reference to the viewer if the currently
+        """Emits add_atlas_requested if the currently
         selected atlas is available locally. Asks the user to confirm
         they'd like to download the atlas otherwise."""
         atlas_name = self.selected_atlas_name()
@@ -152,4 +159,5 @@ class AtlasTableView(QTableView):
         self.download_atlas_confirmed.emit(atlas_name)
 
     def _on_current_changed(self):
+        """Emits a signal with the newly selected atlas name"""
         self.selected_atlas_changed.emit(self.selected_atlas_name())

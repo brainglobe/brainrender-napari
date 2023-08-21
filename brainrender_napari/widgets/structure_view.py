@@ -163,6 +163,7 @@ class StructureView(QTreeView):
     def refresh(self, selected_atlas_name: str):
         """Updates the structure tree view with the currently selected atlas.
         The view is only visible if the selected atlas has been downloaded.
+        Resets the current index either way.
         """
         if selected_atlas_name in get_downloaded_atlases():
             structures = read_atlas_structures_from_file(selected_atlas_name)
@@ -176,6 +177,7 @@ class StructureView(QTreeView):
             self.show()
         else:
             self.hide()
+        self.setCurrentIndex(QModelIndex())
 
     def selected_structure_name(self) -> str:
         """A single place to get a valid selected structure"""
