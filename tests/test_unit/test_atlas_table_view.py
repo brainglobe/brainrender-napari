@@ -12,6 +12,10 @@ from brainrender_napari.widgets.atlas_table_view import (
 
 @pytest.fixture
 def atlas_table_view(qtbot) -> AtlasTableView:
+    """Fixture to provide a valid atlas table view.
+
+    Depends on qtbot fixture to provide the qt event loop.
+    """
     return AtlasTableView()
 
 
@@ -25,13 +29,15 @@ def atlas_table_view(qtbot) -> AtlasTableView:
 def test_atlas_table_view_valid_selection(
     row, expected_atlas_name, atlas_table_view
 ):
+    """Checks selected_atlas_name for valid current indices"""
     model_index = atlas_table_view.model().index(row, 0)
     atlas_table_view.setCurrentIndex(model_index)
     assert atlas_table_view.selected_atlas_name() == expected_atlas_name
 
 
 def test_atlas_table_view_invalid_selection(atlas_table_view):
-    """Checks that selected_atlas_name throws an assertion error if current index is invalid."""
+    """Checks that selected_atlas_name throws an assertion error
+    if current index is invalid."""
     with pytest.raises(AssertionError):
         atlas_table_view.selected_atlas_name()
 
@@ -72,14 +78,14 @@ def test_get_tooltip_invalid_name():
 
 
 @pytest.mark.parametrize(
-    "row, expected_atlas_name",
+    "row",
     [
-        (1, "allen_mouse_10um"),
-        (6, "allen_human_500um"),
+        1,  # "allen_mouse_10um"
+        6,  # "allen_human_500um"
     ],
 )
 def test_double_click_on_not_yet_downloaded_atlas_row(
-    atlas_table_view, mocker, double_click_on_view, row, expected_atlas_name
+    atlas_table_view, mocker, double_click_on_view, row
 ):
     """Check for a few yet-to-be-downloaded atlases that double-clicking
     them on the atlas table view executes the download dialog.
@@ -120,9 +126,7 @@ def test_double_click_on_locally_available_atlas_row(
     assert add_atlas_requested_signal.args == [expected_atlas_name]
 
 
-def test_download_confirmed_callback(
-    atlas_table_view, double_click_on_view, qtbot
-):
+def test_download_confirmed_callback(atlas_table_view, qtbot):
     """Checks that confirming atlas download creates local copy of
     example atlas files and emits expected signal.
 

@@ -51,7 +51,8 @@ def mock_brainglobe_user_folders(monkeypatch):
 
 @pytest.fixture(autouse=True)
 def setup_preexisting_local_atlases():
-    """Automatically setup all tests to have three downloaded atlases in the test user data."""
+    """Automatically setup all tests to have three downloaded atlases
+    in the test user data."""
     preexisting_atlases = [
         ("example_mouse_100um", "v1.2"),
         ("allen_mouse_100um", "v1.2"),
@@ -66,7 +67,7 @@ def setup_preexisting_local_atlases():
 
 @pytest.fixture
 def double_click_on_view(qtbot):
-    """Fixture to avoid code repetition when emulating users double-clicking on a view."""
+    """Fixture to avoid code repetition to emulate double-click on a view."""
 
     def inner_double_click_on_view(view, index):
         viewport_index_position = view.visualRect(index).center()

@@ -1,3 +1,12 @@
+"""The purpose of this file is to provide interactive model and view classes
+for a table holding atlases. Users interacting with the table can request to
+* download an atlas (double-click on row of a not-yet downloaded atlas)
+* add annotation and reference images (double-click on row of local atlas)
+* add additional references (right-click on a row and select from  menu)
+
+It is designed to be agnostic from the viewer framework by emitting signals
+that any interested observers can connect to.
+"""
 from bg_atlasapi.list_atlases import (
     get_all_atlases_lastversions,
     get_downloaded_atlases,
@@ -12,16 +21,6 @@ from brainrender_napari.utils.load_user_data import (
 from brainrender_napari.widgets.atlas_download_dialog import (
     AtlasDownloadDialog,
 )
-
-"""The purpose of this file is to provide interactive model and view classes
-for a table holding atlases. Users interacting with the table can request to
-* download an atlas (double-click on row of a not-yet downloaded atlas)
-* add annotation and reference images (double-click on row of local atlas)
-* add additional references (right-click on a row and select from  menu)
-
-It is designed to be agnostic from the viewer framework by emitting signals
-that any interested observers can connect to.
-"""
 
 
 class AtlasTableModel(QAbstractTableModel):
