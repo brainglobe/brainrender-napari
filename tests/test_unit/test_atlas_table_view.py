@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 
 import pytest
-from qtpy.QtCore import Qt
+from qtpy.QtCore import QModelIndex, Qt
 
 from brainrender_napari.widgets.atlas_table_view import (
     AtlasTableModel,
@@ -39,6 +39,7 @@ def test_atlas_table_view_invalid_selection(atlas_table_view):
     """Checks that selected_atlas_name throws an assertion error
     if current index is invalid."""
     with pytest.raises(AssertionError):
+        atlas_table_view.setCurrentIndex(QModelIndex())
         atlas_table_view.selected_atlas_name()
 
 
@@ -148,7 +149,9 @@ def test_download_confirmed_callback(atlas_table_view, qtbot):
     with qtbot.waitSignal(
         atlas_table_view.download_atlas_confirmed
     ) as download_atlas_confirmed_signal:
-        atlas_table_view._on_download_atlas_confirmed("example_mouse_100um")
+        model_index = atlas_table_view.model().index(0, 0)
+        atlas_table_view.setCurrentIndex(model_index)
+        atlas_table_view._on_download_atlas_confirmed()
 
     assert download_atlas_confirmed_signal.args == ["example_mouse_100um"]
     for file in expected_filenames:

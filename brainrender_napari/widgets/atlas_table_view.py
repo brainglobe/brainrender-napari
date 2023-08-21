@@ -145,8 +145,9 @@ class AtlasTableView(QTableView):
             )
             download_dialog.exec()
 
-    def _on_download_atlas_confirmed(self, atlas_name: str):
+    def _on_download_atlas_confirmed(self):
         """Downloads an atlas and signals that this has happened."""
+        atlas_name = self.selected_atlas_name()
         install_atlas(atlas_name)
         self.download_atlas_confirmed.emit(atlas_name)
 
