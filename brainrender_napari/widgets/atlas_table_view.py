@@ -52,7 +52,7 @@ class AtlasTableModel(QAbstractTableModel):
             if section == 0:
                 return "Atlas name"
             elif section == 1:
-                return "Latest Version"
+                return "Latest version"
             else:
                 raise ValueError("Unexpected horizontal header value.")
         else:
@@ -136,7 +136,9 @@ class AtlasTableView(QTableView):
 
                 selected_item = additional_reference_menu.exec(global_position)
                 if selected_item:
-                    self.additional_reference_requested(selected_item.text())
+                    self.additional_reference_requested.emit(
+                        selected_item.text()
+                    )
 
     def _on_row_double_clicked(self):
         """Emits add_atlas_requested if the currently

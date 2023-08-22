@@ -109,7 +109,7 @@ def test_structure_color(make_napari_viewer):
         assert a * 255 == e
 
 
-def test_add_additional_reference(make_napari_viewer, mocker):
+def test_add_additional_reference(make_napari_viewer):
     viewer = make_napari_viewer()
     atlas_name = "mpin_zfish_1um"
     additional_reference_name = "GAD1b"

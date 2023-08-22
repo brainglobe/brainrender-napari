@@ -57,6 +57,32 @@ def test_hover_atlas_table_view(atlas_table_view, mocker):
     get_tooltip_text_mock.assert_called_once()
 
 
+@pytest.mark.parametrize(
+    "column, expected_header",
+    [
+        (0, "Atlas name"),
+        (1, "Latest version"),
+    ],
+)
+def test_model_header(atlas_table_view, column, expected_header):
+    """Check the table model has expected header data"""
+    assert (
+        atlas_table_view.model().headerData(
+            column, Qt.Orientation.Horizontal, Qt.DisplayRole
+        )
+        == expected_header
+    )
+
+
+def test_model_header_invalid_column(atlas_table_view):
+    """Check the table model throws as expected for invalid column"""
+    invalid_column = 2
+    with pytest.raises(ValueError):
+        atlas_table_view.model().headerData(
+            invalid_column, Qt.Orientation.Horizontal, Qt.DisplayRole
+        )
+
+
 def test_get_tooltip_downloaded():
     """Check tooltip on an example in the downloaded test data"""
     tooltip_text = AtlasTableModel._get_tooltip_text("example_mouse_100um")
@@ -125,6 +151,32 @@ def test_double_click_on_locally_available_atlas_row(
         double_click_on_view(atlas_table_view, model_index)
 
     assert add_atlas_requested_signal.args == [expected_atlas_name]
+
+
+def test_additional_reference_menu(atlas_table_view, qtbot, mocker):
+    """Checks callback to additional reference menu calls QMenu exec
+    and emits expected signal"""
+    atlas_table_view.selectRow(5)  # mpin_zfish_1um is in row 5
+    from qtpy.QtCore import QPoint
+    from qtpy.QtWidgets import QAction
+
+    x = atlas_table_view.rowViewportPosition(5)
+    y = atlas_table_view.columnViewportPosition(0)
+    position = QPoint(x, y)
+    qmenu_exec_mock = mocker.patch(
+        "brainrender_napari.widgets.atlas_table_view.QMenu.exec"
+    )
+    qmenu_exec_mock.return_value = QAction("mock_additional_reference")
+
+    with qtbot.waitSignal(
+        atlas_table_view.additional_reference_requested
+    ) as additional_reference_requested_signal:
+        atlas_table_view.customContextMenuRequested.emit(position)
+
+    qmenu_exec_mock.assert_called_once()
+    assert additional_reference_requested_signal.args == [
+        "mock_additional_reference"
+    ]
 
 
 def test_download_confirmed_callback(atlas_table_view, qtbot):
