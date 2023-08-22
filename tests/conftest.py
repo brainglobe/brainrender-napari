@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 import pytest
-from bg_atlasapi import config
+from bg_atlasapi import BrainGlobeAtlas, config
 from qtpy.QtCore import Qt
 
 
@@ -49,8 +49,26 @@ def mock_brainglobe_user_folders(monkeypatch):
         monkeypatch.setattr(config, "TEMPLATE_CONF_DICT", mock_default_dirs)
 
 
+@pytest.fixture(autouse=True)
+def setup_preexisting_local_atlases():
+    """Automatically setup all tests to have three downloaded atlases
+    in the test user data."""
+    preexisting_atlases = [
+        ("example_mouse_100um", "v1.2"),
+        ("allen_mouse_100um", "v1.2"),
+        ("osten_mouse_100um", "v1.1"),
+    ]
+    for atlas_name, version in preexisting_atlases:
+        if not Path.exists(
+            Path.home() / f".brainglobe/{atlas_name}_{version}"
+        ):
+            _ = BrainGlobeAtlas(atlas_name)
+
+
 @pytest.fixture
 def double_click_on_view(qtbot):
+    """Fixture to avoid code repetition to emulate double-click on a view."""
+
     def inner_double_click_on_view(view, index):
         viewport_index_position = view.visualRect(index).center()
 
