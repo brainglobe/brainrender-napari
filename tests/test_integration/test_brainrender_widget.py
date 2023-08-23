@@ -29,6 +29,26 @@ def test_download_confirmed_refreshes_view(brainrender_widget, mocker):
     )
 
 
+def test_not_downloaded_atlas_hides_checkbox(brainrender_widget, mocker):
+    show_structure_names_hide_mock = mocker.patch(
+        "brainrender_napari.brainrender_widget.QCheckBox.hide"
+    )
+    brainrender_widget._on_atlas_selection_changed(
+        "allen_mouse_10um"
+    )  # not part of downloaded data
+    show_structure_names_hide_mock.assert_called_once()
+
+
+def test_downloaded_atlas_shows_checkbox(brainrender_widget, mocker):
+    show_structure_names_show_mock = mocker.patch(
+        "brainrender_napari.brainrender_widget.QCheckBox.show"
+    )
+    brainrender_widget._on_atlas_selection_changed(
+        "example_mouse_100um"
+    )  # part of downloaded data
+    show_structure_names_show_mock.assert_called_once()
+
+
 @pytest.mark.parametrize(
     "expected_atlas_name",
     [
