@@ -12,6 +12,7 @@ from bg_atlasapi.list_atlases import get_downloaded_atlases
 from napari.viewer import Viewer
 from qtpy.QtWidgets import (
     QCheckBox,
+    QGroupBox,
     QVBoxLayout,
     QWidget,
 )
@@ -49,8 +50,16 @@ class BrainrenderWidget(QWidget):
 
         self.structure_view = StructureView(parent=self)
 
-        # add widgets to the layout
-        self.layout().addWidget(self.atlas_table_view)
+        # add widgets to the layout as group boxes
+        atlas_table_group = QGroupBox("Atlas table view")
+        atlas_table_group.setToolTip(
+            "Double-click on row to download/add annotations and reference\n"
+            "Right-click to add additional reference images (if any exist)"
+        )
+        atlas_table_group.setLayout(QVBoxLayout())
+        atlas_table_group.layout().addWidget(self.atlas_table_view)
+        self.layout().addWidget(atlas_table_group)
+
         self.layout().addWidget(self.show_structure_names)
         self.layout().addWidget(self.structure_view)
 
