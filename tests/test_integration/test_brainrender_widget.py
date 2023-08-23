@@ -82,6 +82,7 @@ def test_add_additional_reference_selected(brainrender_widget, mocker):
     brainrender_widget.atlas_table_view.selectRow(
         5
     )  # mpin_zfish_1um is in row 5
+    assert brainrender_widget.atlas_table_view.selected_atlas_name() == "mpin_zfish_1um"
     additional_reference_name = "GAD1b"
     brainrender_widget.atlas_table_view.additional_reference_requested.emit(
         additional_reference_name
