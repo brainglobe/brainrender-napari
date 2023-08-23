@@ -8,8 +8,10 @@ shown in a table view using the Qt model/view framework
 Users can download and add the atlas images/structures as layers to the viewer.
 """
 from bg_atlasapi import BrainGlobeAtlas
+from bg_atlasapi.list_atlases import get_downloaded_atlases
 from napari.viewer import Viewer
 from qtpy.QtWidgets import (
+    QCheckBox,
     QVBoxLayout,
     QWidget,
 )
@@ -37,10 +39,19 @@ class BrainrenderWidget(QWidget):
         self._viewer = napari_viewer
         self.setLayout(QVBoxLayout())
 
-        # create widgets and add them to the layout
+        # create widgets
         self.atlas_table_view = AtlasTableView(parent=self)
+
+        self.show_structure_names = QCheckBox()
+        self.show_structure_names.setChecked(False)
+        self.show_structure_names.setText("Show structure names")
+        self.show_structure_names.hide()
+
         self.structure_view = StructureView(parent=self)
+
+        # add widgets to the layout
         self.layout().addWidget(self.atlas_table_view)
+        self.layout().addWidget(self.show_structure_names)
         self.layout().addWidget(self.structure_view)
 
         # connect atlas view widget signals
@@ -57,6 +68,11 @@ class BrainrenderWidget(QWidget):
             self._on_atlas_selection_changed
         )
 
+        # connect show structure name signals
+        self.show_structure_names.clicked.connect(
+            self._on_show_structure_names_clicked
+        )
+
         # connect structure view signals
         self.structure_view.add_structure_requested.connect(
             self._on_add_structure_requested
@@ -64,7 +80,8 @@ class BrainrenderWidget(QWidget):
 
     def _on_download_atlas_confirmed(self, atlas_name):
         """Ensure structure view is displayed if new atlas downloaded."""
-        self.structure_view.refresh(atlas_name)
+        show_structure_names = self.show_structure_names.isChecked()
+        self.structure_view.refresh(atlas_name, show_structure_names)
 
     def _on_add_structure_requested(self, structure_name: str):
         """Add given structure as napari atlas representation"""
@@ -88,7 +105,12 @@ class BrainrenderWidget(QWidget):
 
     def _on_atlas_selection_changed(self, atlas_name: str):
         """Refreshes the structure view to match the changed atlas selection"""
-        self.structure_view.refresh(atlas_name)
+        show_structure_names = self.show_structure_names.isChecked()
+        self.structure_view.refresh(atlas_name, show_structure_names)
+        if atlas_name in get_downloaded_atlases():
+            self.show_structure_names.show()
+        else:
+            self.show_structure_names.hide()
 
     def _on_add_atlas_requested(self, atlas_name: str):
         """Add reference and annotation as napari atlas representation"""
@@ -97,3 +119,8 @@ class BrainrenderWidget(QWidget):
             selected_atlas, self._viewer
         )
         selected_atlas_representation.add_to_viewer()
+
+    def _on_show_structure_names_clicked(self):
+        atlas_name = self.atlas_table_view.selected_atlas_name()
+        show_structure_names = self.show_structure_names.isChecked()
+        self.structure_view.refresh(atlas_name, show_structure_names)

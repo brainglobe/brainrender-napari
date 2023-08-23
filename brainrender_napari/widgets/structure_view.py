@@ -56,7 +56,7 @@ class StructureTreeModel(QAbstractItemModel):
 
     def __init__(self, data: List, parent=None):
         super().__init__()
-        self.root_item = StructureTreeItem(data=("Atlas regions", "-1"))
+        self.root_item = StructureTreeItem(data=("acronym", "name", "id"))
         self.build_structure_tree(data, self.root_item)
 
     def build_structure_tree(self, structures: List, root: StructureTreeItem):
@@ -72,6 +72,7 @@ class StructureTreeModel(QAbstractItemModel):
             # before their children
             node = tree.get_node(n_id)
             acronym = structure_id_dict[node.identifier]["acronym"]
+            name = structure_id_dict[node.identifier]["name"]
             if (
                 len(structure_id_dict[node.identifier]["structure_id_path"])
                 == 1
@@ -82,7 +83,7 @@ class StructureTreeModel(QAbstractItemModel):
                 parent_item = inserted_items[parent_id]
 
             item = StructureTreeItem(
-                data=(acronym, node.identifier), parent=parent_item
+                data=(acronym, name, node.identifier), parent=parent_item
             )
             parent_item.appendChild(item)
             inserted_items[node.identifier] = item
@@ -160,7 +161,14 @@ class StructureView(QTreeView):
         super().__init__(parent)
         self.doubleClicked.connect(self._on_row_double_clicked)
 
-    def refresh(self, selected_atlas_name: str):
+        def resize_acronym_column():
+            self.resizeColumnToContents(0)
+
+        self.expanded.connect(resize_acronym_column)
+
+    def refresh(
+        self, selected_atlas_name: str, show_structure_names: bool = False
+    ):
         """Updates the structure tree view with the currently selected atlas.
         The view is only visible if the selected atlas has been downloaded.
         Resets the current index either way.
@@ -169,7 +177,11 @@ class StructureView(QTreeView):
             structures = read_atlas_structures_from_file(selected_atlas_name)
             region_model = StructureTreeModel(structures)
             self.setModel(region_model)
-            self.hideColumn(1)  # don't show structure id
+            if show_structure_names:
+                self.showColumn(1)
+            else:
+                self.hideColumn(1)
+            self.hideColumn(2)  # don't show structure id
             self.setExpandsOnDoubleClick(False)
             self.setHeaderHidden(True)
             self.setWordWrap(False)

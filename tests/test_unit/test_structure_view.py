@@ -45,6 +45,17 @@ def test_structure_view_visibility(
     assert structure_view.isVisible() == expected_visibility
 
 
+@pytest.mark.parametrize("show_structure_names", [True, False])
+def test_structure_view_column_visibility(
+    structure_view, show_structure_names
+):
+    """Checks the column visibility for a visible structure view"""
+    structure_view.refresh("allen_mouse_100um", show_structure_names)
+    assert not structure_view.isColumnHidden(0)  # acronym is always visible
+    assert structure_view.isColumnHidden(2)  # id column is always hidden
+    assert structure_view.isColumnHidden(1) != show_structure_names
+
+
 def test_double_click_on_structure_row(
     structure_view, double_click_on_view, qtbot
 ):
