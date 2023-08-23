@@ -199,7 +199,8 @@ def test_download_confirmed_callback(atlas_table_view, qtbot):
     )  # sanity check that local copy is gone
 
     with qtbot.waitSignal(
-        atlas_table_view.download_atlas_confirmed
+        atlas_table_view.download_atlas_confirmed,
+        timeout=150000,  # assumes atlas can be installed in 2.5 minutes!
     ) as download_atlas_confirmed_signal:
         model_index = atlas_table_view.model().index(0, 0)
         atlas_table_view.setCurrentIndex(model_index)
