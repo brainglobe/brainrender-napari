@@ -1,5 +1,5 @@
 name: brainrender-napari
-display_name: BrainGlobe Tools
+display_name: brainrender
 contributions:
   commands:
     - id: brainrender-napari.make_brainrender_widget
@@ -7,4 +7,4 @@ contributions:
       title: Make Brainrender Napari
   widgets:
     - command: brainrender-napari.make_brainrender_widget
-      display_name: Brainrender Napari
+      display_name: Brainrender
