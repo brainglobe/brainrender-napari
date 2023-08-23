@@ -24,7 +24,9 @@ def test_download_confirmed_refreshes_view(brainrender_widget, mocker):
     brainrender_widget.atlas_table_view.download_atlas_confirmed.emit(
         "allen_mouse_10um"
     )
-    structure_view_refresh_mock.assert_called_once_with("allen_mouse_10um")
+    structure_view_refresh_mock.assert_called_once_with(
+        "allen_mouse_10um", False
+    )
 
 
 @pytest.mark.parametrize(
