@@ -12,6 +12,7 @@ from bg_atlasapi.list_atlases import (
     get_downloaded_atlases,
 )
 from bg_atlasapi.update_atlases import install_atlas
+from napari.qt import thread_worker
 from qtpy.QtCore import QAbstractTableModel, QModelIndex, Qt, Signal
 from qtpy.QtWidgets import QMenu, QTableView, QWidget
 
@@ -157,8 +158,15 @@ class AtlasTableView(QTableView):
     def _on_download_atlas_confirmed(self):
         """Downloads an atlas and signals that this has happened."""
         atlas_name = self.selected_atlas_name()
+        worker = self._install_atlas_in_thread(atlas_name)
+        worker.returned.connect(self.download_atlas_confirmed.emit)
+        worker.start()
+
+    @thread_worker
+    def _install_atlas_in_thread(self, atlas_name: str):
+        """Installs the currently selected atlas in a separate thread."""
         install_atlas(atlas_name)
-        self.download_atlas_confirmed.emit(atlas_name)
+        return atlas_name
 
     def _on_current_changed(self):
         """Emits a signal with the newly selected atlas name"""
