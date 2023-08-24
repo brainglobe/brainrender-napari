@@ -68,6 +68,10 @@ jobs:
       # simple listing of (possibly cached brainglobe folder)
       - name: List files in brainglobe data folder
         run: |
+          echo $HOME
+          echo ~
+          ls -af $HOME
+          ls -af ~
           ls -af ~/.brainglobe/
 
       # Run tests
