@@ -56,8 +56,12 @@ def test_structure_view_column_visibility(
     assert structure_view.isColumnHidden(1) != show_structure_names
 
 
+@pytest.mark.parametrize(
+    "column_clicked",
+    [0, 1],  # we should be able to click on either column with the same result
+)
 def test_double_click_on_structure_row(
-    structure_view, double_click_on_view, qtbot
+    structure_view, double_click_on_view, qtbot, column_clicked
 ):
     """Checks that expected signal is emitted when
     double-clicking on a row in the structure view"""
@@ -65,7 +69,10 @@ def test_double_click_on_structure_row(
 
     root_index = structure_view.rootIndex()
     root_mesh_index = structure_view.model().index(0, 0, root_index)
-    vs_mesh_index = structure_view.model().index(0, 0, root_mesh_index)
+    assert root_mesh_index.isValid()
+    vs_mesh_index = structure_view.model().index(
+        0, column_clicked, root_mesh_index
+    )
     assert vs_mesh_index.isValid()
     structure_view.setCurrentIndex(vs_mesh_index)
     with qtbot.waitSignal(
