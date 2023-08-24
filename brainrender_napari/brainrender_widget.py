@@ -54,14 +54,14 @@ class BrainrenderWidget(QWidget):
         self.structure_view = StructureView(parent=self)
 
         # add widgets to the layout as group boxes
-        atlas_table_group = QGroupBox("Atlas table view")
-        atlas_table_group.setToolTip(
+        self.atlas_table_group = QGroupBox("Atlas table view")
+        self.atlas_table_group.setToolTip(
             "Double-click on row to download/add annotations and reference\n"
             "Right-click to add additional reference images (if any exist)"
         )
-        atlas_table_group.setLayout(QVBoxLayout())
-        atlas_table_group.layout().addWidget(self.atlas_table_view)
-        self.layout().addWidget(atlas_table_group)
+        self.atlas_table_group.setLayout(QVBoxLayout())
+        self.atlas_table_group.layout().addWidget(self.atlas_table_view)
+        self.layout().addWidget(self.atlas_table_group)
 
         self.structure_tree_group = QGroupBox("Structures")
         self.structure_tree_group.setToolTip(

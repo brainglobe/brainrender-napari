@@ -124,3 +124,27 @@ def test_show_structures_checkbox(brainrender_widget, mocker):
     brainrender_widget.show_structure_names.click()
     assert structure_view_refresh_mock.call_count == 2
     structure_view_refresh_mock.assert_called_with("example_mouse_100um", True)
+
+
+def test_structure_view_tooltip(brainrender_widget):
+    for expected_keyword in ["double-click", "structure", "viewer"]:
+        assert (
+            expected_keyword
+            in brainrender_widget.structure_tree_group.toolTip().lower()
+        )
+
+
+def test_atlas_table_view_tooltip(brainrender_widget):
+    for expected_keyword in [
+        "double-click",
+        "download",
+        "add",
+        "annotations",
+        "reference",
+        "right-click",
+        "additional",
+    ]:
+        assert (
+            expected_keyword
+            in brainrender_widget.atlas_table_group.toolTip().lower()
+        )
