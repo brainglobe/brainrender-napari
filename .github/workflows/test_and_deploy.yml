@@ -60,14 +60,10 @@ jobs:
         uses: actions/cache@v3
         with:
           path: | # ensure we don't cache any interrupted atlas download and extraction!
-            ~/.brainglobe/*
-            !~/.brainglobe/atlas.tar.gz
+            $HOME/.brainglobe/*
+            !$HOME/.brainglobe/atlas.tar.gz
           key: cached-atlases
-          enableCrossOsArchive: true
-
-      - name: Setup tmate session
-        if: runner.os == 'Windows'
-        uses: mxschmitt/action-tmate@v3
+          enableCrossOsArchive: false # ~ and $HOME evaluate to different places across OSs!
 
       # simple listing of (possibly cached) brainglobe folder
       - name: List files in brainglobe data folder
