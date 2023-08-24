@@ -61,8 +61,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: | # ensure we don't cache any interrupted atlas download and extraction!
-            $HOME/.brainglobe/*
-            !$HOME/.brainglobe/atlas.tar.gz
+            ~/.brainglobe/*
+            !~/.brainglobe/atlas.tar.gz
           key: ${{ runner.os }}-cached-atlases
           enableCrossOsArchive: false # ~ and $HOME evaluate to different places across OSs!
 
