@@ -57,6 +57,7 @@ def setup_preexisting_local_atlases():
         ("example_mouse_100um", "v1.2"),
         ("allen_mouse_100um", "v1.2"),
         ("osten_mouse_100um", "v1.1"),
+        ("mpin_zfish_1um", "v1.0"),
     ]
     for atlas_name, version in preexisting_atlases:
         if not Path.exists(
