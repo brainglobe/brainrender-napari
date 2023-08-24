@@ -69,7 +69,7 @@ jobs:
         if: runner.os == 'Windows'
         uses: mxschmitt/action-tmate@v3
 
-        # simple listing of (possibly cached brainglobe folder)
+      # simple listing of (possibly cached) brainglobe folder
       - name: List files in brainglobe data folder
         run: |
           echo $HOME
