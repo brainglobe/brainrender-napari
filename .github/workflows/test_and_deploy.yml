@@ -65,6 +65,11 @@ jobs:
           key: cached-atlases
           enableCrossOsArchive: true
 
+      # simple listing of (possibly cached brainglobe folder)
+      - name: List files in brainglobe data folder
+        run: |
+          ls -af ~/.brainglobe/
+
       # Run tests
       - uses: neuroinformatics-unit/actions/test@v2
         with:
