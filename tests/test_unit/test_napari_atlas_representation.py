@@ -61,14 +61,14 @@ def test_add_to_viewer(make_napari_viewer, expected_atlas_name, anisotropic):
         ("osten_mouse_100um"),
     ],
 )
-def test_add_structure_to_viewer(make_napari_viewer, expected_atlas_name):
+def test_add_brain_region_to_viewer(make_napari_viewer, expected_atlas_name):
     """Check that the root mesh extents __roughly__ match the size
     of the annnotations image."""
     viewer = make_napari_viewer()
     atlas = BrainGlobeAtlas(atlas_name=expected_atlas_name)
 
     atlas_representation = NapariAtlasRepresentation(atlas, viewer)
-    atlas_representation.add_structure_to_viewer("root")
+    atlas_representation.add_brain_region_to_viewer("root")
     assert len(viewer.layers) == 1
     mesh = viewer.layers[0]
 
@@ -92,15 +92,15 @@ def test_add_structure_to_viewer(make_napari_viewer, expected_atlas_name):
     )
 
 
-def test_structure_color(make_napari_viewer):
-    """Checks that the default colour of a structure
+def test_brain_region_colour(make_napari_viewer):
+    """Checks that the default colour of a brain region
     is propagated correctly to the corresponding napari layer
     """
     viewer = make_napari_viewer()
     atlas = BrainGlobeAtlas(atlas_name="allen_mouse_100um")
 
     atlas_representation = NapariAtlasRepresentation(atlas, viewer)
-    atlas_representation.add_structure_to_viewer("CTXsp")
+    atlas_representation.add_brain_region_to_viewer("CTXsp")
 
     expected_RGB = atlas.structures["CTXsp"]["rgb_triplet"]
     actual_rgb = viewer.layers[0].vertex_colors[0]

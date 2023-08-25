@@ -16,7 +16,8 @@ def read_atlas_metadata_from_file(atlas_name: str):
 
 
 def read_atlas_structures_from_file(atlas_name: str):
-    """Reads structure info from a '.json' in the BrainGlobe directory."""
+    """Reads "structure" (ie 3D brain region mesh) info
+    from a '.json' in the BrainGlobe directory."""
     brainglobe_dir = Path.home() / ".brainglobe"
     with open(
         brainglobe_dir

@@ -18,13 +18,13 @@ def brainrender_widget(make_napari_viewer) -> BrainrenderWidget:
 
 
 def test_download_confirmed_refreshes_view(brainrender_widget, mocker):
-    structure_view_refresh_mock = mocker.patch(
-        "brainrender_napari.brainrender_widget.StructureView.refresh"
+    brain_region_view_refresh_mock = mocker.patch(
+        "brainrender_napari.brainrender_widget.BrainRegionView.refresh"
     )
     brainrender_widget.atlas_table_view.download_atlas_confirmed.emit(
         "allen_mouse_10um"
     )
-    structure_view_refresh_mock.assert_called_once_with(
+    brain_region_view_refresh_mock.assert_called_once_with(
         "allen_mouse_10um", False
     )
 
@@ -73,21 +73,21 @@ def test_double_click_on_locally_available_atlas_row(
     add_atlas_to_viewer_mock.assert_called_once()
 
 
-def test_structure_row_double_clicked(brainrender_widget, mocker):
-    """Checks that when the structure view widgets emit "VS" and
+def test_brain_region_row_double_clicked(brainrender_widget, mocker):
+    """Checks that when the brain region view widgets emit "VS" and
     the allen_mouse_100um atlas is selected, the NapariAtlasRepresentation
     function is called in the expected way.
     """
-    add_structure_to_viewer_mock = mocker.patch(
+    add_brain_region_to_viewer_mock = mocker.patch(
         "brainrender_napari.brainrender_widget"
-        ".NapariAtlasRepresentation.add_structure_to_viewer"
+        ".NapariAtlasRepresentation.add_brain_region_to_viewer"
     )
     brainrender_widget.atlas_table_view.selectRow(
         4
     )  # allen_mouse_100um is in row 4
 
-    brainrender_widget.structure_view.add_structure_requested.emit("VS")
-    add_structure_to_viewer_mock.assert_called_once_with("VS")
+    brainrender_widget.brain_region_view.add_brain_region_requested.emit("VS")
+    add_brain_region_to_viewer_mock.assert_called_once_with("VS")
 
 
 def test_add_additional_reference_selected(brainrender_widget, mocker):
@@ -114,27 +114,29 @@ def test_add_additional_reference_selected(brainrender_widget, mocker):
     )
 
 
-def test_show_structures_checkbox(brainrender_widget, mocker):
-    structure_view_refresh_mock = mocker.patch(
-        "brainrender_napari.brainrender_widget" ".StructureView.refresh"
+def test_show_brain_regions_checkbox(brainrender_widget, mocker):
+    brain_region_view_refresh_mock = mocker.patch(
+        "brainrender_napari.brainrender_widget.BrainRegionView.refresh"
     )
     brainrender_widget.atlas_table_view.selectRow(
         0
     )  # example_mouse_100um is in row 0
-    structure_view_refresh_mock.assert_called_with(
+    brain_region_view_refresh_mock.assert_called_with(
         "example_mouse_100um", False
     )
 
-    brainrender_widget.show_structure_names.click()
-    assert structure_view_refresh_mock.call_count == 2
-    structure_view_refresh_mock.assert_called_with("example_mouse_100um", True)
+    brainrender_widget.show_brain_region_names.click()
+    assert brain_region_view_refresh_mock.call_count == 2
+    brain_region_view_refresh_mock.assert_called_with(
+        "example_mouse_100um", True
+    )
 
 
-def test_structure_view_tooltip(brainrender_widget):
-    for expected_keyword in ["double-click", "structure", "viewer"]:
+def test_brain_region_view_tooltip(brainrender_widget):
+    for expected_keyword in ["double-click", "brain region", "viewer"]:
         assert (
             expected_keyword
-            in brainrender_widget.structure_tree_group.toolTip().lower()
+            in brainrender_widget.brain_region_tree_group.toolTip().lower()
         )
 
 

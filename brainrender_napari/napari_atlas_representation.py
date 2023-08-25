@@ -32,16 +32,16 @@ class NapariAtlasRepresentation:
             name=f"{self.bg_atlas.atlas_name}_annotation",
         )
 
-    def add_structure_to_viewer(self, structure_name: str):
-        """Adds the mesh of a structure to the viewer
+    def add_brain_region_to_viewer(self, brain_region_name: str):
+        """Adds the mesh of a brain region to the viewer
 
-        structure_name: the id or acronym of the structure.
+        brain_region_name: the id or acronym of the brain region.
         """
-        mesh = self.bg_atlas.mesh_from_structure(structure_name)
-        color = self.bg_atlas.structures[structure_name]["rgb_triplet"]
+        mesh = self.bg_atlas.mesh_from_structure(brain_region_name)
+        color = self.bg_atlas.structures[brain_region_name]["rgb_triplet"]
         self._add_mesh(
             mesh,
-            name=f"{self.bg_atlas.atlas_name}_{structure_name}_mesh",
+            name=f"{self.bg_atlas.atlas_name}_{brain_region_name}_mesh",
             color=color,
         )
 
