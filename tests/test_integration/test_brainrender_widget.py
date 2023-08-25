@@ -29,24 +29,21 @@ def test_download_confirmed_refreshes_view(brainrender_widget, mocker):
     )
 
 
-def test_not_downloaded_atlas_hides_checkbox(brainrender_widget, mocker):
-    show_structure_names_hide_mock = mocker.patch(
-        "brainrender_napari.brainrender_widget.QCheckBox.hide"
+@pytest.mark.parametrize(
+    "expected_visibility, atlas",
+    [
+        (True, "example_mouse_100um"),  # part of downloaded data
+        (False, "allen_mouse_10um"),  # not part of downloaded data
+    ],
+)
+def test_checkbox_visibility(
+    brainrender_widget, mocker, expected_visibility, atlas
+):
+    checkbox_visibility_mock = mocker.patch(
+        "brainrender_napari.brainrender_widget.QCheckBox.setVisible"
     )
-    brainrender_widget._on_atlas_selection_changed(
-        "allen_mouse_10um"
-    )  # not part of downloaded data
-    show_structure_names_hide_mock.assert_called_once()
-
-
-def test_downloaded_atlas_shows_checkbox(brainrender_widget, mocker):
-    show_structure_names_show_mock = mocker.patch(
-        "brainrender_napari.brainrender_widget.QCheckBox.show"
-    )
-    brainrender_widget._on_atlas_selection_changed(
-        "example_mouse_100um"
-    )  # part of downloaded data
-    show_structure_names_show_mock.assert_called_once()
+    brainrender_widget._on_atlas_selection_changed(atlas)
+    checkbox_visibility_mock.assert_called_once_with(expected_visibility)
 
 
 @pytest.mark.parametrize(
@@ -131,3 +128,27 @@ def test_show_structures_checkbox(brainrender_widget, mocker):
     brainrender_widget.show_structure_names.click()
     assert structure_view_refresh_mock.call_count == 2
     structure_view_refresh_mock.assert_called_with("example_mouse_100um", True)
+
+
+def test_structure_view_tooltip(brainrender_widget):
+    for expected_keyword in ["double-click", "structure", "viewer"]:
+        assert (
+            expected_keyword
+            in brainrender_widget.structure_tree_group.toolTip().lower()
+        )
+
+
+def test_atlas_table_view_tooltip(brainrender_widget):
+    for expected_keyword in [
+        "double-click",
+        "download",
+        "add",
+        "annotations",
+        "reference",
+        "right-click",
+        "additional",
+    ]:
+        assert (
+            expected_keyword
+            in brainrender_widget.atlas_table_group.toolTip().lower()
+        )

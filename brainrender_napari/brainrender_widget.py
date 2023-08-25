@@ -12,6 +12,7 @@ from bg_atlasapi.list_atlases import get_downloaded_atlases
 from napari.viewer import Viewer
 from qtpy.QtWidgets import (
     QCheckBox,
+    QGroupBox,
     QVBoxLayout,
     QWidget,
 )
@@ -45,14 +46,32 @@ class BrainrenderWidget(QWidget):
         self.show_structure_names = QCheckBox()
         self.show_structure_names.setChecked(False)
         self.show_structure_names.setText("Show structure names")
+        self.show_structure_names.setToolTip(
+            "Tick to show structure names, untick to show acronyms only."
+        )
         self.show_structure_names.hide()
 
         self.structure_view = StructureView(parent=self)
 
-        # add widgets to the layout
-        self.layout().addWidget(self.atlas_table_view)
-        self.layout().addWidget(self.show_structure_names)
-        self.layout().addWidget(self.structure_view)
+        # add widgets to the layout as group boxes
+        self.atlas_table_group = QGroupBox("Atlas table view")
+        self.atlas_table_group.setToolTip(
+            "Double-click on row to download/add annotations and reference\n"
+            "Right-click to add additional reference images (if any exist)"
+        )
+        self.atlas_table_group.setLayout(QVBoxLayout())
+        self.atlas_table_group.layout().addWidget(self.atlas_table_view)
+        self.layout().addWidget(self.atlas_table_group)
+
+        self.structure_tree_group = QGroupBox("Structures")
+        self.structure_tree_group.setToolTip(
+            "Double-click on structure to add to viewer"
+        )
+        self.structure_tree_group.setLayout(QVBoxLayout())
+        self.structure_tree_group.layout().addWidget(self.show_structure_names)
+        self.structure_tree_group.layout().addWidget(self.structure_view)
+        self.structure_tree_group.hide()
+        self.layout().addWidget(self.structure_tree_group)
 
         # connect atlas view widget signals
         self.atlas_table_view.download_atlas_confirmed.connect(
@@ -107,10 +126,9 @@ class BrainrenderWidget(QWidget):
         """Refreshes the structure view to match the changed atlas selection"""
         show_structure_names = self.show_structure_names.isChecked()
         self.structure_view.refresh(atlas_name, show_structure_names)
-        if atlas_name in get_downloaded_atlases():
-            self.show_structure_names.show()
-        else:
-            self.show_structure_names.hide()
+        is_downloaded = atlas_name in get_downloaded_atlases()
+        self.show_structure_names.setVisible(is_downloaded)
+        self.structure_tree_group.setVisible(is_downloaded)
 
     def _on_add_atlas_requested(self, atlas_name: str):
         """Add reference and annotation as napari atlas representation"""
