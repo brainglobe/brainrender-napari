@@ -20,6 +20,7 @@ from qtpy.QtWidgets import (
 from brainrender_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
 )
+from brainrender_napari.utils.brainglobe_logo import header_widget
 from brainrender_napari.widgets.atlas_table_view import AtlasTableView
 from brainrender_napari.widgets.structure_view import StructureView
 
@@ -39,6 +40,7 @@ class BrainrenderWidget(QWidget):
 
         self._viewer = napari_viewer
         self.setLayout(QVBoxLayout())
+        self.layout().addWidget(header_widget())
 
         # create widgets
         self.atlas_table_view = AtlasTableView(parent=self)
