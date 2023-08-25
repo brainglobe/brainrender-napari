@@ -8,17 +8,23 @@ def structure_view(qtbot) -> StructureView:
     return StructureView()
 
 
-def test_structure_view_valid_selection(structure_view):
+@pytest.mark.parametrize(
+    "column_clicked",
+    [0, 1],  # we should be able to click on either column with the same result
+)
+def test_structure_view_valid_selection(structure_view, column_clicked):
     """Checks that the correct structure name is returned
     if a valid structure view index is selected."""
     structure_view.refresh("allen_mouse_100um")
 
     root_index = structure_view.rootIndex()
     root_mesh_index = structure_view.model().index(0, 0, root_index)
-    vs_mesh_index = structure_view.model().index(0, 0, root_mesh_index)
+    vs_mesh_index = structure_view.model().index(
+        0, column_clicked, root_mesh_index
+    )
     assert vs_mesh_index.isValid()
     structure_view.setCurrentIndex(vs_mesh_index)
-    assert structure_view.selected_structure_name() == "VS"
+    assert structure_view.selected_structure_acronym() == "VS"
 
 
 def test_structure_view_invalid_selection(structure_view):
@@ -26,7 +32,7 @@ def test_structure_view_invalid_selection(structure_view):
     if current index is invalid."""
     structure_view.refresh("allen_mouse_100um")
     with pytest.raises(AssertionError):
-        structure_view.selected_structure_name()
+        structure_view.selected_structure_acronym()
 
 
 @pytest.mark.parametrize(
@@ -56,16 +62,23 @@ def test_structure_view_column_visibility(
     assert structure_view.isColumnHidden(1) != show_structure_names
 
 
+@pytest.mark.parametrize(
+    "column_clicked",
+    [0, 1],  # we should be able to click on either column with the same result
+)
 def test_double_click_on_structure_row(
-    structure_view, double_click_on_view, qtbot
+    structure_view, double_click_on_view, qtbot, column_clicked
 ):
     """Checks that expected signal is emitted when
-    double-clicking on a row in the structure view"""
-    structure_view.refresh("allen_mouse_100um")
+    double-clicking on a row (indpendent of column) in the structure view"""
+    structure_view.refresh("allen_mouse_100um", True)
 
     root_index = structure_view.rootIndex()
     root_mesh_index = structure_view.model().index(0, 0, root_index)
-    vs_mesh_index = structure_view.model().index(0, 0, root_mesh_index)
+    assert root_mesh_index.isValid()
+    vs_mesh_index = structure_view.model().index(
+        0, column_clicked, root_mesh_index
+    )
     assert vs_mesh_index.isValid()
     structure_view.setCurrentIndex(vs_mesh_index)
     with qtbot.waitSignal(

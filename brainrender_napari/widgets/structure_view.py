@@ -191,12 +191,13 @@ class StructureView(QTreeView):
             self.hide()
         self.setCurrentIndex(QModelIndex())
 
-    def selected_structure_name(self) -> str:
+    def selected_structure_acronym(self) -> str:
         """A single place to get a valid selected structure"""
         selected_index = self.selectionModel().currentIndex()
         assert selected_index.isValid()
-        selected_structure_name = self.model().data(selected_index)
-        return selected_structure_name
+        acronym_index = selected_index.siblingAtColumn(0)
+        selected_structure_acronym = self.model().data(acronym_index)
+        return selected_structure_acronym
 
     def _on_row_double_clicked(self):
-        self.add_structure_requested.emit(self.selected_structure_name())
+        self.add_structure_requested.emit(self.selected_structure_acronym())
