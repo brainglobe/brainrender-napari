@@ -63,7 +63,7 @@ class BrainrenderWidget(QWidget):
         self.atlas_table_group.layout().addWidget(self.atlas_table_view)
         self.layout().addWidget(self.atlas_table_group)
 
-        self.brain_region_tree_group = QGroupBox("3D Brain region meshes")
+        self.brain_region_tree_group = QGroupBox("3D Brain Region Meshes")
         self.brain_region_tree_group.setToolTip(
             "Double-click on a brain region to add its 3D mesh to the viewer"
         )
