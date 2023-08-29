@@ -45,9 +45,9 @@ class BrainrenderWidget(QWidget):
 
         self.show_structure_names = QCheckBox()
         self.show_structure_names.setChecked(False)
-        self.show_structure_names.setText("Show structure names")
+        self.show_structure_names.setText("Show region names")
         self.show_structure_names.setToolTip(
-            "Tick to show structure names, untick to show acronyms only."
+            "Tick to show region names, untick to show acronyms only."
         )
         self.show_structure_names.hide()
 
@@ -63,9 +63,9 @@ class BrainrenderWidget(QWidget):
         self.atlas_table_group.layout().addWidget(self.atlas_table_view)
         self.layout().addWidget(self.atlas_table_group)
 
-        self.structure_tree_group = QGroupBox("Structures")
+        self.structure_tree_group = QGroupBox("3D Atlas region meshes")
         self.structure_tree_group.setToolTip(
-            "Double-click on structure to add to viewer"
+            "Double-click on a region to add to viewer"
         )
         self.structure_tree_group.setLayout(QVBoxLayout())
         self.structure_tree_group.layout().addWidget(self.show_structure_names)

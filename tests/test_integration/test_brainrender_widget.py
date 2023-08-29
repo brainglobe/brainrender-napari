@@ -116,7 +116,7 @@ def test_add_additional_reference_selected(brainrender_widget, mocker):
 
 def test_show_structures_checkbox(brainrender_widget, mocker):
     structure_view_refresh_mock = mocker.patch(
-        "brainrender_napari.brainrender_widget" ".StructureView.refresh"
+        "brainrender_napari.brainrender_widget.StructureView.refresh"
     )
     brainrender_widget.atlas_table_view.selectRow(
         0
@@ -131,7 +131,7 @@ def test_show_structures_checkbox(brainrender_widget, mocker):
 
 
 def test_structure_view_tooltip(brainrender_widget):
-    for expected_keyword in ["double-click", "structure", "viewer"]:
+    for expected_keyword in ["double-click", "region", "viewer"]:
         assert (
             expected_keyword
             in brainrender_widget.structure_tree_group.toolTip().lower()
