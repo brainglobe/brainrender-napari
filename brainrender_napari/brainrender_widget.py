@@ -5,7 +5,7 @@ Atlases that are exposed by the Brainglobe atlas API are
 shown in a table view using the Qt model/view framework
 [Qt Model/View framework](https://doc.qt.io/qt-6/model-view-programming.html)
 
-Users can download and add the atlas images/regions as layers to the viewer.
+Users can download and add the atlas images/structures as layers to the viewer.
 """
 from bg_atlasapi import BrainGlobeAtlas
 from bg_atlasapi.list_atlases import get_downloaded_atlases
@@ -21,7 +21,7 @@ from brainrender_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
 )
 from brainrender_napari.widgets.atlas_table_view import AtlasTableView
-from brainrender_napari.widgets.brain_region_view import BrainRegionView
+from brainrender_napari.widgets.structure_view import StructureView
 
 
 class BrainrenderWidget(QWidget):
@@ -43,15 +43,15 @@ class BrainrenderWidget(QWidget):
         # create widgets
         self.atlas_table_view = AtlasTableView(parent=self)
 
-        self.show_brain_region_names = QCheckBox()
-        self.show_brain_region_names.setChecked(False)
-        self.show_brain_region_names.setText("Show brain region names")
-        self.show_brain_region_names.setToolTip(
-            "Tick to show brain region names, untick to show acronyms only."
+        self.show_structure_names = QCheckBox()
+        self.show_structure_names.setChecked(False)
+        self.show_structure_names.setText("Show structure names")
+        self.show_structure_names.setToolTip(
+            "Tick to show structure names, untick to show acronyms only."
         )
-        self.show_brain_region_names.hide()
+        self.show_structure_names.hide()
 
-        self.brain_region_view = BrainRegionView(parent=self)
+        self.structure_view = StructureView(parent=self)
 
         # add widgets to the layout as group boxes
         self.atlas_table_group = QGroupBox("Atlas table view")
@@ -63,17 +63,15 @@ class BrainrenderWidget(QWidget):
         self.atlas_table_group.layout().addWidget(self.atlas_table_view)
         self.layout().addWidget(self.atlas_table_group)
 
-        self.brain_region_tree_group = QGroupBox("3D Brain Region Meshes")
-        self.brain_region_tree_group.setToolTip(
-            "Double-click on a brain region to add its 3D mesh to the viewer"
+        self.structure_tree_group = QGroupBox("Structures")
+        self.structure_tree_group.setToolTip(
+            "Double-click on structure to add to viewer"
         )
-        self.brain_region_tree_group.setLayout(QVBoxLayout())
-        self.brain_region_tree_group.layout().addWidget(
-            self.show_brain_region_names
-        )
-        self.brain_region_tree_group.layout().addWidget(self.brain_region_view)
-        self.brain_region_tree_group.hide()
-        self.layout().addWidget(self.brain_region_tree_group)
+        self.structure_tree_group.setLayout(QVBoxLayout())
+        self.structure_tree_group.layout().addWidget(self.show_structure_names)
+        self.structure_tree_group.layout().addWidget(self.structure_view)
+        self.structure_tree_group.hide()
+        self.layout().addWidget(self.structure_tree_group)
 
         # connect atlas view widget signals
         self.atlas_table_view.download_atlas_confirmed.connect(
@@ -89,32 +87,30 @@ class BrainrenderWidget(QWidget):
             self._on_atlas_selection_changed
         )
 
-        # connect show brain region names signals
-        self.show_brain_region_names.clicked.connect(
-            self._on_show_brain_region_names_clicked
+        # connect show structure name signals
+        self.show_structure_names.clicked.connect(
+            self._on_show_structure_names_clicked
         )
 
-        # connect brain region view signals
-        self.brain_region_view.add_brain_region_requested.connect(
-            self._on_brain_region_requested
+        # connect structure view signals
+        self.structure_view.add_structure_requested.connect(
+            self._on_add_structure_requested
         )
 
     def _on_download_atlas_confirmed(self, atlas_name):
-        """Ensure brain region view is displayed if new atlas downloaded."""
-        brain_region_names = self.show_brain_region_names.isChecked()
-        self.brain_region_view.refresh(atlas_name, brain_region_names)
+        """Ensure structure view is displayed if new atlas downloaded."""
+        show_structure_names = self.show_structure_names.isChecked()
+        self.structure_view.refresh(atlas_name, show_structure_names)
 
-    def _on_brain_region_requested(self, brain_region_name: str):
-        """Add given brain region as napari atlas representation"""
+    def _on_add_structure_requested(self, structure_name: str):
+        """Add given structure as napari atlas representation"""
         selected_atlas = BrainGlobeAtlas(
             self.atlas_table_view.selected_atlas_name()
         )
         selected_atlas_representation = NapariAtlasRepresentation(
             selected_atlas, self._viewer
         )
-        selected_atlas_representation.add_brain_region_to_viewer(
-            brain_region_name
-        )
+        selected_atlas_representation.add_structure_to_viewer(structure_name)
 
     def _on_additional_reference_requested(
         self, additional_reference_name: str
@@ -127,13 +123,12 @@ class BrainrenderWidget(QWidget):
         )
 
     def _on_atlas_selection_changed(self, atlas_name: str):
-        """Refreshes the brain region view to match
-        the changed atlas selection"""
-        show_brain_region_names = self.show_brain_region_names.isChecked()
-        self.brain_region_view.refresh(atlas_name, show_brain_region_names)
+        """Refreshes the structure view to match the changed atlas selection"""
+        show_structure_names = self.show_structure_names.isChecked()
+        self.structure_view.refresh(atlas_name, show_structure_names)
         is_downloaded = atlas_name in get_downloaded_atlases()
-        self.show_brain_region_names.setVisible(is_downloaded)
-        self.brain_region_tree_group.setVisible(is_downloaded)
+        self.show_structure_names.setVisible(is_downloaded)
+        self.structure_tree_group.setVisible(is_downloaded)
 
     def _on_add_atlas_requested(self, atlas_name: str):
         """Add reference and annotation as napari atlas representation"""
@@ -143,7 +138,7 @@ class BrainrenderWidget(QWidget):
         )
         selected_atlas_representation.add_to_viewer()
 
-    def _on_show_brain_region_names_clicked(self):
+    def _on_show_structure_names_clicked(self):
         atlas_name = self.atlas_table_view.selected_atlas_name()
-        show_brain_region_names = self.show_brain_region_names.isChecked()
-        self.brain_region_view.refresh(atlas_name, show_brain_region_names)
+        show_structure_names = self.show_structure_names.isChecked()
+        self.structure_view.refresh(atlas_name, show_structure_names)

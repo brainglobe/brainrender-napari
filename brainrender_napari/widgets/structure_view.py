@@ -154,8 +154,8 @@ class StructureTreeModel(QAbstractItemModel):
             return QModelIndex()
 
 
-class BrainRegionView(QTreeView):
-    add_brain_region_requested = Signal(str)
+class StructureView(QTreeView):
+    add_structure_requested = Signal(str)
 
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
@@ -191,15 +191,13 @@ class BrainRegionView(QTreeView):
             self.hide()
         self.setCurrentIndex(QModelIndex())
 
-    def selected_brain_region_acronym(self) -> str:
-        """A single place to get a valid selected brain region"""
+    def selected_structure_acronym(self) -> str:
+        """A single place to get a valid selected structure"""
         selected_index = self.selectionModel().currentIndex()
         assert selected_index.isValid()
         acronym_index = selected_index.siblingAtColumn(0)
-        selected_brain_region_acronym = self.model().data(acronym_index)
-        return selected_brain_region_acronym
+        selected_structure_acronym = self.model().data(acronym_index)
+        return selected_structure_acronym
 
     def _on_row_double_clicked(self):
-        self.add_brain_region_requested.emit(
-            self.selected_brain_region_acronym()
-        )
+        self.add_structure_requested.emit(self.selected_structure_acronym())
