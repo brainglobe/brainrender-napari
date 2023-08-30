@@ -134,7 +134,9 @@ def test_structure_view_tooltip(brainrender_widget):
     for expected_keyword in [
         "double-click",
         "atlas region",
+        "add",
         "3d",
+        "mesh",
         "display",
         "toggle",
         "viewer",
