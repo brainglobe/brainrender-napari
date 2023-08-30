@@ -20,7 +20,6 @@ from qtpy.QtWidgets import (
 from brainrender_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
 )
-from brainrender_napari.utils.from_viewer import structure_from_viewer
 from brainrender_napari.widgets.atlas_table_view import AtlasTableView
 from brainrender_napari.widgets.structure_view import StructureView
 
@@ -100,31 +99,6 @@ class BrainrenderWidget(QWidget):
         self.structure_view.add_structure_requested.connect(
             self._on_add_structure_requested
         )
-
-        @self._viewer.mouse_move_callbacks.append
-        def display_region_info(v, event):
-            """
-            Show brain region info on mouse over in status bar on the right
-            """
-            assert self._viewer == v
-            self.annotations_layer = self._viewer.layers[
-                -1
-            ]  # temporary hacks!!
-            self.atlas = BrainGlobeAtlas("allen_mouse_100um")
-            if v.dims.ndisplay == 2:
-                if len(v.layers) and self.annotations_layer and self.atlas:
-                    _, _, _, region_info = structure_from_viewer(
-                        self._viewer.cursor.position,
-                        self.annotations_layer,
-                        self.atlas,
-                    )
-                    self._viewer.tooltip.visible = True
-                    self._viewer.tooltip.text = region_info
-            else:
-                self._viewer.help = ""
-
-            print("annotations", self.annotations_layer)
-            print("help", self._viewer.help)
 
     def _on_download_atlas_confirmed(self, atlas_name):
         """Ensure structure view is displayed if new atlas downloaded."""
