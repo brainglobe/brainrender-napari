@@ -96,12 +96,15 @@ class NapariAtlasRepresentation:
     def _on_mouse_move(self, _, event):
         """Adapts the tooltip according to the cursor position.
 
-        No tooltip is displayed if
-        * the viewer is in 3D display
-        * or the cursor is outside annotations image
-        * or the user has chosen to switch off layer tooltips.
+        The tooltip is only displayed if
+        * the viewer is in 2D display
+        * and the cursor is inside the annotation
+        * and the user has not switched off layer tooltips.
         """
         cursor_position = self.viewer.cursor.position
+        print(type(event))
+        print(event)
+        print(event.pos)
         napari_settings = get_settings()
         tooltip_visibility = (
             napari_settings.appearance.layer_tooltip_visibility
@@ -123,7 +126,7 @@ class NapariAtlasRepresentation:
                 hemisphere = self.bg_atlas.hemisphere_from_coords(
                     cursor_position, as_string=True, microns=True
                 ).capitalize()
-                tooltip_text = f"{structure_name} | {hemisphere}."
+                tooltip_text = f"{structure_name} | {hemisphere}"
                 self._tooltip.setText(tooltip_text)
                 self._tooltip.adjustSize()
                 self._tooltip.show()

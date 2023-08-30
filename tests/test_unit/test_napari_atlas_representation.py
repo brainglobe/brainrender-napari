@@ -2,6 +2,8 @@ import pytest
 from bg_atlasapi import BrainGlobeAtlas
 from napari.layers import Image, Labels
 from numpy import all, allclose
+from qtpy.QtCore import QEvent, QPoint, Qt
+from qtpy.QtGui import QMouseEvent
 
 from brainrender_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
@@ -123,3 +125,38 @@ def test_add_additional_reference(make_napari_viewer):
         viewer.layers[0].name
         == f"{atlas_name}_{additional_reference_name}_reference"
     )
+
+
+@pytest.mark.parametrize(
+    "cursor_position, expected_tooltip_text",
+    [
+        ((6500.0, 4298.5, 9057.6), "Caudoputamen | Left"),
+        ((-1000, 0, 0), ""),  # outside image
+    ],
+)
+def test_viewer_tooltip(
+    make_napari_viewer, mocker, cursor_position, expected_tooltip_text
+):
+    """Checks that the custom callback for mouse movement sets the expected
+    tooltip text."""
+    viewer = make_napari_viewer()
+    atlas_name = "allen_mouse_100um"
+    atlas = BrainGlobeAtlas(atlas_name=atlas_name)
+    atlas_representation = NapariAtlasRepresentation(atlas, viewer)
+    atlas_representation.add_to_viewer()
+
+    event = QMouseEvent(
+        QEvent.MouseMove,
+        QPoint(0, 0),  # any pos will do to check text
+        Qt.MouseButton.NoButton,
+        Qt.MouseButton.NoButton,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    # a slight hacky mock of event.pos to circumvent
+    # the napari read-only wrapper around qt events
+    mock_event = mocker.patch.object(event, "pos", return_value=(50, 50))
+    viewer.cursor.position = cursor_position
+    atlas_representation._on_mouse_move(
+        atlas_representation.annotation, mock_event
+    )
+    assert atlas_representation._tooltip.text() == expected_tooltip_text
