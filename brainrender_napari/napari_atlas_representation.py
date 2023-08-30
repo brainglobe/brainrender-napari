@@ -3,7 +3,10 @@ from dataclasses import dataclass
 import numpy as np
 from bg_atlasapi import BrainGlobeAtlas
 from meshio import Mesh
+from napari.settings import get_settings
 from napari.viewer import Viewer
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QLabel
 
 
 @dataclass
@@ -15,9 +18,21 @@ class NapariAtlasRepresentation:
     mesh_opacity: float = 0.4
     mesh_blending: str = "translucent_no_depth"
 
-    def add_to_viewer(self):
-        """Adds the reference and annotation images to the viewer.
+    def __post_init__(self) -> None:
+        self._tooltip = QLabel(self.viewer.window.qt_viewer.parent())
+        self._tooltip.setWindowFlags(
+            Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+        )
+        self._tooltip.setAttribute(Qt.WA_ShowWithoutActivating)
+        self._tooltip.setAlignment(Qt.AlignCenter)
+        self._tooltip.setStyleSheet("color: black")
+        napari_settings = get_settings()
+        napari_settings.appearance.layer_tooltip_visibility = True
 
+    def add_to_viewer(self):
+        """Adds the reference and annotation images as layers to the viewer.
+
+        The layers are connected to self._tooltip
         The reference image's visibility is off, the annotation's is on.
         """
         reference = self.viewer.add_image(
@@ -27,49 +42,14 @@ class NapariAtlasRepresentation:
             visible=False,
         )
 
-        annotation = self.viewer.add_labels(
+        self.annotation = self.viewer.add_labels(
             self.bg_atlas.annotation,
             scale=self.bg_atlas.resolution,
             name=f"{self.bg_atlas.atlas_name}_annotation",
         )
-        from qtpy.QtCore import Qt
-        from qtpy.QtWidgets import QLabel
 
-        tooltip = QLabel(self.viewer.window.qt_viewer.parent())
-        tooltip.setWindowFlags(
-            Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
-        )
-        tooltip.setAttribute(Qt.WA_ShowWithoutActivating)
-        tooltip.setAlignment(Qt.AlignCenter)
-        tooltip.setStyleSheet("color: black")
-
-        # TODO:
-        # docs, tests
-        def on_mouse_move(layer, event):
-            if annotation:
-                pos = event.pos
-                tooltip.move(pos[0], pos[1])
-                structure_acronym = self.bg_atlas.structure_from_coords(
-                    self.viewer.cursor.position, microns=True, as_acronym=True
-                )
-                structure_name = self.bg_atlas.structures[structure_acronym][
-                    "name"
-                ]
-                hemisphere = self.bg_atlas.hemisphere_from_coords(
-                    self.viewer.cursor.position, as_string=True, microns=True
-                ).capitalize()
-                tooltip_text = f"{structure_name} | {hemisphere}."
-                tooltip.setText(tooltip_text)
-                tooltip.show()
-            else:
-                tooltip.setText(
-                    "An annotation image is needed to display tooltips."
-                    "Add a new annotation image for this atlas"
-                    "by double-clicking in the atlas table view"
-                )
-
-        annotation.mouse_move_callbacks.append(on_mouse_move)
-        reference.mouse_move_callbacks.append(on_mouse_move)
+        self.annotation.mouse_move_callbacks.append(self._on_mouse_move)
+        reference.mouse_move_callbacks.append(self._on_mouse_move)
 
     def add_structure_to_viewer(self, structure_name: str):
         """Adds the mesh of a structure to the viewer
@@ -106,8 +86,51 @@ class NapariAtlasRepresentation:
         self.viewer.add_surface((points, cells), **viewer_kwargs)
 
     def add_additional_reference(self, additional_reference_key: str):
-        self.viewer.add_image(
+        additional_reference = self.viewer.add_image(
             self.bg_atlas.additional_references[additional_reference_key],
             scale=self.bg_atlas.resolution,
             name=f"{self.bg_atlas.atlas_name}_{additional_reference_key}_reference",
         )
+        additional_reference.mouse_move_callbacks.append(self._on_mouse_move)
+
+    def _on_mouse_move(self, _, event):
+        """Adapts the tooltip according to the cursor position.
+
+        No tooltip is displayed if
+        * the viewer is in 3D display
+        * or the cursor is outside annotations image
+        * or the user has chosen to switch off layer tooltips.
+        """
+        cursor_position = self.viewer.cursor.position
+        napari_settings = get_settings()
+        tooltip_visibility = (
+            napari_settings.appearance.layer_tooltip_visibility
+        )
+        if (
+            tooltip_visibility
+            and self.annotation
+            and np.all(np.array(cursor_position) > 0)
+            and self.viewer.dims.ndisplay == 2
+        ):
+            self._tooltip.move(int(event.pos[0]), int(event.pos[1]))
+            try:
+                structure_acronym = self.bg_atlas.structure_from_coords(
+                    cursor_position, microns=True, as_acronym=True
+                )
+                structure_name = self.bg_atlas.structures[structure_acronym][
+                    "name"
+                ]
+                hemisphere = self.bg_atlas.hemisphere_from_coords(
+                    cursor_position, as_string=True, microns=True
+                ).capitalize()
+                tooltip_text = f"{structure_name} | {hemisphere}."
+                self._tooltip.setText(tooltip_text)
+                self._tooltip.adjustSize()
+                self._tooltip.show()
+            except (KeyError, IndexError):
+                # cursor position outside the image or in the image background
+                # so no tooltip to be displayed
+                # this saves us a bunch of assertions and extra computation
+                # TODO assert arguments of key errors/index errors here
+                self._tooltip.setText("")
+                self._tooltip.hide()
