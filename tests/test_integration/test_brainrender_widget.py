@@ -131,7 +131,16 @@ def test_show_structures_checkbox(brainrender_widget, mocker):
 
 
 def test_structure_view_tooltip(brainrender_widget):
-    for expected_keyword in ["double-click", "region", "viewer"]:
+    for expected_keyword in [
+        "double-click",
+        "atlas region",
+        "add",
+        "3d",
+        "mesh",
+        "display",
+        "toggle",
+        "viewer",
+    ]:
         assert (
             expected_keyword
             in brainrender_widget.structure_tree_group.toolTip().lower()

@@ -65,7 +65,10 @@ class BrainrenderWidget(QWidget):
 
         self.structure_tree_group = QGroupBox("3D Atlas region meshes")
         self.structure_tree_group.setToolTip(
-            "Double-click on a region to add to viewer"
+            "Double-click on an atlas region to add its mesh to the viewer.\n"
+            "Meshes will only show if the display is set to 3D.\n"
+            "Toggle 2D/3D display using the square/cube icon on the\n"
+            "lower left of the napari window."
         )
         self.structure_tree_group.setLayout(QVBoxLayout())
         self.structure_tree_group.layout().addWidget(self.show_structure_names)
