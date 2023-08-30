@@ -20,17 +20,56 @@ class NapariAtlasRepresentation:
 
         The reference image's visibility is off, the annotation's is on.
         """
-        self.viewer.add_image(
+        reference = self.viewer.add_image(
             self.bg_atlas.reference,
             scale=self.bg_atlas.resolution,
             name=f"{self.bg_atlas.atlas_name}_reference",
             visible=False,
         )
-        self.viewer.add_labels(
+
+        annotation = self.viewer.add_labels(
             self.bg_atlas.annotation,
             scale=self.bg_atlas.resolution,
             name=f"{self.bg_atlas.atlas_name}_annotation",
         )
+        from qtpy.QtCore import Qt
+        from qtpy.QtWidgets import QLabel
+
+        tooltip = QLabel(self.viewer.window.qt_viewer.parent())
+        tooltip.setWindowFlags(
+            Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+        )
+        tooltip.setAttribute(Qt.WA_ShowWithoutActivating)
+        tooltip.setAlignment(Qt.AlignCenter)
+        tooltip.setStyleSheet("color: black")
+
+        # TODO:
+        # docs, tests
+        def on_mouse_move(layer, event):
+            if annotation:
+                pos = event.pos
+                tooltip.move(pos[0], pos[1])
+                structure_acronym = self.bg_atlas.structure_from_coords(
+                    self.viewer.cursor.position, microns=True, as_acronym=True
+                )
+                structure_name = self.bg_atlas.structures[structure_acronym][
+                    "name"
+                ]
+                hemisphere = self.bg_atlas.hemisphere_from_coords(
+                    self.viewer.cursor.position, as_string=True, microns=True
+                ).capitalize()
+                tooltip_text = f"{structure_name} | {hemisphere}."
+                tooltip.setText(tooltip_text)
+                tooltip.show()
+            else:
+                tooltip.setText(
+                    "An annotation image is needed to display tooltips."
+                    "Add a new annotation image for this atlas"
+                    "by double-clicking in the atlas table view"
+                )
+
+        annotation.mouse_move_callbacks.append(on_mouse_move)
+        reference.mouse_move_callbacks.append(on_mouse_move)
 
     def add_structure_to_viewer(self, structure_name: str):
         """Adds the mesh of a structure to the viewer
