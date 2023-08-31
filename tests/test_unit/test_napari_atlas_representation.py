@@ -52,6 +52,13 @@ def test_add_to_viewer(make_napari_viewer, expected_atlas_name, anisotropic):
     assert isinstance(annotation, Labels)
     assert isinstance(reference, Image)
 
+    assert (
+        atlas_representation._on_mouse_move in annotation.mouse_move_callbacks
+    )
+    assert (
+        atlas_representation._on_mouse_move in reference.mouse_move_callbacks
+    )
+
     assert allclose(annotation.extent.world, reference.extent.world)
 
 
@@ -120,10 +127,15 @@ def test_add_additional_reference(make_napari_viewer):
     atlas_representation = NapariAtlasRepresentation(atlas, viewer)
     atlas_representation.add_additional_reference(additional_reference_name)
 
+    additional_reference = viewer.layers[0]
     assert len(viewer.layers) == 1
     assert (
-        viewer.layers[0].name
+        additional_reference.name
         == f"{atlas_name}_{additional_reference_name}_reference"
+    )
+    assert (
+        atlas_representation._on_mouse_move
+        in additional_reference.mouse_move_callbacks
     )
 
 
