@@ -156,6 +156,7 @@ def test_viewer_tooltip(
     atlas = BrainGlobeAtlas(atlas_name=atlas_name)
     atlas_representation = NapariAtlasRepresentation(atlas, viewer)
     atlas_representation.add_to_viewer()
+    annotation = viewer.layers[1]
 
     event = QMouseEvent(
         QEvent.MouseMove,
@@ -168,9 +169,7 @@ def test_viewer_tooltip(
     # the napari read-only wrapper around qt events
     mock_event = mocker.patch.object(event, "pos", return_value=(50, 50))
     viewer.cursor.position = cursor_position
-    atlas_representation._on_mouse_move(
-        atlas_representation.annotation, mock_event
-    )
+    atlas_representation._on_mouse_move(annotation, mock_event)
     assert atlas_representation._tooltip.text() == expected_tooltip_text
 
 
@@ -183,6 +182,7 @@ def test_too_quick_mouse_move_keyerror(make_napari_viewer, mocker):
     atlas = BrainGlobeAtlas(atlas_name=atlas_name)
     atlas_representation = NapariAtlasRepresentation(atlas, viewer)
     atlas_representation.add_to_viewer()
+    annotation = viewer.layers[1]
 
     event = QMouseEvent(
         QEvent.MouseMove,
@@ -204,8 +204,6 @@ def test_too_quick_mouse_move_keyerror(make_napari_viewer, mocker):
         side_effect=KeyError(),
     )
 
-    atlas_representation._on_mouse_move(
-        atlas_representation.annotation, mock_event
-    )
+    atlas_representation._on_mouse_move(annotation, mock_event)
     mock_structure_from_coords.assert_called_once()
     assert atlas_representation._tooltip.text() == ""

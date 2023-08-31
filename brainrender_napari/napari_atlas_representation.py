@@ -19,6 +19,7 @@ class NapariAtlasRepresentation:
     mesh_blending: str = "translucent_no_depth"
 
     def __post_init__(self) -> None:
+        """Setup a custom QLabel tooltip and enable napari layer tooltips"""
         self._tooltip = QLabel(self.viewer.window.qt_viewer.parent())
         self._tooltip.setWindowFlags(
             Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
@@ -32,7 +33,7 @@ class NapariAtlasRepresentation:
     def add_to_viewer(self):
         """Adds the reference and annotation images as layers to the viewer.
 
-        The layers are connected to self._tooltip
+        The layers are connected to the mouse move callback to set tooltip.
         The reference image's visibility is off, the annotation's is on.
         """
         reference = self.viewer.add_image(
@@ -42,13 +43,13 @@ class NapariAtlasRepresentation:
             visible=False,
         )
 
-        self.annotation = self.viewer.add_labels(
+        annotation = self.viewer.add_labels(
             self.bg_atlas.annotation,
             scale=self.bg_atlas.resolution,
             name=f"{self.bg_atlas.atlas_name}_annotation",
         )
 
-        self.annotation.mouse_move_callbacks.append(self._on_mouse_move)
+        annotation.mouse_move_callbacks.append(self._on_mouse_move)
         reference.mouse_move_callbacks.append(self._on_mouse_move)
 
     def add_structure_to_viewer(self, structure_name: str):
@@ -86,6 +87,9 @@ class NapariAtlasRepresentation:
         self.viewer.add_surface((points, cells), **viewer_kwargs)
 
     def add_additional_reference(self, additional_reference_key: str):
+        """Adds a given additional reference as a layer to the viewer.
+        and connects it to the mouse move callback to set tooltip.
+        """
         additional_reference = self.viewer.add_image(
             self.bg_atlas.additional_references[additional_reference_key],
             scale=self.bg_atlas.resolution,
@@ -108,7 +112,6 @@ class NapariAtlasRepresentation:
         )
         if (
             tooltip_visibility
-            and self.annotation
             and np.all(np.array(cursor_position) > 0)
             and self.viewer.dims.ndisplay == 2
         ):
@@ -131,6 +134,5 @@ class NapariAtlasRepresentation:
                 # cursor position outside the image or in the image background
                 # so no tooltip to be displayed
                 # this saves us a bunch of assertions and extra computation
-                # TODO assert arguments of key errors/index errors here
                 self._tooltip.setText("")
                 self._tooltip.hide()
