@@ -102,9 +102,6 @@ class NapariAtlasRepresentation:
         * and the user has not switched off layer tooltips.
         """
         cursor_position = self.viewer.cursor.position
-        print(type(event))
-        print(event)
-        print(event.pos)
         napari_settings = get_settings()
         tooltip_visibility = (
             napari_settings.appearance.layer_tooltip_visibility
