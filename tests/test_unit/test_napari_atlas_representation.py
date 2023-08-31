@@ -172,3 +172,40 @@ def test_viewer_tooltip(
         atlas_representation.annotation, mock_event
     )
     assert atlas_representation._tooltip.text() == expected_tooltip_text
+
+
+def test_too_quick_mouse_move_keyerror(make_napari_viewer, mocker):
+    """Quickly moving the cursor position can cause
+    structure_from_coords to be called with a background label.
+    This test checks that we handle that case gracefully."""
+    viewer = make_napari_viewer()
+    atlas_name = "allen_mouse_100um"
+    atlas = BrainGlobeAtlas(atlas_name=atlas_name)
+    atlas_representation = NapariAtlasRepresentation(atlas, viewer)
+    atlas_representation.add_to_viewer()
+
+    event = QMouseEvent(
+        QEvent.MouseMove,
+        QPoint(0, 0),  # any pos will do to check text
+        Qt.MouseButton.NoButton,
+        Qt.MouseButton.NoButton,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    # a slight hacky mock of event.pos to circumvent
+    # the napari read-only wrapper around qt events
+    mock_event = mocker.patch.object(event, "pos", return_value=(0, 0))
+    viewer.cursor.position = (6500.0, 4298.5, 9057.6)
+
+    # Mock the case where a quick mouse move calls structure_from_coords
+    # with key 0 (background)
+    mock_structure_from_coords = mocker.patch.object(
+        atlas_representation.bg_atlas,
+        "structure_from_coords",
+        side_effect=KeyError(),
+    )
+
+    atlas_representation._on_mouse_move(
+        atlas_representation.annotation, mock_event
+    )
+    mock_structure_from_coords.assert_called_once()
+    assert atlas_representation._tooltip.text() == ""
