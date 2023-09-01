@@ -6,6 +6,7 @@ from meshio import Mesh
 from napari.settings import get_settings
 from napari.viewer import Viewer
 from qtpy.QtCore import Qt
+from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QLabel
 
 
@@ -97,13 +98,19 @@ class NapariAtlasRepresentation:
         )
         additional_reference.mouse_move_callbacks.append(self._on_mouse_move)
 
-    def _on_mouse_move(self, _, event):
+    def _on_mouse_move(self, layer, event):
         """Adapts the tooltip according to the cursor position.
 
         The tooltip is only displayed if
         * the viewer is in 2D display
         * and the cursor is inside the annotation
         * and the user has not switched off layer tooltips.
+
+        Note that layer, event input args are unused,
+        because all the required info is in
+        * the bg_atlas.structure_from_coords
+        * the (screen) cursor position
+        * the (napari) cursor position
         """
         cursor_position = self.viewer.cursor.position
         napari_settings = get_settings()
@@ -115,7 +122,7 @@ class NapariAtlasRepresentation:
             and np.all(np.array(cursor_position) > 0)
             and self.viewer.dims.ndisplay == 2
         ):
-            self._tooltip.move(int(event.pos[0]), int(event.pos[1]))
+            self._tooltip.move(QCursor.pos().x() + 20, QCursor.pos().y() + 20)
             try:
                 structure_acronym = self.bg_atlas.structure_from_coords(
                     cursor_position, microns=True, as_acronym=True
