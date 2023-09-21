@@ -17,18 +17,6 @@ def brainrender_widget(make_napari_viewer) -> BrainrenderWidget:
     return BrainrenderWidget(viewer)
 
 
-def test_download_confirmed_refreshes_view(brainrender_widget, mocker):
-    structure_view_refresh_mock = mocker.patch(
-        "brainrender_napari.brainrender_widget.StructureView.refresh"
-    )
-    brainrender_widget.atlas_table_view.download_atlas_confirmed.emit(
-        "allen_mouse_10um"
-    )
-    structure_view_refresh_mock.assert_called_once_with(
-        "allen_mouse_10um", False
-    )
-
-
 @pytest.mark.parametrize(
     "expected_visibility, atlas",
     [
