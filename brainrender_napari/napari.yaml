@@ -5,6 +5,11 @@ contributions:
     - id: brainrender-napari.make_brainrender_widget
       python_name: brainrender_napari.brainrender_widget:BrainrenderWidget
       title: Make Brainrender Napari
+    - id: brainrender-napari.make_atlas_version_manager_widget
+      python_name: brainrender_napari.atlas_version_manager_widget:AtlasVersionManagerWidget
+      title: Make Brainrender Napari
   widgets:
     - command: brainrender-napari.make_brainrender_widget
       display_name: Brainrender
+    - command: brainrender-napari.make_atlas_version_manager_widget
+      display_name: Atlas version manager
