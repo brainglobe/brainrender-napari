@@ -11,7 +11,7 @@ BrainGlobe Tools for computational neuroanatomy
 
 ----------------------------------
 
-A napari plugin to visualise and manage BrainGlobe atlases. `brainrender-napari` aims to port the functionality of [`brainrender`](https://github.com/brainglobe/brainrender) to [`napari`](https://napari.org/stable/)
+A napari plugin to visualise and manage BrainGlobe atlases. `brainrender-napari` aims to port the functionality of [`brainrender`](https://github.com/brainglobe/brainrender) to [`napari`](https://napari.org/stable/).
 
 ## Installation
 
@@ -39,6 +39,13 @@ Distributed under the terms of the [BSD-3] license,
 
 If you encounter any problems, please [file an issue] along with a detailed description.
 
+## Acknowledgements
+
+This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template and the [Neuroinformatics Unit's template](https://github.com/neuroinformatics-unit/python-cookiecutter).
+
+[Cookiecutter]: https://github.com/audreyr/cookiecutter
+[@napari]: https://github.com/napari
+[cookiecutter-napari-plugin]: https://github.com/napari/cookiecutter-napari-plugin
 [BSD-3]: http://opensource.org/licenses/BSD-3-Clause
 [file an issue]: https://github.com/brainglobe/brainrender-napari/issues
 [tox]: https://tox.readthedocs.io/en/latest/
