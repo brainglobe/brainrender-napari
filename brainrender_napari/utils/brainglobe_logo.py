@@ -1,8 +1,10 @@
-from importlib.resources import path
+from importlib.resources import files
 
 from qtpy.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QWidget
 
-brainglobe_logo = path("brainrender_napari.resources", "brainglobe.png")
+brainglobe_logo = files("brainrender_napari").joinpath(
+    "resources/brainglobe.png"
+)
 
 _logo_html = f"""
 <h1>
