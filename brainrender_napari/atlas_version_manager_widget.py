@@ -1,5 +1,6 @@
 from qtpy.QtWidgets import QVBoxLayout, QWidget
 
+from brainrender_napari.utils.brainglobe_logo import header_widget
 from brainrender_napari.widgets.atlas_manager_view import AtlasManagerView
 
 
@@ -10,6 +11,9 @@ class AtlasVersionManagerWidget(QWidget):
         super().__init__()
 
         self.setLayout(QVBoxLayout())
+        self.layout().addWidget(
+            header_widget(tutorial_file_name="update-atlas-napari.html")
+        )
 
         # create widgets
         self.atlas_manager_view = AtlasManagerView(parent=self)
