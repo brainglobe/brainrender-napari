@@ -3,7 +3,7 @@ name = "brainrender-napari"
 authors = [{name = "Alessandro Felder", email= "a.felder@ucl.ac.uk"}]
 description = "A napari plugin to render BrainGlobe atlases and associated data as layers."
 readme = "README.md"
-requires-python = ">=3.8.0"
+requires-python = ">=3.9.0"
 dynamic = ["version"]
 
 license = {text = "BSD-3-Clause"}
@@ -14,9 +14,9 @@ classifiers = [
     "Intended Audience :: Developers",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: BSD License",
     "Topic :: Scientific/Engineering :: Image Processing",
@@ -76,7 +76,7 @@ exclude = ["tests", "docs*"]
 addopts = "--cov=brainrender_napari"
 
 [tool.black]
-target-version = ['py38', 'py39', 'py310']
+target-version = ['py39', 'py310', 'py311']
 skip-string-normalization = false
 line-length = 79
 
@@ -101,7 +101,7 @@ select = ["I", "E", "F"]
 fix = true
 
 [tool.cibuildwheel]
-build = "cp38-* cp39-* cp310-*"
+build = "cp39-* cp310- cp311-*"
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
@@ -109,14 +109,14 @@ archs = ["x86_64", "arm64"]
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{38,39,310}
+envlist = py{39,310,311}
 isolated_build = True
 
 [gh-actions]
 python =
-    3.8: py38
     3.9: py39
     3.10: py310
+    3.11: py311
 
 [testenv]
 extras =
