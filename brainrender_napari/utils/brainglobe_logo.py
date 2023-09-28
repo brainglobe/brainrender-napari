@@ -15,7 +15,7 @@ _docs_links_html = """
 <h3>
 <p>Atlas visualisation</p>
 <p><a href="https://brainglobe.info" style="color:gray;">Website</a></p>
-<p><a href="https://brainglobe.info/documentation/cellfinder/tutorials/visualise-atlas-napari.html" style="color:gray;">Tutorial</a></p>
+<p><a href="https://brainglobe.info/tutorials/visualise-atlas-napari.html" style="color:gray;">Tutorial</a></p>
 <p><a href="https://github.com/brainglobe/brainrender-napari" style="color:gray;">Source</a></p>
 <p><a href="https://doi.org/10.7554/eLife.65751" style="color:gray;">Citation</a></p>
 <p><small>For help, hover the cursor over the atlases/regions.</small>
