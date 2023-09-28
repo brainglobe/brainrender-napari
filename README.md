@@ -28,7 +28,7 @@ To install latest development version :
 
 ## Contributing
 
-Contributions are very welcome. Have a look at our [developer conventions](https://brainglobe.info/developers/index.html) for more info. The core development team is happy to help and advise anyone wanting to contribute! 
+Contributions are very welcome. Have a look at our [developer conventions](https://brainglobe.info/developers/index.html) for more info. The core development team is happy to help and advise anyone wanting to contribute!
 
 ## License
 
