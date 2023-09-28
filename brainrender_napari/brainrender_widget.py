@@ -38,7 +38,9 @@ class BrainrenderWidget(QWidget):
 
         self._viewer = napari_viewer
         self.setLayout(QVBoxLayout())
-        self.layout().addWidget(header_widget())
+        self.layout().addWidget(
+            header_widget(tutorial_file_name="visualise-atlas-napari.html")
+        )
 
         # create widgets
         self.atlas_viewer_view = AtlasViewerView(parent=self)
