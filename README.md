@@ -20,6 +20,8 @@ Check out the ["Visualising an atlas in napari"](https://brainglobe.info/tutoria
 
 ## Installation
 
+We strongly recommend to use a virtual environment manager (like `conda` or `venv`). The installation instructions below will not specify the Qt backend for napari, and you will therefore need to install that separately. Please see [the `napari` installation instructions](https://napari.org/stable/tutorials/fundamentals/installation.html) for further advice on this.
+
 You can install `brainrender-napari` via [pip]:
 
     pip install brainrender-napari
