@@ -12,6 +12,7 @@ BrainGlobe Tools for computational neuroanatomy
 ----------------------------------
 
 A napari plugin to visualise and manage BrainGlobe atlases. `brainrender-napari` aims to port the functionality of [`brainrender`](https://github.com/brainglobe/brainrender) to [`napari`](https://napari.org/stable/).
+![add-region-brainrender-napari](https://github.com/brainglobe/brainrender-napari/assets/10500965/24fd3752-0ba7-4f47-aabf-5de22ff0f69b)
 
 ## Installation
 
