@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/brainglobe/brainrender-napari/branch/main/graph/badge.svg)](https://codecov.io/gh/brainglobe/brainrender-napari)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/brainrender-napari)](https://napari-hub.org/plugins/brainrender-napari)
 
-BrainGlobe Tools for computational neuroanatomy
+Visualisation and management of BrainGlobe atlases in napari.
 
 ----------------------------------
 
