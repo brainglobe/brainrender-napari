@@ -48,7 +48,7 @@ If you encounter any problems, please [file an issue] along with a detailed desc
 
 ## Acknowledgements
 
-This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template and the [Neuroinformatics Unit's template](https://github.com/neuroinformatics-unit/python-cookiecutter).
+This [@napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template and the [Neuroinformatics Unit's template](https://github.com/neuroinformatics-unit/python-cookiecutter).
 
 [Cookiecutter]: https://github.com/audreyr/cookiecutter
 [@napari]: https://github.com/napari
