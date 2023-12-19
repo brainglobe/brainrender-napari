@@ -8,6 +8,8 @@ from qtpy.QtWidgets import QTableView
 
 from brainrender_napari.utils.formatting import format_atlas_name
 
+from brainrender_napari.utils.formatting import format_atlas_name
+
 
 class AtlasTableModel(QAbstractTableModel):
     """A table data model for atlases."""
