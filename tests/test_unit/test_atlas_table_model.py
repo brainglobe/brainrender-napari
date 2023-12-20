@@ -19,17 +19,19 @@ def atlas_table_model():
     ],
 )
 def test_model_header(atlas_table_model, column, expected_header):
-    """Check the table model has expected header data"""
+    """Check the table model has expected header data
+    both via the function and the member variable."""
     assert (
         atlas_table_model.headerData(
             column, Qt.Orientation.Horizontal, Qt.DisplayRole
         )
         == expected_header
     )
+    assert atlas_table_model.column_headers[column] == expected_header
 
 
 def test_model_header_invalid_column(atlas_table_model):
-    """Check the table model throws a value error as expected for invalid column"""
+    """Check the table model throws a value error for invalid column"""
     invalid_column = 4
     with pytest.raises(ValueError):
         atlas_table_model.headerData(
