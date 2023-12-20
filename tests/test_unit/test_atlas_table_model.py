@@ -29,7 +29,7 @@ def test_model_header(atlas_table_model, column, expected_header):
 
 
 def test_model_header_invalid_column(atlas_table_model):
-    """Check the table model throws as expected for invalid column"""
+    """Check the table model throws a value error as expected for invalid column"""
     invalid_column = 4
     with pytest.raises(ValueError):
         atlas_table_model.headerData(

@@ -57,7 +57,7 @@ class AtlasViewerView(QTableView):
         if len(get_downloaded_atlases()) == 0:
             self.no_atlas_available.emit()
 
-        # hide not locally available atlases
+        # hide atlases not available locally
         for row_index in range(self.model().rowCount()):
             index = self.model().index(row_index, 0)
             if self.model().data(index) not in get_downloaded_atlases():
