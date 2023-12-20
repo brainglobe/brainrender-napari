@@ -50,9 +50,9 @@ class AtlasViewerView(QTableView):
         self.doubleClicked.connect(self._on_row_double_clicked)
         self.selectionModel().currentChanged.connect(self._on_current_changed)
 
-        for hidden_column in [0, 2, 3]:
-            # hide raw name(0), local and latest versions(2,3) in this view
-            self.hideColumn(hidden_column)
+        for column_header in ["Raw name", "Local version", "Latest version"]:
+            index_to_hide = self.model().column_headers.index(column_header)
+            self.hideColumn(index_to_hide)
 
         if len(get_downloaded_atlases()) == 0:
             self.no_atlas_available.emit()

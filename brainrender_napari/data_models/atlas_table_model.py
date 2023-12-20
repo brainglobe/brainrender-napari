@@ -16,6 +16,12 @@ class AtlasTableModel(QAbstractTableModel):
 
     def __init__(self):
         super().__init__()
+        self.column_headers = [
+            "Raw name",
+            "Atlas",
+            "Local version",
+            "Latest version",
+        ]
         self.refresh_data()
 
     def refresh_data(self) -> None:
@@ -64,14 +70,8 @@ class AtlasTableModel(QAbstractTableModel):
         """Customises the horizontal header data of model,
         and raises an error if an unexpected column is found."""
         if role == Qt.DisplayRole and orientation == Qt.Orientation.Horizontal:
-            if section == 0:
-                return "Raw name"
-            elif section == 1:
-                return "Atlas"
-            elif section == 2:
-                return "Local version"
-            elif section == 3:
-                return "Latest version"
+            if section >= 0 and section < len(self.column_headers):
+                return self.column_headers[section]
             else:
                 raise ValueError("Unexpected horizontal header value.")
         else:
