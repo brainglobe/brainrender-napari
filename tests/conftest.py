@@ -1,8 +1,9 @@
 import os
+import shutil
 from pathlib import Path
 
 import pytest
-from bg_atlasapi import BrainGlobeAtlas, config
+from bg_atlasapi import BrainGlobeAtlas, config, list_atlases
 from qtpy.QtCore import Qt
 
 
@@ -88,3 +89,28 @@ def double_click_on_view(qtbot):
         )
 
     return inner_double_click_on_view
+
+
+@pytest.fixture
+def mock_newer_atlas_version_available():
+    current_version_path = Path.home() / ".brainglobe/example_mouse_100um_v1.2"
+    older_version_path = Path.home() / ".brainglobe/example_mouse_100um_v1.1"
+    assert current_version_path.exists() and not older_version_path.exists()
+
+    current_version_path.rename(older_version_path)
+    assert older_version_path.exists() and not current_version_path.exists()
+    assert (
+        list_atlases.get_atlases_lastversions()["example_mouse_100um"][
+            "latest_version"
+        ]
+        == "1.2"
+    )
+    assert list_atlases.get_local_atlas_version("example_mouse_100um") == "1.1"
+
+    yield  # run test with outdated version
+
+    # cleanup: ensure version is up-to-date again
+    if older_version_path.exists():
+        shutil.rmtree(path=older_version_path)
+        _ = BrainGlobeAtlas("example_mouse_100um")
+    assert current_version_path.exists() and not older_version_path.exists()
