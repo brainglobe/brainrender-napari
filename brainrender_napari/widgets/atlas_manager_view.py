@@ -54,7 +54,7 @@ class AtlasManagerView(QTableView):
     def _on_row_double_clicked(self):
         atlas_name = self.selected_atlas_name()
         if atlas_name in get_downloaded_atlases():
-            up_to_date = get_atlases_lastversions[atlas_name]["updated"]
+            up_to_date = get_atlases_lastversions()[atlas_name]["updated"]
             if not up_to_date:
                 update_dialog = AtlasManagerDialog(atlas_name, "Update")
                 update_dialog.ok_button.clicked.connect(

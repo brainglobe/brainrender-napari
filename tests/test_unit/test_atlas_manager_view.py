@@ -105,6 +105,26 @@ def test_download_confirmed_callback(atlas_manager_view, qtbot):
         assert Path.exists(file)
 
 
+def test_double_click_on_outdated_atlas_row(
+    atlas_manager_view,
+    mocker,
+    double_click_on_view,
+    mock_newer_atlas_version_available,
+):
+    """Check for an outdated atlas that double-clicking
+    it on the atlas manager view executes the update dialog.
+    """
+
+    outdated_atlas_index = atlas_manager_view.model().index(0, 1)
+    atlas_manager_view.setCurrentIndex(outdated_atlas_index)
+
+    dialog_exec_mock = mocker.patch(
+        "brainrender_napari.widgets.atlas_manager_view.AtlasManagerDialog.exec"
+    )
+    double_click_on_view(atlas_manager_view, outdated_atlas_index)
+    dialog_exec_mock.assert_called_once()
+
+
 def test_hover_atlas_manager_view(atlas_manager_view, mocker):
     """Check tooltip is called when hovering over view"""
     index = atlas_manager_view.model().index(2, 1)
@@ -131,6 +151,13 @@ def test_get_tooltip_not_up_to_date(mock_newer_atlas_version_available):
     tooltip_text = AtlasManagerView.get_tooltip_text("example_mouse_100um")
     assert format_atlas_name("example_mouse_100um") in tooltip_text
     assert "double-click to update" in tooltip_text
+
+
+def test_get_tooltip_is_up_to_date():
+    """Check tooltip on an atlas that is already up-to-date"""
+    tooltip_text = AtlasManagerView.get_tooltip_text("example_mouse_100um")
+    assert format_atlas_name("example_mouse_100um") in tooltip_text
+    assert "is up-to-date" in tooltip_text
 
 
 def test_get_tooltip_invalid_name():
