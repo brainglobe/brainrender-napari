@@ -47,17 +47,20 @@ class AtlasManagerView(QTableView):
         self.setSelectionMode(QTableView.SelectionMode.SingleSelection)
 
         self.doubleClicked.connect(self._on_row_double_clicked)
-        self.hideColumn(0)  # hide raw name
+        self.hideColumn(
+            self.model().column_headers.index("Raw name")
+        )  # hide raw name
 
     def _on_row_double_clicked(self):
         atlas_name = self.selected_atlas_name()
         if atlas_name in get_downloaded_atlases():
-            # check if update needed
-            update_dialog = AtlasManagerDialog(atlas_name, "Update")
-            update_dialog.ok_button.clicked.connect(
-                self._on_update_atlas_confirmed
-            )
-            update_dialog.exec()
+            up_to_date = get_atlases_lastversions[atlas_name]["updated"]
+            if not up_to_date:
+                update_dialog = AtlasManagerDialog(atlas_name, "Update")
+                update_dialog.ok_button.clicked.connect(
+                    self._on_update_atlas_confirmed
+                )
+                update_dialog.exec()
         else:
             download_dialog = AtlasManagerDialog(atlas_name, "Download")
             download_dialog.ok_button.clicked.connect(
