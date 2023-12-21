@@ -4,6 +4,7 @@ from bg_atlasapi.list_atlases import (
     get_local_atlas_version,
 )
 from qtpy.QtCore import QAbstractTableModel, QModelIndex, Qt
+from qtpy.QtWidgets import QTableView
 
 from brainrender_napari.utils.formatting import format_atlas_name
 
@@ -11,7 +12,7 @@ from brainrender_napari.utils.formatting import format_atlas_name
 class AtlasTableModel(QAbstractTableModel):
     """A table data model for atlases."""
 
-    def __init__(self, view_type):
+    def __init__(self, view_type: QTableView):
         super().__init__()
         self.column_headers = [
             "Raw name",
@@ -19,6 +20,10 @@ class AtlasTableModel(QAbstractTableModel):
             "Local version",
             "Latest version",
         ]
+        assert hasattr(
+            view_type, "get_tooltip_text"
+        ), "Views for this model must implement"
+        "a `classmethod` called `get_tooltip_text`"
         self.view_type = view_type
         self.refresh_data()
 
@@ -48,7 +53,7 @@ class AtlasTableModel(QAbstractTableModel):
             return self._data[index.row()][index.column()]
         if role == Qt.ToolTipRole:
             hovered_atlas_name = self._data[index.row()][0]
-            return self.view_type._get_tooltip_text(hovered_atlas_name)
+            return self.view_type.get_tooltip_text(hovered_atlas_name)
 
     def rowCount(self, index: QModelIndex = QModelIndex()):
         return len(self._data)

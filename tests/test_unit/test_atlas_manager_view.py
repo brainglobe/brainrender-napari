@@ -111,7 +111,7 @@ def test_hover_atlas_manager_view(atlas_manager_view, mocker):
 
     get_tooltip_text_mock = mocker.patch(
         "brainrender_napari.widgets"
-        ".atlas_manager_view.AtlasManagerView._get_tooltip_text"
+        ".atlas_manager_view.AtlasManagerView.get_tooltip_text"
     )
 
     atlas_manager_view.model().data(index, Qt.ToolTipRole)
@@ -121,14 +121,14 @@ def test_hover_atlas_manager_view(atlas_manager_view, mocker):
 
 def test_get_tooltip_not_locally_available():
     """Check tooltip on an example in not-downloaded test data"""
-    tooltip_text = AtlasManagerView._get_tooltip_text("allen_human_500um")
+    tooltip_text = AtlasManagerView.get_tooltip_text("allen_human_500um")
     assert format_atlas_name("allen_human_500um") in tooltip_text
     assert "double-click to download" in tooltip_text
 
 
 def test_get_tooltip_not_up_to_date(mock_newer_atlas_version_available):
     """Check tooltip on an atlas that is not up-to-date"""
-    tooltip_text = AtlasManagerView._get_tooltip_text("example_mouse_100um")
+    tooltip_text = AtlasManagerView.get_tooltip_text("example_mouse_100um")
     assert format_atlas_name("example_mouse_100um") in tooltip_text
     assert "double-click to update" in tooltip_text
 
@@ -136,5 +136,5 @@ def test_get_tooltip_not_up_to_date(mock_newer_atlas_version_available):
 def test_get_tooltip_invalid_name():
     """Check tooltip on non-existent test data"""
     with pytest.raises(ValueError) as e:
-        _ = AtlasManagerView._get_tooltip_text("wrong_atlas_name")
+        _ = AtlasManagerView.get_tooltip_text("wrong_atlas_name")
         assert "invalid atlas name" in e

@@ -105,7 +105,7 @@ class AtlasViewerView(QTableView):
         self.selected_atlas_changed.emit(self.selected_atlas_name())
 
     @classmethod
-    def _get_tooltip_text(cls, atlas_name: str):
+    def get_tooltip_text(cls, atlas_name: str):
         """Returns the atlas metadata as a formatted string,
         as well as instructions on how to interact with the atlas."""
         if atlas_name in get_downloaded_atlases():

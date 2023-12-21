@@ -63,7 +63,7 @@ def test_hover_atlas_viewer_view(atlas_viewer_view, mocker):
 
     get_tooltip_text_mock = mocker.patch(
         "brainrender_napari.widgets"
-        ".atlas_viewer_view.AtlasViewerView._get_tooltip_text"
+        ".atlas_viewer_view.AtlasViewerView.get_tooltip_text"
     )
 
     atlas_viewer_view.model().data(index, Qt.ToolTipRole)
@@ -124,7 +124,7 @@ def test_additional_reference_menu(atlas_viewer_view, qtbot, mocker):
 
 def test_get_tooltip():
     """Check tooltip on an example in the downloaded test data"""
-    tooltip_text = AtlasViewerView._get_tooltip_text("example_mouse_100um")
+    tooltip_text = AtlasViewerView.get_tooltip_text("example_mouse_100um")
     assert format_atlas_name("example_mouse_100um") in tooltip_text
     assert "add to viewer" in tooltip_text
 
@@ -132,5 +132,5 @@ def test_get_tooltip():
 def test_get_tooltip_invalid_name():
     """Check tooltip on non-existent test data"""
     with pytest.raises(ValueError) as e:
-        _ = AtlasViewerView._get_tooltip_text("wrong_atlas_name")
+        _ = AtlasViewerView.get_tooltip_text("wrong_atlas_name")
         assert "invalid atlas name" in e
