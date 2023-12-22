@@ -1,6 +1,8 @@
 import shutil
+from importlib import import_module, reload
 from pathlib import Path
 
+import napari.qt
 import pytest
 from qtpy.QtCore import Qt
 
@@ -165,3 +167,36 @@ def test_get_tooltip_invalid_name():
     with pytest.raises(ValueError) as e:
         _ = AtlasManagerView.get_tooltip_text("wrong_atlas_name")
         assert "invalid atlas name" in e
+
+
+def test_apply_in_thread(qtbot, mocker):
+    """
+    Checks the _apply_in_thread method of AtlasManagerView
+    - calls its first argument (a function) on its second argument (a string)
+    - returns its second argument
+
+    We manually replace the @thread_worker decorator during this test,
+    so _apply_in_thread is executed in the same thread. This ensures
+    coverage picks up lines inside _apply_in_thread.
+    """
+
+    # replace the @thread_worker decorator with an identity function
+    def identity(func):
+        return func
+
+    napari.qt.thread_worker = identity
+    # reload the module for the replaced decorator to take effect
+    module_name = AtlasManagerView.__module__
+    module = import_module(module_name)
+    reload(module)
+    assert module.thread_worker == identity
+    atlas_manager_view = module.AtlasManagerView()
+
+    # check that mock_dummy_apply is applied as expected
+    mock_dummy_apply = mocker.Mock()
+    actual = atlas_manager_view._apply_in_thread(
+        mock_dummy_apply, "example_mouse_100um"
+    )
+    expected = "example_mouse_100um"
+    assert actual == expected
+    mock_dummy_apply.assert_called_once_with(expected)
