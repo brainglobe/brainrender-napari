@@ -15,6 +15,7 @@ from qtpy.QtCore import Qt, Signal
 from qtpy.QtWidgets import QMenu, QTableView, QWidget
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
+from brainrender_napari.utils.formatting import format_atlas_name
 from brainrender_napari.utils.load_user_data import (
     read_atlas_metadata_from_file,
 )
@@ -34,7 +35,7 @@ class AtlasViewerView(QTableView):
         """
         super().__init__(parent)
 
-        self.setModel(AtlasTableModel())
+        self.setModel(AtlasTableModel(AtlasViewerView))
 
         self.setEnabled(True)
         self.verticalHeader().hide()
@@ -102,3 +103,19 @@ class AtlasViewerView(QTableView):
     def _on_current_changed(self) -> None:
         """Emits a signal with the newly selected atlas name"""
         self.selected_atlas_changed.emit(self.selected_atlas_name())
+
+    @classmethod
+    def get_tooltip_text(cls, atlas_name: str):
+        """Returns the atlas metadata as a formatted string,
+        as well as instructions on how to interact with the atlas."""
+        if atlas_name in get_downloaded_atlases():
+            metadata = read_atlas_metadata_from_file(atlas_name)
+            metadata_as_string = ""
+            for key, value in metadata.items():
+                metadata_as_string += f"{key}:\t{value}\n"
+            tooltip_text = f"{format_atlas_name(atlas_name)}\
+                (double-click to add to viewer)\
+                \n{metadata_as_string}"
+        else:
+            raise ValueError("Tooltip text called with invalid atlas name.")
+        return tooltip_text

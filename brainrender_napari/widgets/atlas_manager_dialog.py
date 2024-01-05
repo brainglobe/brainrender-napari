@@ -8,16 +8,16 @@ from qtpy.QtWidgets import (
 )
 
 
-class AtlasDownloadDialog(QDialog):
-    """A modal dialog to ask users to confirm they'd like to download
+class AtlasManagerDialog(QDialog):
+    """A modal dialog to ask users to confirm they'd like to download/update
     the selected atlas, and warn them that it may be slow.
     """
 
-    def __init__(self, atlas_name):
+    def __init__(self, atlas_name: str, action: str) -> None:
         if atlas_name in get_all_atlases_lastversions().keys():
             super().__init__()
 
-            self.setWindowTitle(f"Download {atlas_name} Atlas")
+            self.setWindowTitle(f"{action} {atlas_name} Atlas")
             self.setModal(True)
 
             self.label = QLabel("Are you sure?\n(It may take a while)")
@@ -36,5 +36,6 @@ class AtlasDownloadDialog(QDialog):
             self.setLayout(layout)
         else:
             raise ValueError(
-                "Download Dialog constructor called with invalid atlas name."
+                "Atlas manager dialog constructor"
+                "called with invalid atlas name."
             )

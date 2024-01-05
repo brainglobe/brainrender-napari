@@ -5,8 +5,9 @@ from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
 
 
 @pytest.fixture
-def atlas_table_model():
-    return AtlasTableModel()
+def atlas_table_model(mocker):
+    mock_view = mocker.Mock(spec=["get_tooltip_text"])
+    return AtlasTableModel(view_type=mock_view)
 
 
 @pytest.mark.parametrize(
@@ -39,22 +40,11 @@ def test_model_header_invalid_column(atlas_table_model):
         )
 
 
-def test_get_tooltip_downloaded():
-    """Check tooltip on an example in the downloaded test data"""
-    tooltip_text = AtlasTableModel._get_tooltip_text("example_mouse_100um")
-    assert "example_mouse" in tooltip_text
-    assert "add to viewer" in tooltip_text
-
-
-def test_get_tooltip_not_locally_available():
-    """Check tooltip on an example in not-downloaded test data"""
-    tooltip_text = AtlasTableModel._get_tooltip_text("allen_human_500um")
-    assert "allen_human_500um" in tooltip_text
-    assert "double-click to download" in tooltip_text
-
-
-def test_get_tooltip_invalid_name():
-    """Check tooltip on non-existent test data"""
-    with pytest.raises(ValueError) as e:
-        _ = AtlasTableModel._get_tooltip_text("wrong_atlas_name")
-        assert "invalid atlas name" in e
+def test_model_header_invalid_view():
+    """Checks that the model complains
+    if its view_type is not valid."""
+    with pytest.raises(AssertionError) as error:
+        _ = AtlasTableModel(view_type=None)
+        assert "Views" in error
+        assert "classmethod" in error
+        assert "get_tooltip_text" in error

@@ -3,6 +3,7 @@ import traceback
 import pytest
 from qtpy.QtCore import QModelIndex, Qt
 
+from brainrender_napari.utils.formatting import format_atlas_name
 from brainrender_napari.widgets.atlas_viewer_view import (
     AtlasViewerView,
 )
@@ -56,13 +57,13 @@ def test_atlas_view_not_downloaded_selection(qtbot, atlas_viewer_view):
     assert "selected_atlas_name" in traceback.format_tb(collected_traceback)[0]
 
 
-def test_hover_atlas_view(atlas_viewer_view, mocker):
+def test_hover_atlas_viewer_view(atlas_viewer_view, mocker):
     """Check tooltip is called when hovering over view"""
     index = atlas_viewer_view.model().index(2, 1)
 
     get_tooltip_text_mock = mocker.patch(
-        "brainrender_napari.data_models"
-        ".atlas_table_model.AtlasTableModel._get_tooltip_text"
+        "brainrender_napari.widgets"
+        ".atlas_viewer_view.AtlasViewerView.get_tooltip_text"
     )
 
     atlas_viewer_view.model().data(index, Qt.ToolTipRole)
@@ -119,3 +120,17 @@ def test_additional_reference_menu(atlas_viewer_view, qtbot, mocker):
     assert additional_reference_requested_signal.args == [
         "mock_additional_reference"
     ]
+
+
+def test_get_tooltip():
+    """Check tooltip on an example in the downloaded test data"""
+    tooltip_text = AtlasViewerView.get_tooltip_text("example_mouse_100um")
+    assert format_atlas_name("example_mouse_100um") in tooltip_text
+    assert "add to viewer" in tooltip_text
+
+
+def test_get_tooltip_invalid_name():
+    """Check tooltip on non-existent test data"""
+    with pytest.raises(ValueError) as e:
+        _ = AtlasViewerView.get_tooltip_text("wrong_atlas_name")
+        assert "invalid atlas name" in e
