@@ -2,7 +2,7 @@
 and update atlases. Users interacting with the table can request to
 * download an atlas (double-click on row of a not-yet downloaded atlas)
 * update an atlas (double-click on row of outdated local atlas)
-They will can also hover over an up-to-date local atlas and see that
+They can also hover over an up-to-date local atlas and see that
 it's up to date.
 
 It is designed to be agnostic from the viewer framework by emitting signals
