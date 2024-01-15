@@ -12,7 +12,7 @@ from qtpy.QtCore import (
 from brainrender_napari.data_models.atlas_table_model import (
     singleton_atlas_table_model,
 )
-from brainrender_napari.utils.napari_in_thread import apply_in_thread
+from brainrender_napari.utils.threading import apply_on_atlas_in_thread
 
 
 class AtlasSortFilterProxyModel(QSortFilterProxyModel):
@@ -242,7 +242,9 @@ class AtlasSortFilterProxyModel(QSortFilterProxyModel):
         Parameters:
             atlas_name (str): The name of the atlas.
         """
-        worker = apply_in_thread(self.perform_double_click_action, atlas_name)
+        worker = apply_on_atlas_in_thread(
+            self.perform_double_click_action, atlas_name
+        )
         worker.returned.connect(self.double_click_action_performed.emit)
         worker.returned.connect(self.sourceModel().refresh_data)
         worker.start()

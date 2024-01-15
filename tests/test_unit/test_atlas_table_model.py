@@ -1,13 +1,14 @@
 import pytest
 from qtpy.QtCore import Qt
 
-from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
+from brainrender_napari.data_models.atlas_table_model import (
+    singleton_atlas_table_model,
+)
 
 
 @pytest.fixture
-def atlas_table_model(mocker):
-    mock_view = mocker.Mock(spec=["get_tooltip_text"])
-    return AtlasTableModel(view_type=mock_view)
+def atlas_table_model():
+    return singleton_atlas_table_model
 
 
 @pytest.mark.parametrize(
@@ -38,13 +39,3 @@ def test_model_header_invalid_column(atlas_table_model):
         atlas_table_model.headerData(
             invalid_column, Qt.Orientation.Horizontal, Qt.DisplayRole
         )
-
-
-def test_model_header_invalid_view():
-    """Checks that the model complains
-    if its view_type is not valid."""
-    with pytest.raises(AssertionError) as error:
-        _ = AtlasTableModel(view_type=None)
-        assert "Views" in error
-        assert "classmethod" in error
-        assert "get_tooltip_text" in error
