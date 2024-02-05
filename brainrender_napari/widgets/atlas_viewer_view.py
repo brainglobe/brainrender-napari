@@ -6,6 +6,7 @@ to request adding of atlas images. Users interacting it can request to
 It is designed to be agnostic from the viewer framework by emitting signals
 that interested observers can connect to.
 """
+
 from typing import Tuple
 
 from bg_atlasapi.list_atlases import (
