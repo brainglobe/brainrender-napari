@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 import numpy as np
-from bg_atlasapi import BrainGlobeAtlas
+from brainglobe_atlasapi import BrainGlobeAtlas
 from meshio import Mesh
 from napari.settings import get_settings
 from napari.viewer import Viewer

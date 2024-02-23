@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from bg_atlasapi.list_atlases import get_local_atlas_version
+from brainglobe_atlasapi.list_atlases import get_local_atlas_version
 
 
 def read_atlas_metadata_from_file(atlas_name: str):

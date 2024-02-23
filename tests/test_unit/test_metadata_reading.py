@@ -1,4 +1,4 @@
-from bg_atlasapi import BrainGlobeAtlas
+from brainglobe_atlasapi import BrainGlobeAtlas
 
 from brainrender_napari.utils.load_user_data import (
     read_atlas_metadata_from_file,
