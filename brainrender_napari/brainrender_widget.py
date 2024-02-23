@@ -7,6 +7,7 @@ shown in a table view using the Qt model/view framework
 
 Users can add the atlas images/structures as layers to the viewer.
 """
+
 from bg_atlasapi import BrainGlobeAtlas
 from bg_atlasapi.list_atlases import get_downloaded_atlases
 from napari.viewer import Viewer
