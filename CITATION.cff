@@ -1,0 +1,24 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: brainrender-napari
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Alessandro
+    family-names: Felder
+    email: a.felder@ucl.ac.uk
+  - given-names: BrainGlobe
+    family-names: Developers
+    email: hello@brainglobe.info
+repository-code: 'https://github.com/brainglobe/brainrender-napari'
+url: 'https://brainglobe.info'
+abstract: >-
+  Visualisation and management of BrainGlobe atlases in
+  napari.
+license: BSD-3-Clause
+date-released: '2023-10-13'
+year: 2023
