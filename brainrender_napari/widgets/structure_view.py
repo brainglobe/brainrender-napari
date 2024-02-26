@@ -4,8 +4,8 @@ The view is only visible if the atlas is downloaded."""
 
 from typing import Dict, List
 
-from bg_atlasapi.list_atlases import get_downloaded_atlases
-from bg_atlasapi.structure_tree_util import get_structures_tree
+from brainglobe_atlasapi.list_atlases import get_downloaded_atlases
+from brainglobe_atlasapi.structure_tree_util import get_structures_tree
 from qtpy.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
 from qtpy.QtGui import QStandardItem
 from qtpy.QtWidgets import QTreeView, QWidget

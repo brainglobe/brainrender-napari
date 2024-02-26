@@ -83,7 +83,7 @@ def test_download_confirmed_callback(atlas_manager_view, qtbot):
     Test setup consists of remembering the expected files and folders
     of a preexisting atlas and then removing them. This allows checking
     that the function triggers the creation of the same local copy
-    of the atlas as the `bg_atlasapi` itself.
+    of the atlas as the `brainglobe_atlasapi` itself.
     """
     atlas_directory = Path.home() / ".brainglobe/example_mouse_100um_v1.2"
     expected_filenames = atlas_directory.iterdir()

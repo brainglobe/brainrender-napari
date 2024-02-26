@@ -9,7 +9,7 @@ that interested observers can connect to.
 
 from typing import Tuple
 
-from bg_atlasapi.list_atlases import (
+from brainglobe_atlasapi.list_atlases import (
     get_downloaded_atlases,
 )
 from qtpy.QtCore import Qt, Signal

@@ -1,5 +1,5 @@
 import pytest
-from bg_atlasapi import BrainGlobeAtlas
+from brainglobe_atlasapi import BrainGlobeAtlas
 from napari.layers import Image, Labels
 from numpy import all, allclose
 from qtpy.QtCore import QEvent, QPoint, Qt

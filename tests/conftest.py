@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 
 import pytest
-from bg_atlasapi import BrainGlobeAtlas, config, list_atlases
+from brainglobe_atlasapi import BrainGlobeAtlas, config, list_atlases
 from qtpy.QtCore import Qt
 
 

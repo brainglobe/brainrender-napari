@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from bg_atlasapi.structure_tree_util import get_structures_tree
+from brainglobe_atlasapi.structure_tree_util import get_structures_tree
 from qtpy.QtCore import QAbstractItemModel, QModelIndex, Qt
 from qtpy.QtGui import QStandardItem
 

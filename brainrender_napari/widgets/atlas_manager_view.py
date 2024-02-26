@@ -11,12 +11,12 @@ that any interested observers can connect to.
 
 from typing import Callable
 
-from bg_atlasapi.list_atlases import (
+from brainglobe_atlasapi.list_atlases import (
     get_all_atlases_lastversions,
     get_atlases_lastversions,
     get_downloaded_atlases,
 )
-from bg_atlasapi.update_atlases import install_atlas, update_atlas
+from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
 from napari.qt import thread_worker
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QTableView, QWidget

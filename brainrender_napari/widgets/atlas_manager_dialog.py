@@ -1,4 +1,4 @@
-from bg_atlasapi.list_atlases import get_all_atlases_lastversions
+from brainglobe_atlasapi.list_atlases import get_all_atlases_lastversions
 from qtpy.QtWidgets import (
     QDialog,
     QHBoxLayout,

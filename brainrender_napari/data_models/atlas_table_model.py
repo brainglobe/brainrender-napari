@@ -1,4 +1,4 @@
-from bg_atlasapi.list_atlases import (
+from brainglobe_atlasapi.list_atlases import (
     get_all_atlases_lastversions,
     get_atlases_lastversions,
     get_local_atlas_version,
