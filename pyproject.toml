@@ -23,8 +23,9 @@ classifiers = [
 ]
 
 dependencies = [
-    "napari>=0.4.18",
     "brainglobe-atlasapi>=2.0.1",
+    "meshio",
+    "napari>=0.4.18",
     "numpy",
     "qtpy",
 ]
