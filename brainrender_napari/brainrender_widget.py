@@ -10,6 +10,7 @@ Users can add the atlas images/structures as layers to the viewer.
 
 from brainglobe_atlasapi import BrainGlobeAtlas
 from brainglobe_atlasapi.list_atlases import get_downloaded_atlases
+from brainglobe_utils.qtpy.logo import header_widget
 from napari.viewer import Viewer
 from qtpy.QtWidgets import (
     QCheckBox,
@@ -21,7 +22,6 @@ from qtpy.QtWidgets import (
 from brainrender_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
 )
-from brainrender_napari.utils.brainglobe_logo import header_widget
 from brainrender_napari.widgets.atlas_viewer_view import AtlasViewerView
 from brainrender_napari.widgets.structure_view import StructureView
 
@@ -39,7 +39,17 @@ class BrainrenderWidget(QWidget):
 
         self._viewer = napari_viewer
         self.setLayout(QVBoxLayout())
-        self.layout().addWidget(header_widget())
+        self.layout().addWidget(
+            header_widget(
+                "brainrender",
+                "Atlas visualisation",
+                tutorial_file_name="visualise-atlas-napari.html",
+                citation_doi="https://doi.org/10.7554/eLife.65751",
+                github_repo_name="brainrender-napari",
+                help_text="For help, hover the cursor over the "
+                "atlases/regions.",
+            )
+        )
 
         # create widgets
         self.atlas_viewer_view = AtlasViewerView(parent=self)

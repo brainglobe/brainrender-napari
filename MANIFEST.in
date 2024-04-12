@@ -4,7 +4,6 @@ include README.md
 include .napari-hub/DESCRIPTION.md
 include .napari-hub/config.yml
 include brainrender_napari/napari.yaml
-include brainrender_napari/resources/brainglobe.png
 exclude .pre-commit-config.yaml
 
 recursive-exclude * __pycache__
