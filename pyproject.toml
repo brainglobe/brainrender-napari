@@ -118,4 +118,11 @@ extras =
     dev
 commands =
     pytest -v --color=yes --cov=brainrender_napari --cov-report=xml
+passenv =
+    CI
+    GITHUB_ACTIONS
+    DISPLAY
+    XAUTHORITY
+    NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
+    PYVISTA_OFF_SCREEN
 """
