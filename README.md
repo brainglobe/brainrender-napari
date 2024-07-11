@@ -32,19 +32,14 @@ To install latest development version :
 
     pip install git+https://github.com/brainglobe/brainrender-napari.git
 
-
-## Contributing
-
-Contributions are very welcome. Have a look at our [developer conventions](https://brainglobe.info/developers/index.html) for more info. The core development team is happy to help and advise anyone wanting to contribute!
+## Seeking help or contributing
+We are always happy to help users of our tools, and welcome any contributions. If you would like to get in contact with us for any reason, please see the [contact page of our website](https://brainglobe.info/contact.html).
 
 ## License
 
 Distributed under the terms of the [BSD-3] license,
 "brainrender-napari" is free and open source software
 
-## Issues
-
-If you encounter any problems, please [file an issue] along with a detailed description.
 
 ## Acknowledgements
 
