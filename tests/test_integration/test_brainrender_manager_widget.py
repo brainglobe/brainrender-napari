@@ -19,7 +19,7 @@ def manager_widget(make_napari_viewer) -> BrainrenderManagerWidget:
     return BrainrenderManagerWidget(viewer)
 
 
-def test_atlas_viewer_view_tooltip(manager_widget):
+def test_atlas_manager_view_tooltip(manager_widget):
     for expected_keyword in [
         "double-click",
         "download/update",
@@ -28,5 +28,5 @@ def test_atlas_viewer_view_tooltip(manager_widget):
     ]:
         assert (
             expected_keyword
-            in manager_widget.atlas_viewer_group.toolTip().lower()
+            in manager_widget.atlas_manager_group.toolTip().lower()
         )
