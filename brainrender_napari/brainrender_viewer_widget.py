@@ -26,7 +26,7 @@ from brainrender_napari.widgets.atlas_viewer_view import AtlasViewerView
 from brainrender_napari.widgets.structure_view import StructureView
 
 
-class BrainrenderWidget(QWidget):
+class BrainrenderViewerWidget(QWidget):
     """The purpose of this class is
     * to hold atlas visualisation widgets for napari
     * coordinate between these widgets and napari
