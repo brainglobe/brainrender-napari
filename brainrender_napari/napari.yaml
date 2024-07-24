@@ -10,6 +10,6 @@ contributions:
       title: Make Brainrender Napari Manager
   widgets:
     - command: brainrender-napari.make_brainrender_viewer_widget
-      display_name: Brainrender (visualise)
+      display_name: Brainrender
     - command: brainrender-napari.make_brainrender_manager_widget
-      display_name: Brainrender (manage)
+      display_name: Manage atlas versions
