@@ -34,10 +34,9 @@ class BrainrenderManagerWidget(QWidget):
                 "brainrender",
                 "Atlas management",
                 tutorial_file_name="manage-atlas-napari.html",
-                citation_doi="https://doi.org/10.7554/eLife.65751",
+                citation_doi="https://doi.org/10.21105/joss.02668",
                 github_repo_name="brainrender-napari",
-                help_text="For help, hover the cursor over the "
-                "atlases/regions.",
+                help_text="For help, hover the cursor over the " "atlases.",
             )
         )
 
