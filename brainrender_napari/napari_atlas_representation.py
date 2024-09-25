@@ -12,7 +12,7 @@ from qtpy.QtWidgets import QLabel
 
 @dataclass
 class NapariAtlasRepresentation:
-    """Representation of a BG atlas as napari layers"""
+    """Representation of a BG atlas as napari layers, in pixel space."""
 
     bg_atlas: BrainGlobeAtlas
     viewer: Viewer
@@ -39,14 +39,12 @@ class NapariAtlasRepresentation:
         """
         reference = self.viewer.add_image(
             self.bg_atlas.reference,
-            scale=self.bg_atlas.resolution,
             name=f"{self.bg_atlas.atlas_name}_reference",
             visible=False,
         )
 
         annotation = self.viewer.add_labels(
             self.bg_atlas.annotation,
-            scale=self.bg_atlas.resolution,
             name=f"{self.bg_atlas.atlas_name}_annotation",
         )
 
@@ -54,22 +52,26 @@ class NapariAtlasRepresentation:
         reference.mouse_move_callbacks.append(self._on_mouse_move)
 
     def add_structure_to_viewer(self, structure_name: str):
-        """Adds the mesh of a structure to the viewer
+        """Adds the mesh of a structure to the viewer.
+        The mesh will be rescaled to pixel space.
 
         structure_name: the id or acronym of the structure.
         """
         mesh = self.bg_atlas.mesh_from_structure(structure_name)
+        scale = [1.0 / resolution for resolution in self.bg_atlas.resolution]
         color = self.bg_atlas.structures[structure_name]["rgb_triplet"]
         self._add_mesh(
             mesh,
+            scale,
             name=f"{self.bg_atlas.atlas_name}_{structure_name}_mesh",
             color=color,
         )
 
-    def _add_mesh(self, mesh: Mesh, name: str, color=None):
+    def _add_mesh(self, mesh: Mesh, scale: list, name: str, color=None):
         """Helper function to add a mesh as a surface layer to the viewer.
 
         mesh: the mesh to add
+        scale: List of scaling factors for each axis
         name: name for the surface layer
         color: RGB values (0-255) as a list to colour mesh with
         """
@@ -85,7 +87,7 @@ class NapariAtlasRepresentation:
             viewer_kwargs["vertex_colors"] = np.repeat(
                 [[float(c) / 255 for c in color]], len(points), axis=0
             )
-        self.viewer.add_surface((points, cells), **viewer_kwargs)
+        self.viewer.add_surface((points, cells), scale=scale, **viewer_kwargs)
 
     def add_additional_reference(self, additional_reference_key: str):
         """Adds a given additional reference as a layer to the viewer.
@@ -93,7 +95,6 @@ class NapariAtlasRepresentation:
         """
         additional_reference = self.viewer.add_image(
             self.bg_atlas.additional_references[additional_reference_key],
-            scale=self.bg_atlas.resolution,
             name=f"{self.bg_atlas.atlas_name}_{additional_reference_key}_reference",
         )
         additional_reference.mouse_move_callbacks.append(self._on_mouse_move)
