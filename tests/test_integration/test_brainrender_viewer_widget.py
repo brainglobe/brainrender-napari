@@ -86,12 +86,14 @@ def test_add_additional_reference_selected(viewer_widget, mocker):
         "brainrender_napari.brainrender_viewer_widget"
         ".NapariAtlasRepresentation.add_additional_reference"
     )
-    viewer_widget.atlas_viewer_view.selectRow(5)  # mpin_zfish_1um is in row 5
+    viewer_widget.atlas_viewer_view.selectRow(
+        0
+    )  # # example atlas + mock additional reference is in row 0
     assert (
         viewer_widget.atlas_viewer_view.selected_atlas_name()
-        == "mpin_zfish_1um"
+        == "example_mouse_100um"
     )
-    additional_reference_name = "GAD1b"
+    additional_reference_name = "reference"
     viewer_widget.atlas_viewer_view.additional_reference_requested.emit(
         additional_reference_name
     )
