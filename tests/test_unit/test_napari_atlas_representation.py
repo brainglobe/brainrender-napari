@@ -120,8 +120,8 @@ def test_structure_color(make_napari_viewer):
 
 def test_add_additional_reference(make_napari_viewer):
     viewer = make_napari_viewer()
-    atlas_name = "mpin_zfish_1um"
-    additional_reference_name = "GAD1b"
+    atlas_name = "example_mouse_100um"
+    additional_reference_name = "reference"
     atlas = BrainGlobeAtlas(atlas_name=atlas_name)
 
     atlas_representation = NapariAtlasRepresentation(atlas, viewer)

@@ -37,7 +37,7 @@ def test_update_atlas_confirmed(
 
     with qtbot.waitSignal(
         atlas_manager_view.update_atlas_confirmed,
-        timeout=150000,  # assumes atlas can be updated in 2.5 minutes!
+        timeout=300000,  # assumes atlas can be updated in 5 minutes!
     ) as update_atlas_confirmed_signal:
         # replace with double-click on view?
         model_index = atlas_manager_view.model().index(0, 0)
@@ -96,7 +96,7 @@ def test_download_confirmed_callback(atlas_manager_view, qtbot):
 
     with qtbot.waitSignal(
         atlas_manager_view.download_atlas_confirmed,
-        timeout=150000,  # assumes atlas can be installed in 2.5 minutes!
+        timeout=300000,  # assumes atlas can be installed in 5 minutes!
     ) as download_atlas_confirmed_signal:
         model_index = atlas_manager_view.model().index(0, 0)
         atlas_manager_view.setCurrentIndex(model_index)

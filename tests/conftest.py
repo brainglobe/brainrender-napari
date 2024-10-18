@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 from pathlib import Path
@@ -58,13 +59,23 @@ def setup_preexisting_local_atlases():
         ("example_mouse_100um", "v1.2"),
         ("allen_mouse_100um", "v1.2"),
         ("osten_mouse_100um", "v1.1"),
-        ("mpin_zfish_1um", "v1.0"),
     ]
     for atlas_name, version in preexisting_atlases:
         if not Path.exists(
             Path.home() / f".brainglobe/{atlas_name}_{version}"
         ):
             _ = BrainGlobeAtlas(atlas_name)
+
+    # mock an additional reference for the example mouse
+    atlas_path = Path.home() / ".brainglobe" / "example_mouse_100um_v1.2"
+    metadata_path = atlas_path / "metadata.json"
+    if metadata_path.exists():
+        with open(metadata_path, "r") as f:
+            metadata = f.read()
+            metadata_dict = json.loads(metadata)
+            metadata_dict["additional_references"] = ["reference"]
+            with open(metadata_path, "w") as f:
+                json.dump(metadata_dict, f, indent=4)
 
 
 @pytest.fixture

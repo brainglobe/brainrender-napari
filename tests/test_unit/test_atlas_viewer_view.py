@@ -99,17 +99,19 @@ def test_double_click_on_locally_available_atlas_row(
 def test_additional_reference_menu(atlas_viewer_view, qtbot, mocker):
     """Checks callback to additional reference menu calls QMenu exec
     and emits expected signal"""
-    atlas_viewer_view.selectRow(5)  # mpin_zfish_1um is in row 5
+    atlas_viewer_view.selectRow(
+        0
+    )  # example atlas + mock additional reference is in row 0
     from qtpy.QtCore import QPoint
     from qtpy.QtWidgets import QAction
 
-    x = atlas_viewer_view.rowViewportPosition(5)
+    x = atlas_viewer_view.rowViewportPosition(0)
     y = atlas_viewer_view.columnViewportPosition(1)
     position = QPoint(x, y)
     qmenu_exec_mock = mocker.patch(
         "brainrender_napari.widgets.atlas_viewer_view.QMenu.exec"
     )
-    qmenu_exec_mock.return_value = QAction("mock_additional_reference")
+    qmenu_exec_mock.return_value = QAction("reference")
 
     with qtbot.waitSignal(
         atlas_viewer_view.additional_reference_requested
@@ -117,9 +119,7 @@ def test_additional_reference_menu(atlas_viewer_view, qtbot, mocker):
         atlas_viewer_view.customContextMenuRequested.emit(position)
 
     qmenu_exec_mock.assert_called_once()
-    assert additional_reference_requested_signal.args == [
-        "mock_additional_reference"
-    ]
+    assert additional_reference_requested_signal.args == ["reference"]
 
 
 def test_get_tooltip():
