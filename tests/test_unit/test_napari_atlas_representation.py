@@ -142,7 +142,7 @@ def test_add_additional_reference(make_napari_viewer):
 @pytest.mark.parametrize(
     "cursor_position, expected_tooltip_text",
     [
-        ((6500.0, 4298.5, 9057.6), "Caudoputamen | Left"),
+        ((65, 43, 91), "Caudoputamen | Left"),
         ((-1000, 0, 0), ""),  # outside image
     ],
 )
