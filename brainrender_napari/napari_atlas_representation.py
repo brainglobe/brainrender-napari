@@ -126,13 +126,13 @@ class NapariAtlasRepresentation:
             self._tooltip.move(QCursor.pos().x() + 20, QCursor.pos().y() + 20)
             try:
                 structure_acronym = self.bg_atlas.structure_from_coords(
-                    cursor_position, microns=True, as_acronym=True
+                    cursor_position, microns=False, as_acronym=True
                 )
                 structure_name = self.bg_atlas.structures[structure_acronym][
                     "name"
                 ]
                 hemisphere = self.bg_atlas.hemisphere_from_coords(
-                    cursor_position, as_string=True, microns=True
+                    cursor_position, as_string=True, microns=False
                 ).capitalize()
                 tooltip_text = f"{structure_name} | {hemisphere}"
                 self._tooltip.setText(tooltip_text)
