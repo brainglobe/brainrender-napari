@@ -30,9 +30,10 @@ class AtlasTableModel(QAbstractTableModel):
     def refresh_data(self) -> None:
         """Refresh model data by calling atlas API"""
         all_atlases = get_all_atlases_lastversions()
+        local_atlases = get_atlases_lastversions().keys()
         data = []
         for name, latest_version in all_atlases.items():
-            if name in get_atlases_lastversions().keys():
+            if name in local_atlases:
                 data.append(
                     [
                         name,
