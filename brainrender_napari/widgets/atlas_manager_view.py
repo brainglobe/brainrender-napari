@@ -9,6 +9,7 @@ It is designed to be agnostic from the viewer framework by emitting signals
 that any interested observers can connect to.
 """
 
+import shutil
 from typing import Callable
 
 from brainglobe_atlasapi.list_atlases import (
@@ -16,14 +17,47 @@ from brainglobe_atlasapi.list_atlases import (
     get_atlases_lastversions,
     get_downloaded_atlases,
 )
-from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
+from brainglobe_atlasapi.update_atlases import BrainGlobeAtlas
 from napari.qt import thread_worker
+from napari.utils import progress
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QTableView, QWidget
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
 from brainrender_napari.utils.formatting import format_atlas_name
 from brainrender_napari.widgets.atlas_manager_dialog import AtlasManagerDialog
+
+
+def install_atlas_with_progress(atlas_name: str, fn_update: Callable):
+    """
+    By passing fn_update when instantiating BrainGlobeAtlas
+    Progress information during the downlaod progress is
+    retrieved so that the actual progress (%) can be updated
+    """
+    BrainGlobeAtlas(atlas_name, fn_update=fn_update)
+    return atlas_name
+
+
+def update_atlas_with_progress(atlas_name: str, fn_update: Callable):
+    """
+    When updating an existing atlas, it should also be possible to pass
+    fn_update to get the actual progress (%)
+    """
+    atlas = BrainGlobeAtlas(
+        atlas_name, check_latest=False, fn_update=fn_update
+    )
+    if atlas.check_latest_version(print_warning=False):
+        return atlas_name
+
+    folder = atlas.brainglobe_dir / atlas.local_full_name
+    shutil.rmtree(folder)
+    if folder.exists():
+        raise ValueError(
+            "Something went wrong while trying to delete the old version"
+            "of the atlas, aborting."
+        )
+    atlas.download_extract_file()
+    return atlas_name
 
 
 class AtlasManagerView(QTableView):
@@ -71,15 +105,47 @@ class AtlasManagerView(QTableView):
     def _on_download_atlas_confirmed(self):
         """Downloads the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
-        worker = self._apply_in_thread(install_atlas, atlas_name)
-        worker.returned.connect(self.download_atlas_confirmed.emit)
+        pbar = progress(total=0, desc=f"Downloading {atlas_name}...")
+
+        def update_fn(completed, total):
+            if pbar.total == 0 and total > 0:
+                pbar.total = total
+            diff = completed - pbar.n
+            if diff > 0:
+                pbar.update(diff)
+
+        worker = self._apply_in_thread(
+            install_atlas_with_progress, atlas_name, update_fn
+        )
+
+        def on_finished(result):
+            pbar.close()
+            self.download_atlas_confirmed.emit(result)
+
+        worker.returned.connect(on_finished)
         worker.start()
 
     def _on_update_atlas_confirmed(self):
         """Updates the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
-        worker = self._apply_in_thread(update_atlas, atlas_name)
-        worker.returned.connect(self.update_atlas_confirmed.emit)
+        pbar = progress(total=0, desc=f"Updating {atlas_name}...")
+
+        def update_fn(completed, total):
+            if pbar.total == 0 and total > 0:
+                pbar.total = total
+            diff = completed - pbar.n
+            if diff > 0:
+                pbar.update(diff)
+
+        worker = self._apply_in_thread(
+            update_atlas_with_progress, atlas_name, update_fn
+        )
+
+        def on_finished(result):
+            pbar.close()
+            self.update_atlas_confirmed.emit(result)
+
+        worker.returned.connect(on_finished)
         worker.start()
 
     def selected_atlas_name(self) -> str:
@@ -90,12 +156,12 @@ class AtlasManagerView(QTableView):
         selected_atlas_name = self.model().data(selected_atlas_name_index)
         return selected_atlas_name
 
+    @staticmethod
     @thread_worker
-    def _apply_in_thread(self, apply: Callable, atlas_name: str):
-        """Calls `apply` on the given atlas in a separate thread."""
-        apply(atlas_name)
-        self.model().refresh_data()
-        return atlas_name
+    def _apply_in_thread(apply: Callable, *args, **kwargs):
+        """Helper function that executes the specified function
+        in a background threaseparate thread."""
+        return apply(*args, **kwargs)
 
     @classmethod
     def get_tooltip_text(cls, atlas_name: str):
