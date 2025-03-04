@@ -4,8 +4,8 @@ from brainglobe_atlasapi.list_atlases import (
     get_local_atlas_version,
 )
 from qtpy.QtCore import QAbstractTableModel, QModelIndex, Qt
-from qtpy.QtWidgets import QTableView
 from qtpy.QtGui import QBrush, QColor
+from qtpy.QtWidgets import QTableView
 
 from brainrender_napari.utils.formatting import format_atlas_name
 
