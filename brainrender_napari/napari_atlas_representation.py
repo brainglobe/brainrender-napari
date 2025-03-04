@@ -60,6 +60,7 @@ class NapariAtlasRepresentation:
         # If the viewer is in 2D mode, a warning popup is displayed and processing is interrupted
         if self.viewer.dims.ndisplay == 2:
             from qtpy.QtWidgets import QMessageBox
+
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setWindowTitle("You need a 3D mode")
@@ -67,7 +68,7 @@ class NapariAtlasRepresentation:
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec_()
             return
-        
+
         mesh = self.bg_atlas.mesh_from_structure(structure_name)
         scale = [1.0 / resolution for resolution in self.bg_atlas.resolution]
         color = self.bg_atlas.structures[structure_name]["rgb_triplet"]
