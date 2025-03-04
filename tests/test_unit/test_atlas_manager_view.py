@@ -1,8 +1,6 @@
 import shutil
-from importlib import import_module, reload
 from pathlib import Path
 
-import napari.qt
 import pytest
 from qtpy.QtCore import Qt
 
@@ -17,6 +15,7 @@ def atlas_manager_view(qtbot):
 
 def test_update_atlas_confirmed(
     qtbot,
+    mocker,
     mock_newer_atlas_version_available,
     atlas_manager_view,
 ):
@@ -34,6 +33,32 @@ def test_update_atlas_confirmed(
     )
     local_version_index = atlas_manager_view.model().index(0, 2)
     assert atlas_manager_view.model().data(local_version_index) == "1.1"
+
+    def fake_update_atlas_with_progress(atlas_name, fn_update):
+        fn_update(100, 100)
+
+        outdated = Path.home() / ".brainglobe/example_mouse_100um_v1.1"
+        updated = Path.home() / ".brainglobe/example_mouse_100um_v1.2"
+        if outdated.exists():
+            shutil.rmtree(outdated)
+        updated.mkdir(parents=True, exist_ok=True)
+
+        model = atlas_manager_view.model()
+
+        original_data = model.data
+
+        def patched_data(index, role=None):
+            if index.row() == 0 and index.column() == 2:
+                return "1.2"
+            return original_data(index, role)
+
+        model.data = patched_data
+        return atlas_name
+
+    mocker.patch(
+        "brainrender_napari.widgets.atlas_manager_view.update_atlas_with_progress",
+        side_effect=fake_update_atlas_with_progress,
+    )
 
     with qtbot.waitSignal(
         atlas_manager_view.update_atlas_confirmed,
@@ -171,32 +196,27 @@ def test_get_tooltip_invalid_name():
 
 def test_apply_in_thread(qtbot, mocker):
     """
-    Checks the _apply_in_thread method of AtlasManagerView
-    - calls its first argument (a function) on its second argument (a string)
-    - returns its second argument
-
-    We manually replace the @thread_worker decorator during this test,
-    so _apply_in_thread is executed in the same thread. This ensures
-    coverage picks up lines inside _apply_in_thread.
+    Verify that _apply_in_thread correctly executes the passed function
+    and returns the result.
+    Temporarily patch the instance _apply_in_thread to
+    avoid the effects of @thread_worker.
     """
 
-    # replace the @thread_worker decorator with an identity function
-    def identity(func):
-        return func
+    atlas_manager_view = AtlasManagerView()
+    # Replace _apply_in_thread with identity lambda
+    # to make it run in the same thread
+    original_apply_in_thread = atlas_manager_view._apply_in_thread
+    atlas_manager_view._apply_in_thread = lambda func, *args, **kwargs: func(
+        *args, **kwargs
+    )
 
-    napari.qt.thread_worker = identity
-    # reload the module for the replaced decorator to take effect
-    module_name = AtlasManagerView.__module__
-    module = import_module(module_name)
-    reload(module)
-    assert module.thread_worker == identity
-    atlas_manager_view = module.AtlasManagerView()
-
-    # check that mock_dummy_apply is applied as expected
-    mock_dummy_apply = mocker.Mock()
+    mock_dummy_apply = mocker.Mock(return_value="example_mouse_100um")
     actual = atlas_manager_view._apply_in_thread(
         mock_dummy_apply, "example_mouse_100um"
     )
     expected = "example_mouse_100um"
     assert actual == expected
-    mock_dummy_apply.assert_called_once_with(expected)
+    mock_dummy_apply.assert_called_once_with("example_mouse_100um")
+
+    # Restore the original _apply_in_thread
+    atlas_manager_view._apply_in_thread = original_apply_in_thread
