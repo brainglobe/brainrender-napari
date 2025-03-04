@@ -4,6 +4,7 @@ from brainglobe_atlasapi.list_atlases import (
     get_local_atlas_version,
 )
 from qtpy.QtCore import QAbstractTableModel, QModelIndex, Qt
+from qtpy.QtGui import QBrush, QColor
 from qtpy.QtWidgets import QTableView
 
 from brainrender_napari.utils.formatting import format_atlas_name
@@ -55,6 +56,20 @@ class AtlasTableModel(QAbstractTableModel):
         if role == Qt.ToolTipRole:
             hovered_atlas_name = self._data[index.row()][0]
             return self.view_type.get_tooltip_text(hovered_atlas_name)
+        if role == Qt.BackgroundRole:
+            local_version = self._data[index.row()][2]
+            if local_version == "n/a":
+                # Remote atlas: greyed out background
+                return QBrush(Qt.lightGray)
+            else:
+                latest_version = self._data[index.row()][3]
+                if local_version == latest_version:
+                    # Up-to-date atlas: normal background (default)
+                    return None
+                else:
+                    # Out-of-date atlas: amber background
+                    return QBrush(QColor(255, 191, 0))
+        return None
 
     def rowCount(self, index: QModelIndex = QModelIndex()):
         return len(self._data)
