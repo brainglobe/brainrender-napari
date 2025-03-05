@@ -58,8 +58,6 @@ class NapariAtlasRepresentation:
 
         structure_name: the id or acronym of the structure.
         """
-        # If the viewer is in 2D mode, a warning popup is
-        # displayed and processing is interrupted
         if self.viewer.dims.ndisplay == 2:
             show_info("Meshes will only show if the display is set to 3D.")
 
