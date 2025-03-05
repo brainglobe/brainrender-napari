@@ -4,10 +4,11 @@ from brainglobe_atlasapi.list_atlases import (
     get_local_atlas_version,
 )
 from qtpy.QtCore import QAbstractTableModel, QModelIndex, Qt
+from qtpy.QtGui import QBrush, QColor
 from qtpy.QtWidgets import QTableView
 
 from brainrender_napari.utils.formatting import format_atlas_name
-
+from napari.settings import get_settings 
 
 class AtlasTableModel(QAbstractTableModel):
     """A table data model for atlases."""
@@ -55,6 +56,29 @@ class AtlasTableModel(QAbstractTableModel):
         if role == Qt.ToolTipRole:
             hovered_atlas_name = self._data[index.row()][0]
             return self.view_type.get_tooltip_text(hovered_atlas_name)
+        if role == Qt.BackgroundRole:
+
+            theme = get_settings().appearance.theme # 'dark' or 'light'
+
+            local_version = self._data[index.row()][2]
+            if local_version == "n/a":
+                if theme == 'dark':
+                    return QBrush(QColor(80, 80, 80)) # dark grey
+                else:
+                    return QBrush(Qt.lightGray) # light grey
+            else:
+                latest_version = self._data[index.row()][3]
+                if local_version == latest_version:
+                    # Up-to-date atlas: normal background (default)
+                    return None
+                else:
+                    # Out-of-date atlas:
+                    if theme == "dark":
+                        return QBrush(QColor(255, 140, 0)) # dark amber
+                    else:
+                        return QBrush(QColor(255, 191, 0))
+                    
+        return None
 
     def rowCount(self, index: QModelIndex = QModelIndex()):
         return len(self._data)
