@@ -80,8 +80,11 @@ class AtlasManagerView(QTableView):
         atlas_name = self.selected_atlas_name()
         worker = self._apply_in_thread(update_atlas, atlas_name)
         worker.returned.connect(self.update_atlas_confirmed.emit)
-        worker.returned.connect(lambda: self.model().refresh_data())  # Refresh table
+        worker.returned.connect(
+            lambda: self.model().refresh_data()
+        )  # Refresh table
         worker.start()
+
     def selected_atlas_name(self) -> str:
         """A single place to get a valid selected atlas name."""
         selected_index = self.selectionModel().currentIndex()
