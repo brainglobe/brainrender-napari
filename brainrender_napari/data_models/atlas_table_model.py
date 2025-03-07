@@ -67,6 +67,7 @@ class AtlasTableModel(QAbstractTableModel):
                     return QBrush(QColor(80, 80, 80))  # dark grey
                 else:
                     return QBrush(Qt.lightGray)  # light grey
+
             else:
                 latest_version = self._data[index.row()][3]
                 if local_version == latest_version:
@@ -78,7 +79,6 @@ class AtlasTableModel(QAbstractTableModel):
                         return QBrush(QColor(255, 140, 0))  # dark amber
                     else:
                         return QBrush(QColor(255, 191, 0))
-
         return None
 
     def rowCount(self, index: QModelIndex = QModelIndex()):
