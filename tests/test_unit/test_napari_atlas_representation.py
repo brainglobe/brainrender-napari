@@ -1,6 +1,5 @@
 import pytest
 from brainglobe_atlasapi import BrainGlobeAtlas
-from meshio import Mesh
 from napari.layers import Image, Labels
 from numpy import all, allclose
 from qtpy.QtCore import QEvent, QPoint, Qt
@@ -118,7 +117,9 @@ def test_show_info_called_for_2D_and_not_3D(
     atlas_representation = NapariAtlasRepresentation(atlas, viewer)
 
     # Patch show_info from napari notifications.
-    show_info_mock = mocker.patch("brainrender_napari.napari_atlas_representation.show_info")
+    show_info_mock = mocker.patch(
+        "brainrender_napari.napari_atlas_representation.show_info"
+    )
     atlas_representation.add_structure_to_viewer("CP")
 
     if expected_called:
