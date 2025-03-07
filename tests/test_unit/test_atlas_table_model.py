@@ -1,8 +1,9 @@
 import pytest
 from qtpy.QtCore import Qt
+from qtpy.QtGui import QColor, QBrush
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
-
+from napari.settings import get_settings
 
 @pytest.fixture
 def atlas_table_model(mocker):
@@ -48,3 +49,36 @@ def test_model_header_invalid_view():
         assert "Views" in error
         assert "classmethod" in error
         assert "get_tooltip_text" in error
+
+def test_background_color_for_outdated_atlas(atlas_table_model, monkeypatch):
+    """
+    For out-of-date atlas (local_version=“1.1”, latest_version=“1.2”),
+    Test to verify that the amber color is returned according to the theme.
+    """
+    target_atlas = "example_mouse_100um"
+    row = None
+    for i, entry in enumerate(atlas_table_model._data):
+        if entry[0] == target_atlas:
+            row = i
+            break
+    if row is None:
+        pytest.skip(f"Skip because {target_atlas} does not exit in the data table.")
+    
+    atlas_table_model._data[row][2] = "1.1" # local_version
+    atlas_table_model._data[row][3] = "1.2" # latest_verision
+
+    theme = get_settings().appearance.theme
+
+    index = atlas_table_model.index(row, 0)
+    brush = atlas_table_model.data(index, role=Qt.BackgroundRole)
+    assert isinstance(brush, QBrush)
+
+    if theme == "dark":
+        expected_rgb = (255, 140, 0) # dark amber
+    else:
+        expected_rgb = (255, 191, 0) # light amber
+
+    # Retrieve QColor from the retrieved QBrush 
+    # and verify RGB (ignoring alpha values)
+    actual_rgb = brush.color().getRgb()[:3]
+    assert actual_rgb == expected_rgb, f"Expected RGB {expected_rgb}, but got {actual_rgb}"
