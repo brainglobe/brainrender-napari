@@ -101,6 +101,35 @@ def test_add_structure_to_viewer(make_napari_viewer, expected_atlas_name):
     )
 
 
+@pytest.mark.parametrize("ndisplay, expected_called", [(2, True), (3, False)])
+def test_show_info_called_for_2D_and_not_3D(
+    make_napari_viewer, mocker, ndisplay, expected_called
+):
+    """
+    Test that when add_structure_to_viewer is called:
+        - If the viewer is in 2D mode, then show_info is called
+        - If the viewer is in 3D mode, then show_info is not called
+    """
+    viewer = make_napari_viewer()
+    viewer.dims.ndisplay = ndisplay
+
+    atlas = BrainGlobeAtlas(atlas_name="allen_mouse_100um")
+    atlas_representation = NapariAtlasRepresentation(atlas, viewer)
+
+    # Patch show_info from napari notifications.
+    show_info_mock = mocker.patch(
+        "brainrender_napari.napari_atlas_representation.show_info"
+    )
+    atlas_representation.add_structure_to_viewer("CP")
+
+    if expected_called:
+        show_info_mock.assert_called_once_with(
+            "Meshes will only show if the display is set to 3D."
+        )
+    else:
+        show_info_mock.assert_not_called()
+
+
 def test_structure_color(make_napari_viewer):
     """Checks that the default colour of a structure
     is propagated correctly to the corresponding napari layer
