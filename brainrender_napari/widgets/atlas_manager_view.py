@@ -99,6 +99,9 @@ class AtlasManagerView(QTableView):
             total=0,
             desc=f"{'Downloading' if operation == install_atlas_with_progress
                     else 'Updating'} {atlas_name}...",
+            unit="B",
+            unit_scale=True,
+            unit_divisor=1024,
         )
 
         def update_fn(completed, total):
