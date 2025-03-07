@@ -9,7 +9,6 @@ It is designed to be agnostic from the viewer framework by emitting signals
 that any interested observers can connect to.
 """
 
-import shutil
 from typing import Callable
 
 from brainglobe_atlasapi.list_atlases import (
@@ -17,7 +16,7 @@ from brainglobe_atlasapi.list_atlases import (
     get_atlases_lastversions,
     get_downloaded_atlases,
 )
-from brainglobe_atlasapi.update_atlases import BrainGlobeAtlas
+from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
 from napari.qt import thread_worker
 from napari.utils import progress
 from qtpy.QtCore import Signal
@@ -34,7 +33,7 @@ def install_atlas_with_progress(atlas_name: str, fn_update: Callable):
     Progress information during the downlaod progress is
     retrieved so that the actual progress (%) can be updated
     """
-    BrainGlobeAtlas(atlas_name, fn_update=fn_update)
+    install_atlas(atlas_name, fn_update=fn_update)
     return atlas_name
 
 
@@ -43,20 +42,7 @@ def update_atlas_with_progress(atlas_name: str, fn_update: Callable):
     When updating an existing atlas, it should also be possible to pass
     fn_update to get the actual progress (%)
     """
-    atlas = BrainGlobeAtlas(
-        atlas_name, check_latest=False, fn_update=fn_update
-    )
-    if atlas.check_latest_version(print_warning=False):
-        return atlas_name
-
-    folder = atlas.brainglobe_dir / atlas.local_full_name
-    shutil.rmtree(folder)
-    if folder.exists():
-        raise ValueError(
-            "Something went wrong while trying to delete the old version"
-            "of the atlas, aborting."
-        )
-    atlas.download_extract_file()
+    update_atlas(atlas_name, fn_update=fn_update)
     return atlas_name
 
 
@@ -102,10 +88,18 @@ class AtlasManagerView(QTableView):
             )
             download_dialog.exec()
 
-    def _on_download_atlas_confirmed(self):
-        """Downloads the currently selected atlas and signals this."""
-        atlas_name = self.selected_atlas_name()
-        pbar = progress(total=0, desc=f"Downloading {atlas_name}...")
+    def _start_worker(
+        self, operation: Callable, atlas_name: str, signal: Signal
+    ):
+        """
+        Helper functions that combine progress bar generation,
+        update processing, worker activation, and signal issuance into one
+        """
+        pbar = progress(
+            total=0,
+            desc=f"{'Downloading' if operation == install_atlas_with_progress
+                    else 'Updating'} {atlas_name}...",
+        )
 
         def update_fn(completed, total):
             if pbar.total == 0 and total > 0:
@@ -114,39 +108,27 @@ class AtlasManagerView(QTableView):
             if diff > 0:
                 pbar.update(diff)
 
-        worker = self._apply_in_thread(
-            install_atlas_with_progress, atlas_name, update_fn
+        worker = self._apply_in_thread(operation, atlas_name, update_fn)
+        worker.returned.connect(
+            lambda result: (pbar.close(), signal.emit(result))
         )
-
-        def on_finished(result):
-            pbar.close()
-            self.download_atlas_confirmed.emit(result)
-
-        worker.returned.connect(on_finished)
         worker.start()
+
+    def _on_download_atlas_confirmed(self):
+        """Downloads the currently selected atlas and signals this."""
+        atlas_name = self.selected_atlas_name()
+        self._start_worker(
+            install_atlas_with_progress,
+            atlas_name,
+            self.download_atlas_confirmed,
+        )
 
     def _on_update_atlas_confirmed(self):
         """Updates the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
-        pbar = progress(total=0, desc=f"Updating {atlas_name}...")
-
-        def update_fn(completed, total):
-            if pbar.total == 0 and total > 0:
-                pbar.total = total
-            diff = completed - pbar.n
-            if diff > 0:
-                pbar.update(diff)
-
-        worker = self._apply_in_thread(
-            update_atlas_with_progress, atlas_name, update_fn
+        self._start_worker(
+            update_atlas_with_progress, atlas_name, self.update_atlas_confirmed
         )
-
-        def on_finished(result):
-            pbar.close()
-            self.update_atlas_confirmed.emit(result)
-
-        worker.returned.connect(on_finished)
-        worker.start()
 
     def selected_atlas_name(self) -> str:
         """A single place to get a valid selected atlas name."""
