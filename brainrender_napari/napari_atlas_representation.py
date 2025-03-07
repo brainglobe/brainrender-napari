@@ -60,19 +60,22 @@ class NapariAtlasRepresentation:
         mesh = self.bg_atlas.mesh_from_structure(structure_name)
         scale = [1.0 / resolution for resolution in self.bg_atlas.resolution]
         color = self.bg_atlas.structures[structure_name]["rgb_triplet"]
+        region_name = self.bg_atlas.structures[structure_name]["name"]
         self._add_mesh(
             mesh,
             scale,
             name=f"{self.bg_atlas.atlas_name}_{structure_name}_mesh",
+            region_name=region_name,
             color=color,
         )
 
-    def _add_mesh(self, mesh: Mesh, scale: list, name: str, color=None):
+    def _add_mesh(self, mesh: Mesh, scale: list, name: str, region_name: str, color=None):
         """Helper function to add a mesh as a surface layer to the viewer.
 
         mesh: the mesh to add
         scale: List of scaling factors for each axis
         name: name for the surface layer
+        region_name: formal region name to be stored in layer metadata
         color: RGB values (0-255) as a list to colour mesh with
         """
         points = mesh.points
@@ -87,7 +90,9 @@ class NapariAtlasRepresentation:
             viewer_kwargs["vertex_colors"] = np.repeat(
                 [[float(c) / 255 for c in color]], len(points), axis=0
             )
-        self.viewer.add_surface((points, cells), scale=scale, **viewer_kwargs)
+
+        layer = self.viewer.add_surface((points, cells), scale=scale, **viewer_kwargs)
+        layer.metadata["region_name"] = region_name
 
     def add_additional_reference(self, additional_reference_key: str):
         """Adds a given additional reference as a layer to the viewer.
@@ -101,46 +106,49 @@ class NapariAtlasRepresentation:
 
     def _on_mouse_move(self, layer, event):
         """Adapts the tooltip according to the cursor position.
-
-        The tooltip is only displayed if
-        * the viewer is in 2D display
-        * and the cursor is inside the annotation
-        * and the user has not switched off layer tooltips.
-
-        Note that layer, event input args are unused,
-        because all the required info is in
-        * the bg_atlas.structure_from_coords
-        * the (screen) cursor position
-        * the (napari) cursor position
+    
+        In 2D mode, it works as before.
+        In 3D mode, it attempts to retrieve region information based on the cursor position
+        and displays the formal region name.
         """
         cursor_position = self.viewer.cursor.position
         napari_settings = get_settings()
-        tooltip_visibility = (
-            napari_settings.appearance.layer_tooltip_visibility
-        )
-        if (
-            tooltip_visibility
-            and np.all(np.array(cursor_position) > 0)
-            and self.viewer.dims.ndisplay == 2
-        ):
-            self._tooltip.move(QCursor.pos().x() + 20, QCursor.pos().y() + 20)
-            try:
-                structure_acronym = self.bg_atlas.structure_from_coords(
-                    cursor_position, microns=False, as_acronym=True
-                )
-                structure_name = self.bg_atlas.structures[structure_acronym][
-                    "name"
-                ]
-                hemisphere = self.bg_atlas.hemisphere_from_coords(
-                    cursor_position, as_string=True, microns=False
-                ).capitalize()
-                tooltip_text = f"{structure_name} | {hemisphere}"
-                self._tooltip.setText(tooltip_text)
-                self._tooltip.adjustSize()
-                self._tooltip.show()
-            except (KeyError, IndexError):
-                # cursor position outside the image or in the image background
-                # so no tooltip to be displayed
-                # this saves us a bunch of assertions and extra computation
-                self._tooltip.setText("")
-                self._tooltip.hide()
+        tooltip_visibility = napari_settings.appearance.layer_tooltip_visibility
+
+        if tooltip_visibility and np.all(np.array(cursor_position) > 0):
+            # In the case of 2D
+            if self.viewer.dims.ndisplay == 2:
+                self._tooltip.move(QCursor.pos().x() + 20, QCursor.pos().y() + 20)
+                try:
+                    structure_acronym = self.bg_atlas.structure_from_coords(
+                        cursor_position, microns=False, as_acronym=True
+                    )
+                    structure_name = self.bg_atlas.structures[structure_acronym]["name"]
+                    hemisphere = self.bg_atlas.hemisphere_from_coords(
+                        cursor_position, as_string=True, microns=False
+                    ).capitalize()
+                    tooltip_text = f"{structure_name} | {hemisphere}"
+                    self._tooltip.setText(tooltip_text)
+                    self._tooltip.adjustSize()
+                    self._tooltip.show()
+                except (KeyError, IndexError):
+                    self._tooltip.setText("")
+                    self._tooltip.hide()
+            # In the case of 3D
+            elif self.viewer.dims.ndisplay == 3:
+                self._tooltip.move(QCursor.pos().x() + 20, QCursor.pos().y() + 20)
+                try:
+                    structure_acronym = self.bg_atlas.structure_from_coords(
+                        cursor_position, microns=False, as_acronym=True
+                    )
+                    structure_name = self.bg_atlas.structures[structure_acronym]["name"]
+                    tooltip_text = f"{structure_name}"
+                    self._tooltip.setText(tooltip_text)
+                    self._tooltip.adjustSize()
+                    self._tooltip.show()
+                except (KeyError, IndexError):
+                    self._tooltip.setText("")
+                    self._tooltip.hide()
+        else:
+            self._tooltip.setText("")
+            self._tooltip.hide()
