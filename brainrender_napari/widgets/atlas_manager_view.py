@@ -138,9 +138,8 @@ class AtlasManagerView(QTableView):
         selected_atlas_name = self.model().data(selected_atlas_name_index)
         return selected_atlas_name
 
-    @staticmethod
     @thread_worker
-    def _apply_in_thread(apply: Callable, *args, **kwargs):
+    def _apply_in_thread(self, apply: Callable, *args, **kwargs):
         """Helper function that executes the specified function
         in a background threaseparate thread."""
         return apply(*args, **kwargs)
