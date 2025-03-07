@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 from brainglobe_atlasapi import BrainGlobeAtlas
 from meshio import Mesh
@@ -115,36 +114,12 @@ def test_show_info_called_for_2D_and_not_3D(
     viewer = make_napari_viewer()
     viewer.dims.ndisplay = ndisplay
 
-    atlas = BrainGlobeAtlas(atlas_name="example_mouse_100um")
+    atlas = BrainGlobeAtlas(atlas_name="allen_mouse_100um")
     atlas_representation = NapariAtlasRepresentation(atlas, viewer)
 
-    # Dummy mesh to avoid errors in mesh addition.
-    dummy_mesh = Mesh(
-        points=np.zeros((1, 3)), cells=[("triangle", np.array([[0, 0, 0]]))]
-    )
-
-    # Patch bg_atlas.mesh_from_structure to return dummy_mesh.
-    mocker.patch.object(
-        atlas_representation.bg_atlas,
-        "mesh_from_structure",
-        return_value=dummy_mesh,
-    )
-
-    # "dummy_structure" make the key referenceable
-    atlas_representation.bg_atlas.__dict__["structures"] = {
-        "dummy_structure": {"rgb_triplet": [255, 255, 255]}
-    }
-    atlas_representation.bg_atlas.__dict__["acronym_to_id_map"] = {
-        "dummy_structure": "dummy_structure"
-    }
-
     # Patch show_info from napari notifications.
-    show_info_mock = mocker.patch(
-        "brainrender_napari.napari_atlas_representation.show_info"
-    )
-
-    # Call add_structure_to_viewer with the dummy structure.
-    atlas_representation.add_structure_to_viewer("dummy_structure")
+    show_info_mock = mocker.patch("brainrender_napari.napari_atlas_representation.show_info")
+    atlas_representation.add_structure_to_viewer("CP")
 
     if expected_called:
         show_info_mock.assert_called_once_with(
