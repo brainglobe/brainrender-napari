@@ -51,9 +51,9 @@ class AtlasManagerView(QTableView):
         self.setSelectionMode(QTableView.SelectionMode.SingleSelection)
 
         self.doubleClicked.connect(self._on_row_double_clicked)
-        self.hideColumn(
-            self.table.column_headers.index("Raw name")
-        )  # hide raw name
+        self.hidden_columns = ["Raw name"] # hide raw name
+        for col in self.hidden_columns:
+            self.hideColumn(self.table.column_headers.index(col))
 
     def _apply_filters(self, query: str):
         """Filters the table view based on the query."""
@@ -153,6 +153,8 @@ class AtlasManagerFilter(QWidget):
         c = self.column_field = QComboBox()
         c.addItems(self.atlas_manager_view.table.column_headers)
         c.insertItem(0, "Any")
+        for col in self.atlas_manager_view.hidden_columns:
+            c.removeItem(c.findText(col))
         c.setCurrentIndex(0)
         c.currentIndexChanged.connect(self.apply)
 
@@ -184,3 +186,4 @@ class AtlasManagerFilter(QWidget):
         self.atlas_manager_view.proxy.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.atlas_manager_view._apply_filters(query)
         return
+    
