@@ -13,7 +13,7 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from brainrender_napari.widgets.atlas_manager_view import AtlasManagerView
+from brainrender_napari.widgets.atlas_manager_view import AtlasManagerView, AtlasManagerFilter
 
 
 class BrainrenderManagerWidget(QWidget):
@@ -50,4 +50,5 @@ class BrainrenderManagerWidget(QWidget):
         )
         self.atlas_manager_group.setLayout(QVBoxLayout())
         self.atlas_manager_group.layout().addWidget(self.atlas_manager_view)
+        self.atlas_manager_group.layout().addWidget(AtlasManagerFilter(self.atlas_manager_view))
         self.layout().addWidget(self.atlas_manager_group)
