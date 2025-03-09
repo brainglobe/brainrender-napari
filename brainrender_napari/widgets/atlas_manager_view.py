@@ -69,10 +69,13 @@ class AtlasManagerView(QTableView):
             download_dialog.exec()
 
     def _on_download_atlas_confirmed(self):
-        """Downloads the currently selected atlas and signals this."""
+        """Downloads the currently selected atlas and refreshes the table."""
         atlas_name = self.selected_atlas_name()
         worker = self._apply_in_thread(install_atlas, atlas_name)
+
         worker.returned.connect(self.download_atlas_confirmed.emit)
+        worker.returned.connect(lambda: self.model().refresh_data())
+
         worker.start()
 
     def _on_update_atlas_confirmed(self):
