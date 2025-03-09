@@ -18,7 +18,7 @@ from brainglobe_atlasapi.list_atlases import (
 )
 from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
 from napari.qt import thread_worker
-from qtpy.QtCore import Signal
+from qtpy.QtCore import Signal, QSortFilterProxyModel
 from qtpy.QtWidgets import QTableView, QWidget
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
@@ -38,7 +38,11 @@ class AtlasManagerView(QTableView):
         """
         super().__init__(parent)
 
-        self.setModel(AtlasTableModel(AtlasManagerView))
+        self.table = AtlasTableModel(AtlasManagerView)
+        self.proxy = QSortFilterProxyModel()
+        self.proxy.setSourceModel(self.table)
+        self.setModel(self.proxy)
+
         self.setEnabled(True)
         self.verticalHeader().hide()
         self.resizeColumnsToContents()
@@ -48,8 +52,13 @@ class AtlasManagerView(QTableView):
 
         self.doubleClicked.connect(self._on_row_double_clicked)
         self.hideColumn(
-            self.model().column_headers.index("Raw name")
+            self.table.column_headers.index("Raw name")
         )  # hide raw name
+
+    def _apply_filter(self, query: str):
+        """Filters the table view based on the given query."""
+        self.proxy.setFilterFixedString(query)
+        return
 
     def _on_row_double_clicked(self):
         atlas_name = self.selected_atlas_name()
@@ -87,14 +96,14 @@ class AtlasManagerView(QTableView):
         selected_index = self.selectionModel().currentIndex()
         assert selected_index.isValid()
         selected_atlas_name_index = selected_index.siblingAtColumn(0)
-        selected_atlas_name = self.model().data(selected_atlas_name_index)
+        selected_atlas_name = self.table.data(selected_atlas_name_index)
         return selected_atlas_name
 
     @thread_worker
     def _apply_in_thread(self, apply: Callable, atlas_name: str):
         """Calls `apply` on the given atlas in a separate thread."""
         apply(atlas_name)
-        self.model().refresh_data()
+        self.table.refresh_data()
         return atlas_name
 
     @classmethod
