@@ -134,10 +134,13 @@ class AtlasManagerView(QTableView):
         # Reset and show the progress bar
         self._progress_bar.setMaximum(100)
         self._progress_bar.setValue(0)
+        operation_name = (
+            "Downloading"
+            if operation == install_atlas_with_progress
+            else "Updating"
+        )
         self._progress_bar.setFormat(
-            f"{'Downloading' if operation == install_atlas_with_progress
-                else 'Updating'} "
-            f"{atlas_name}... 0.00 B / 0.00 B (%p%)"
+            f"{operation_name} {atlas_name}... 0.00 B / 0.00 B (%p%)"
         )
 
         self._progress_bar.show()
