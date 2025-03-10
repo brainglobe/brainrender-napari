@@ -205,7 +205,7 @@ class AtlasManagerView(QTableView):
     @thread_worker
     def _apply_in_thread(self, apply: Callable, *args, **kwargs):
         """Helper function that executes the specified function
-        in a background threaseparate thread."""
+        in a separate thread."""
         return apply(*args, **kwargs)
 
     @classmethod
