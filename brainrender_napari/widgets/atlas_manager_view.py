@@ -63,7 +63,8 @@ class AtlasManagerView(QTableView):
             self.hideColumn(self.table.column_headers.index(col))
 
     def _apply_filters(self, query: str):
-        """Filters the table view based on the query."""
+        """Filters the table view based on the query and
+        proxy's internal state."""
         self.proxy.setFilterFixedString(query)
         return
 
@@ -183,7 +184,8 @@ class AtlasManagerFilter(QWidget):
         return
 
     def apply(self):
-        """Apply filters."""
+        """Updates proxy's internal state based on input and
+        applies filters."""
         query = self.query_field.text()
         column = self.column_field.currentText()
 
