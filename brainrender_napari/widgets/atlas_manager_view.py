@@ -9,7 +9,7 @@ It is designed to be agnostic from the viewer framework by emitting signals
 that any interested observers can connect to.
 """
 
-from typing import Callable
+from typing import Callable, Optional
 
 from brainglobe_atlasapi.list_atlases import (
     get_all_atlases_lastversions,
@@ -70,7 +70,7 @@ class AtlasManagerView(QTableView):
         """
         super().__init__(parent)
 
-        self._progress_bar = None
+        self._progress_bar: Optional[QProgressBar] = None
 
         self.setModel(AtlasTableModel(AtlasManagerView))
         self.setEnabled(True)
@@ -158,6 +158,7 @@ class AtlasManagerView(QTableView):
     def _update_progress_bar_from_signal(
         self, completed: int, total: int, atlas_name: str, operation: Callable
     ):
+        assert self._progress_bar is not None, "Progress bar is not set"
         percentage = min(
             int((completed / total) * 100) if total > 0 else 0, 100
         )
