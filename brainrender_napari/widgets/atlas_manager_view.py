@@ -135,7 +135,8 @@ class AtlasManagerView(QTableView):
         self._progress_bar.setMaximum(100)
         self._progress_bar.setValue(0)
         self._progress_bar.setFormat(
-            f"{'Downloading' if operation == install_atlas_with_progress else 'Updating'} "
+            f"{'Downloading' if operation == install_atlas_with_progress
+                else 'Updating'} "
             f"{atlas_name}... 0.00 B / 0.00 B (%p%)"
         )
 
@@ -168,7 +169,9 @@ class AtlasManagerView(QTableView):
             else "Updating"
         )
         self._progress_bar.setFormat(
-            f"{operation_type} {atlas_name}... {_format_bytes(completed)} / {_format_bytes(total)} ({percentage}%)"
+            f"{operation_type} {atlas_name}... "
+            f"{_format_bytes(completed)} / {_format_bytes(total)} "
+            f"({percentage}%)"
         )
 
     def _on_download_atlas_confirmed(self):
