@@ -9,9 +9,9 @@ from brainglobe_utils.qtpy.logo import header_widget
 from napari.viewer import Viewer
 from qtpy.QtWidgets import (
     QGroupBox,
+    QProgressBar,
     QVBoxLayout,
     QWidget,
-    QProgressBar,
 )
 
 from brainrender_napari.widgets.atlas_manager_view import AtlasManagerView
@@ -52,9 +52,8 @@ class BrainrenderManagerWidget(QWidget):
         self.atlas_manager_group.setLayout(QVBoxLayout())
         self.atlas_manager_group.layout().addWidget(self.atlas_manager_view)
         self.layout().addWidget(self.atlas_manager_group)
-        
+
         self.progress_bar = QProgressBar(self)
         self.progress_bar.hide()
         self.atlas_manager_group.layout().addWidget(self.progress_bar)
-        self.layout().addWidget(self.atlas_manager_group)
         self.atlas_manager_view.set_progress_bar(self.progress_bar)
