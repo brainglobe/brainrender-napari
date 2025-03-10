@@ -8,6 +8,7 @@ it's up to date.
 It is designed to be agnostic from the viewer framework by emitting signals
 that any interested observers can connect to.
 """
+
 from typing import Callable
 
 from brainglobe_atlasapi.list_atlases import (
@@ -17,17 +18,17 @@ from brainglobe_atlasapi.list_atlases import (
 )
 from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
 from napari.qt import thread_worker
-from qtpy.QtWidgets import QProgressBar 
-from qtpy.QtCore import Signal, QTimer, Qt
+from qtpy.QtCore import Signal
 from qtpy.QtWidgets import (
-    QWidget,
-    QTableView,
     QProgressBar,
+    QTableView,
+    QWidget,
 )
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
 from brainrender_napari.utils.formatting import format_atlas_name
 from brainrender_napari.widgets.atlas_manager_dialog import AtlasManagerDialog
+
 
 def _format_bytes(num_bytes: float) -> str:
     for unit in ["B", "KB", "MB", "GB"]:
@@ -35,6 +36,7 @@ def _format_bytes(num_bytes: float) -> str:
             return f"{num_bytes:.2f} {unit}"
         num_bytes /= 1024
     return f"{num_bytes:.2f} TB"
+
 
 def install_atlas_with_progress(atlas_name: str, fn_update: Callable):
     """
@@ -87,11 +89,13 @@ class AtlasManagerView(QTableView):
     def set_progress_bar(self, progress_bar: QProgressBar):
         """
         Assign a QProgressBar from the parent widget.
-        This bar will be used to show download/update progress 
+        This bar will be used to show download/update progress
         """
         self._progress_bar = progress_bar
         self._progress_bar.setTextVisible(True)
-        self._progress_bar.setStyleSheet("QProgressBar { text-align: center; }")
+        self._progress_bar.setStyleSheet(
+            "QProgressBar { text-align: center; }"
+        )
 
     def _on_row_double_clicked(self):
         atlas_name = self.selected_atlas_name()
@@ -120,8 +124,10 @@ class AtlasManagerView(QTableView):
         """
         if not self._progress_bar:
             # If there's no progress bar set, just run the operation
-            worker = self._apply_in_thread(operation, atlas_name, lambda c, t: None) 
-            worker.returned.connect(lambda result: signal.emit(result)) 
+            worker = self._apply_in_thread(
+                operation, atlas_name, lambda c, t: None
+            )
+            worker.returned.connect(lambda result: signal.emit(result))
             worker.start()
             return
 
@@ -130,27 +136,37 @@ class AtlasManagerView(QTableView):
         self._progress_bar.setValue(0)
         self._progress_bar.setFormat(
             f"{'Downloading' if operation == install_atlas_with_progress else 'Updating'} "
-            f"{atlas_name}... 0.00 B / 0.00 B (%p%)"            
-        )       
+            f"{atlas_name}... 0.00 B / 0.00 B (%p%)"
+        )
 
-        self._progress_bar.show()  
+        self._progress_bar.show()
 
         def update_fn(completed, total):
             self.progress_updated.emit(completed, total, atlas_name, operation)
 
         worker = self._apply_in_thread(operation, atlas_name, update_fn)
-        worker.returned.connect(lambda result: (
-            self._progress_bar.setValue(self._progress_bar.maximum()),
-            self._progress_bar.hide(),
-            signal.emit(result)
-            ))
+        worker.returned.connect(
+            lambda result: (
+                self._progress_bar.setValue(self._progress_bar.maximum()),
+                self._progress_bar.hide(),
+                signal.emit(result),
+            )
+        )
         worker.start()
 
-    def _update_progress_bar_from_signal(self, completed: int, total: int, atlas_name: str, operation: Callable):
-        percentage = min(int((completed / total) * 100) if total > 0 else 0, 100)
+    def _update_progress_bar_from_signal(
+        self, completed: int, total: int, atlas_name: str, operation: Callable
+    ):
+        percentage = min(
+            int((completed / total) * 100) if total > 0 else 0, 100
+        )
         self._progress_bar.setMaximum(100)
         self._progress_bar.setValue(percentage)
-        operation_type = 'Downloading' if operation == install_atlas_with_progress else 'Updating'
+        operation_type = (
+            "Downloading"
+            if operation == install_atlas_with_progress
+            else "Updating"
+        )
         self._progress_bar.setFormat(
             f"{operation_type} {atlas_name}... {_format_bytes(completed)} / {_format_bytes(total)} ({percentage}%)"
         )
@@ -204,4 +220,3 @@ class AtlasManagerView(QTableView):
         else:
             raise ValueError("Tooltip text called with invalid atlas name.")
         return tooltip_text
-
