@@ -8,7 +8,6 @@ it's up to date.
 It is designed to be agnostic from the viewer framework by emitting signals
 that any interested observers can connect to.
 """
-
 from typing import Callable
 
 from brainglobe_atlasapi.list_atlases import (
@@ -18,14 +17,24 @@ from brainglobe_atlasapi.list_atlases import (
 )
 from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
 from napari.qt import thread_worker
-from napari.utils import progress
-from qtpy.QtCore import Signal
-from qtpy.QtWidgets import QTableView, QWidget
+from qtpy.QtWidgets import QProgressBar 
+from qtpy.QtCore import Signal, QTimer, Qt
+from qtpy.QtWidgets import (
+    QWidget,
+    QTableView,
+    QProgressBar,
+)
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
 from brainrender_napari.utils.formatting import format_atlas_name
 from brainrender_napari.widgets.atlas_manager_dialog import AtlasManagerDialog
 
+def _format_bytes(num_bytes: float) -> str:
+    for unit in ["B", "KB", "MB", "GB"]:
+        if num_bytes < 1024:
+            return f"{num_bytes:.2f} {unit}"
+        num_bytes /= 1024
+    return f"{num_bytes:.2f} TB"
 
 def install_atlas_with_progress(atlas_name: str, fn_update: Callable):
     """
@@ -49,6 +58,7 @@ def update_atlas_with_progress(atlas_name: str, fn_update: Callable):
 class AtlasManagerView(QTableView):
     download_atlas_confirmed = Signal(str)
     update_atlas_confirmed = Signal(str)
+    progress_updated = Signal(int, int, str, object)
 
     def __init__(self, parent: QWidget = None):
         """Initialises an atlas table view with latest atlas versions.
@@ -57,6 +67,8 @@ class AtlasManagerView(QTableView):
         setting up signal-slot connections.
         """
         super().__init__(parent)
+
+        self._progress_bar = None
 
         self.setModel(AtlasTableModel(AtlasManagerView))
         self.setEnabled(True)
@@ -70,6 +82,16 @@ class AtlasManagerView(QTableView):
         self.hideColumn(
             self.model().column_headers.index("Raw name")
         )  # hide raw name
+        self.progress_updated.connect(self._update_progress_bar_from_signal)
+
+    def set_progress_bar(self, progress_bar: QProgressBar):
+        """
+        Assign a QProgressBar from the parent widget.
+        This bar will be used to show download/update progress 
+        """
+        self._progress_bar = progress_bar
+        self._progress_bar.setTextVisible(True)
+        self._progress_bar.setStyleSheet("QProgressBar { text-align: center; }")
 
     def _on_row_double_clicked(self):
         atlas_name = self.selected_atlas_name()
@@ -92,30 +114,46 @@ class AtlasManagerView(QTableView):
         self, operation: Callable, atlas_name: str, signal: Signal
     ):
         """
-        Helper functions that combine progress bar generation,
-        update processing, worker activation, and signal issuance into one
+        Helper function that combines progress bar generation,
+        update processing, worker activation, and signal issuance.
+        Displays a QProgressBar in the plugin widget.
         """
-        pbar = progress(
-            total=0,
-            desc=f"{'Downloading' if operation == install_atlas_with_progress
-                    else 'Updating'} {atlas_name}...",
-            unit="B",
-            unit_scale=True,
-            unit_divisor=1024,
-        )
+        if not self._progress_bar:
+            # If there's no progress bar set, just run the operation
+            worker = self._apply_in_thread(operation, atlas_name, lambda c, t: None) 
+            worker.returned.connect(lambda result: signal.emit(result)) 
+            worker.start()
+            return
+
+        # Reset and show the progress bar
+        self._progress_bar.setMaximum(100)
+        self._progress_bar.setValue(0)
+        self._progress_bar.setFormat(
+            f"{'Downloading' if operation == install_atlas_with_progress else 'Updating'} "
+            f"{atlas_name}... 0.00 B / 0.00 B (%p%)"            
+        )       
+
+        self._progress_bar.show()  
 
         def update_fn(completed, total):
-            if pbar.total == 0 and total > 0:
-                pbar.total = total
-            diff = completed - pbar.n
-            if diff > 0:
-                pbar.update(diff)
+            self.progress_updated.emit(completed, total, atlas_name, operation)
 
         worker = self._apply_in_thread(operation, atlas_name, update_fn)
-        worker.returned.connect(
-            lambda result: (pbar.close(), signal.emit(result))
-        )
+        worker.returned.connect(lambda result: (
+            self._progress_bar.setValue(self._progress_bar.maximum()),
+            self._progress_bar.hide(),
+            signal.emit(result)
+            ))
         worker.start()
+
+    def _update_progress_bar_from_signal(self, completed: int, total: int, atlas_name: str, operation: Callable):
+        percentage = min(int((completed / total) * 100) if total > 0 else 0, 100)
+        self._progress_bar.setMaximum(100)
+        self._progress_bar.setValue(percentage)
+        operation_type = 'Downloading' if operation == install_atlas_with_progress else 'Updating'
+        self._progress_bar.setFormat(
+            f"{operation_type} {atlas_name}... {_format_bytes(completed)} / {_format_bytes(total)} ({percentage}%)"
+        )
 
     def _on_download_atlas_confirmed(self):
         """Downloads the currently selected atlas and signals this."""
@@ -166,3 +204,4 @@ class AtlasManagerView(QTableView):
         else:
             raise ValueError("Tooltip text called with invalid atlas name.")
         return tooltip_text
+
