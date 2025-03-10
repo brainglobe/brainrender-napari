@@ -150,27 +150,29 @@ class AtlasManagerFilter(QWidget):
 
     def setup_ui(self):
         """Creates embedded widgets and attaches these within a layout."""
-        l = self.layout = QHBoxLayout(self)
-        l.setContentsMargins(0, 0, 0, 0)
-        l.setSpacing(0)
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
 
-        q = self.query_field = QLineEdit(self)
-        q.setPlaceholderText("Search...")
-        q.textChanged.connect(self.apply)
+        self.query_field = QLineEdit(self)
+        self.query_field.setPlaceholderText("Search...")
+        self.query_field.textChanged.connect(self.apply)
 
-        l.addWidget(QLabel("Query:"))
-        l.addWidget(q)
+        self.layout.addWidget(QLabel("Query:"))
+        self.layout.addWidget(self.query_field)
 
-        c = self.column_field = QComboBox()
-        c.addItems(self.atlas_manager_view.table.column_headers)
-        c.insertItem(0, "Any")
+        self.column_field = QComboBox()
+        self.column_field.addItems(
+            self.atlas_manager_view.table.column_headers
+        )
+        self.column_field.insertItem(0, "Any")
         for col in self.atlas_manager_view.hidden_columns:
-            c.removeItem(c.findText(col))
-        c.setCurrentIndex(0)
-        c.currentIndexChanged.connect(self.apply)
+            self.column_field.removeItem(self.column_field.findText(col))
+        self.column_field.setCurrentIndex(0)
+        self.column_field.currentIndexChanged.connect(self.apply)
 
-        l.addWidget(QLabel("Column:"))
-        l.addWidget(c)
+        self.layout.addWidget(QLabel("Column:"))
+        self.layout.addWidget(self.column_field)
         return
 
     def clear(self):
