@@ -52,15 +52,15 @@ def test_model_header_invalid_view():
         assert "get_tooltip_text" in error
 
 
-def test_background_color_for_outdated_atlas(atlas_table_model, mock_newer_atlas_version_available):
+def test_background_color_for_outdated_atlas(
+    atlas_table_model, mock_newer_atlas_version_available
+):
     """
     For out-of-date atlas (local_version=“1.1”, latest_version=“1.2”),
     Test to verify that the amber color is returned according to the theme.
     """
     index = atlas_table_model.index(0, 0)
     theme = get_settings().appearance.theme
-
-    index = atlas_table_model.index(row, 0)
     brush = atlas_table_model.data(index, role=Qt.BackgroundRole)
     assert isinstance(brush, QBrush)
 
