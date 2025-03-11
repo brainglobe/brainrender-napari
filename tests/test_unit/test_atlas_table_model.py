@@ -51,23 +51,25 @@ def test_model_header_invalid_view():
         assert "classmethod" in error
         assert "get_tooltip_text" in error
 
-
+@pytest.mark.parametrize(
+    "theme, expected_rgb",
+    [
+        ('dark', (255, 140, 0)),
+        ('light', (255, 191, 0)),
+    ],
+)
 def test_background_color_for_outdated_atlas(
-    atlas_table_model, mock_newer_atlas_version_available
+    atlas_table_model, theme, expected_rgb, mock_newer_atlas_version_available
 ):
     """
     For out-of-date atlas (local_version=“1.1”, latest_version=“1.2”),
     Test to verify that the amber color is returned according to the theme.
     """
+    get_settings().appearance.theme = theme 
+    
     index = atlas_table_model.index(0, 0)
-    theme = get_settings().appearance.theme
     brush = atlas_table_model.data(index, role=Qt.BackgroundRole)
     assert isinstance(brush, QBrush)
-
-    if theme == "dark":
-        expected_rgb = (255, 140, 0)  # dark amber
-    else:
-        expected_rgb = (255, 191, 0)  # light amber
 
     # Retrieve QColor from the retrieved QBrush
     # and verify RGB (ignoring alpha values)
