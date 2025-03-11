@@ -69,17 +69,23 @@ class AtlasManagerView(QTableView):
             download_dialog.exec()
 
     def _on_download_atlas_confirmed(self):
-        """Downloads the currently selected atlas and signals this."""
+        """Downloads the currently selected atlas and refreshes the table."""
         atlas_name = self.selected_atlas_name()
         worker = self._apply_in_thread(install_atlas, atlas_name)
+
         worker.returned.connect(self.download_atlas_confirmed.emit)
+        worker.returned.connect(lambda: self.model().refresh_data())
+
         worker.start()
 
     def _on_update_atlas_confirmed(self):
-        """Updates the currently selected atlas and signals this."""
+        """Updates the currently selected atlas and refreshes the table."""
         atlas_name = self.selected_atlas_name()
         worker = self._apply_in_thread(update_atlas, atlas_name)
         worker.returned.connect(self.update_atlas_confirmed.emit)
+        worker.returned.connect(
+            lambda: self.model().refresh_data()
+        )  # Refresh table
         worker.start()
 
     def selected_atlas_name(self) -> str:
@@ -94,7 +100,6 @@ class AtlasManagerView(QTableView):
     def _apply_in_thread(self, apply: Callable, atlas_name: str):
         """Calls `apply` on the given atlas in a separate thread."""
         apply(atlas_name)
-        self.model().refresh_data()
         return atlas_name
 
     @classmethod
