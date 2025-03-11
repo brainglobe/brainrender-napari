@@ -18,8 +18,15 @@ from brainglobe_atlasapi.list_atlases import (
 )
 from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
 from napari.qt import thread_worker
-from qtpy.QtCore import Signal
-from qtpy.QtWidgets import QTableView, QWidget
+from qtpy.QtCore import QSortFilterProxyModel, Qt, Signal
+from qtpy.QtWidgets import (
+    QComboBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QTableView,
+    QWidget,
+)
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
 from brainrender_napari.utils.formatting import format_atlas_name
@@ -38,7 +45,11 @@ class AtlasManagerView(QTableView):
         """
         super().__init__(parent)
 
-        self.setModel(AtlasTableModel(AtlasManagerView))
+        self.table = AtlasTableModel(AtlasManagerView)
+        self.proxy = QSortFilterProxyModel()
+        self.proxy.setSourceModel(self.table)
+        self.setModel(self.proxy)
+
         self.setEnabled(True)
         self.verticalHeader().hide()
         self.resizeColumnsToContents()
@@ -47,9 +58,15 @@ class AtlasManagerView(QTableView):
         self.setSelectionMode(QTableView.SelectionMode.SingleSelection)
 
         self.doubleClicked.connect(self._on_row_double_clicked)
-        self.hideColumn(
-            self.model().column_headers.index("Raw name")
-        )  # hide raw name
+        self.hidden_columns = ["Raw name"]  # hide raw name
+        for col in self.hidden_columns:
+            self.hideColumn(self.table.column_headers.index(col))
+
+    def _apply_filters(self, query: str):
+        """Filters the table view based on the query and
+        proxy's internal state."""
+        self.proxy.setFilterFixedString(query)
+        return
 
     def _on_row_double_clicked(self):
         atlas_name = self.selected_atlas_name()
@@ -87,14 +104,14 @@ class AtlasManagerView(QTableView):
         selected_index = self.selectionModel().currentIndex()
         assert selected_index.isValid()
         selected_atlas_name_index = selected_index.siblingAtColumn(0)
-        selected_atlas_name = self.model().data(selected_atlas_name_index)
+        selected_atlas_name = self.table.data(selected_atlas_name_index)
         return selected_atlas_name
 
     @thread_worker
     def _apply_in_thread(self, apply: Callable, atlas_name: str):
         """Calls `apply` on the given atlas in a separate thread."""
         apply(atlas_name)
-        self.model().refresh_data()
+        self.table.refresh_data()
         return atlas_name
 
     @classmethod
@@ -116,3 +133,74 @@ class AtlasManagerView(QTableView):
         else:
             raise ValueError("Tooltip text called with invalid atlas name.")
         return tooltip_text
+
+
+class AtlasManagerFilter(QWidget):
+    """Implements simple query-based filtering for the atlas table view,
+    allowing users to search for specific atlases."""
+
+    def __init__(
+        self, atlas_manager_view: AtlasManagerView, parent: QWidget = None
+    ):
+        super().__init__(parent)
+
+        self.atlas_manager_view = atlas_manager_view
+        self.setup_ui()
+        return
+
+    def setup_ui(self):
+        """Creates embedded widgets and attaches these within a layout."""
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
+
+        self.query_field = QLineEdit(self)
+        self.query_field.setPlaceholderText("Search...")
+        self.query_field.textChanged.connect(self.apply)
+
+        self.layout.addWidget(QLabel("Query:"))
+        self.layout.addWidget(self.query_field)
+
+        self.column_field = QComboBox()
+        self.column_field.addItems(
+            self.atlas_manager_view.table.column_headers
+        )
+        self.column_field.insertItem(0, "Any")
+        for col in self.atlas_manager_view.hidden_columns:
+            self.column_field.removeItem(self.column_field.findText(col))
+        self.column_field.setCurrentIndex(0)
+        self.column_field.currentIndexChanged.connect(self.apply)
+
+        self.layout.addWidget(QLabel("Column:"))
+        self.layout.addWidget(self.column_field)
+        return
+
+    def clear(self):
+        self.atlas_manager_view.table.proxy.setFilterFixedString("")
+
+    def closeEvent(self, event):
+        """Cleans up the widget when it is closed."""
+        self.query_field.textChanged.disconnect(self.apply)
+        self.column_field.currentIndexChanged.disconnect(self.apply)
+        self.clear()
+        return
+
+    def apply(self):
+        """Updates proxy's internal state based on input and
+        applies filters."""
+        query = self.query_field.text()
+        column = self.column_field.currentText()
+
+        if column == "Any":
+            self.atlas_manager_view.proxy.setFilterKeyColumn(-1)
+        else:
+            column_index = self.atlas_manager_view.table.column_headers.index(
+                column
+            )
+            self.atlas_manager_view.proxy.setFilterKeyColumn(column_index)
+
+        self.atlas_manager_view.proxy.setFilterCaseSensitivity(
+            Qt.CaseInsensitive
+        )
+        self.atlas_manager_view._apply_filters(query)
+        return
