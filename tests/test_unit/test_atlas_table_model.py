@@ -7,7 +7,7 @@ from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
 
 
 @pytest.fixture
-def atlas_table_model(mocker):
+def atlas_table_model(mocker, mock_newer_atlas_version_available):
     mock_view = mocker.Mock(spec=["get_tooltip_text"])
     return AtlasTableModel(view_type=mock_view)
 
