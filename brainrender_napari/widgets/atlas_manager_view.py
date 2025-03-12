@@ -9,7 +9,7 @@ It is designed to be agnostic from the viewer framework by emitting signals
 that any interested observers can connect to.
 """
 
-from typing import Callable, Optional
+from typing import Callable
 
 from brainglobe_atlasapi.list_atlases import (
     get_all_atlases_lastversions,
@@ -29,11 +29,12 @@ from brainrender_napari.utils.formatting import format_atlas_name
 from brainrender_napari.widgets.atlas_manager_dialog import AtlasManagerDialog
 
 
-
 class AtlasManagerView(QTableView):
     download_atlas_confirmed = Signal(str)
     update_atlas_confirmed = Signal(str)
-    progress_updated = Signal(int, int, str, object) # completed, total, atlas_name, operation_type
+    progress_updated = Signal(
+        int, int, str, object
+    )  # completed, total, atlas_name, operation_type
 
     def __init__(self, parent: QWidget = None):
         """Initialises an atlas table view with latest atlas versions.
@@ -42,7 +43,6 @@ class AtlasManagerView(QTableView):
         setting up signal-slot connections.
         """
         super().__init__(parent)
-
 
         self.setModel(AtlasTableModel(AtlasManagerView))
         self.setEnabled(True)
@@ -56,7 +56,6 @@ class AtlasManagerView(QTableView):
         self.hideColumn(
             self.model().column_headers.index("Raw name")
         )  # hide raw name
-
 
     def _on_row_double_clicked(self):
         atlas_name = self.selected_atlas_name()
@@ -76,20 +75,27 @@ class AtlasManagerView(QTableView):
             download_dialog.exec()
 
     def _start_worker(
-        self, operation: Callable, atlas_name: str, signal: Signal, operation_type: str
+        self,
+        operation: Callable,
+        atlas_name: str,
+        signal: Signal,
+        operation_type: str,
     ):
         """
         Helper function that combines progress bar generation,
         update processing, worker activation, and signal issuance.
         Displays a QProgressBar in the plugin widget.
         """
+
         def update_fn(completed, total):
-            self.progress_updated.emit(completed, total, atlas_name, operation_type)
+            self.progress_updated.emit(
+                completed, total, atlas_name, operation_type
+            )
 
         worker = self._apply_in_thread(operation, atlas_name, update_fn)
         worker.returned.connect(lambda result: signal.emit(result))
         worker.start()
-        
+
     def _on_download_atlas_confirmed(self):
         """Downloads the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
@@ -97,20 +103,15 @@ class AtlasManagerView(QTableView):
             install_atlas,
             atlas_name,
             self.download_atlas_confirmed,
-            "Downloading"
+            "Downloading",
         )
-
 
     def _on_update_atlas_confirmed(self):
         """Updates the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
         self._start_worker(
-            update_atlas, 
-            atlas_name, 
-            self.update_atlas_confirmed,
-            "Updating"
+            update_atlas, atlas_name, self.update_atlas_confirmed, "Updating"
         )
-
 
     def selected_atlas_name(self) -> str:
         """A single place to get a valid selected atlas name."""

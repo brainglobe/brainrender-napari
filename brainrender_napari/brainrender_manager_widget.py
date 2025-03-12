@@ -13,8 +13,9 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from brainrender_napari.widgets.atlas_manager_view import AtlasManagerView
 from brainrender_napari.atlas_progress_bar import AtlasProgressBar
+from brainrender_napari.widgets.atlas_manager_view import AtlasManagerView
+
 
 class BrainrenderManagerWidget(QWidget):
     """The purpose of this class is
@@ -56,7 +57,13 @@ class BrainrenderManagerWidget(QWidget):
         self.progress_bar = AtlasProgressBar(self)
         self.atlas_manager_group.layout().addWidget(self.progress_bar)
 
-        # Connect signals 
-        self.atlas_manager_view.progress_updated.connect(self.progress_bar.update_progress)
-        self.atlas_manager_view.download_atlas_confirmed.connect(self.progress_bar.operation_completed)
-        self.atlas_manager_view.update_atlas_confirmed.connect(self.progress_bar.operation_completed)
+        # Connect signals
+        self.atlas_manager_view.progress_updated.connect(
+            self.progress_bar.update_progress
+        )
+        self.atlas_manager_view.download_atlas_confirmed.connect(
+            self.progress_bar.operation_completed
+        )
+        self.atlas_manager_view.update_atlas_confirmed.connect(
+            self.progress_bar.operation_completed
+        )
