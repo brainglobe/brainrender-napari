@@ -6,3 +6,13 @@ def format_atlas_name(name: str) -> str:
     formatted_name[0] = formatted_name[0].capitalize()
     formatted_name[-1] = f"({formatted_name[-1].split('um')[0]} \u03bcm)"
     return " ".join([formatted for formatted in formatted_name])
+
+def format_bytes(num_bytes: float) -> str:
+    """
+    Format a byte count into a human-readable string with appropriate units.
+    """
+    for unit in ["B", "KB", "MB", "GB"]:
+        if num_bytes < 1024:
+            return f"{num_bytes:.2f} {unit}"
+        num_bytes /= 1024
+    return f"{num_bytes:.2f} TB"
