@@ -76,7 +76,7 @@ class AtlasManagerView(QTableView):
             download_dialog.exec()
 
     def _start_worker(
-        self, operation: Callable, atlas_name: str, signal: Signal
+        self, operation: Callable, atlas_name: str, signal: Signal, operation_type: str
     ):
         """
         Helper function that combines progress bar generation,
@@ -84,12 +84,12 @@ class AtlasManagerView(QTableView):
         Displays a QProgressBar in the plugin widget.
         """
         def update_fn(completed, total):
-            self.progress_updated.emit(completed, total, atlas_name, operation)
+            self.progress_updated.emit(completed, total, atlas_name, operation_type)
 
         worker = self._apply_in_thread(operation, atlas_name, update_fn)
         worker.returned.connect(lambda result: signal.emit(result))
         worker.start()
-
+        
     def _on_download_atlas_confirmed(self):
         """Downloads the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
