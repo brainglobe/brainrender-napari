@@ -56,7 +56,6 @@ class AtlasManagerView(QTableView):
         self.hideColumn(
             self.model().column_headers.index("Raw name")
         )  # hide raw name
-        self.progress_updated.connect(self._update_progress_bar_from_signal)
 
 
     def _on_row_double_clicked(self):
