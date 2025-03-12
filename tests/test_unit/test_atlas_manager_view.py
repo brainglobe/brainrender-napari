@@ -34,7 +34,7 @@ def test_update_atlas_confirmed(
     local_version_index = atlas_manager_view.model().index(0, 2)
     assert atlas_manager_view.model().data(local_version_index) == "1.1"
 
-    def fake_update_atlas_with_progress(atlas_name, fn_update):
+    def fake_update_atlas(atlas_name, fn_update):
         fn_update(100, 100)
 
         outdated = Path.home() / ".brainglobe/example_mouse_100um_v1.1"
@@ -56,8 +56,8 @@ def test_update_atlas_confirmed(
         return atlas_name
 
     mocker.patch(
-        "brainrender_napari.widgets.atlas_manager_view.update_atlas_with_progress",
-        side_effect=fake_update_atlas_with_progress,
+        "brainrender_napari.widgets.atlas_manager_view.update_atlas",
+        side_effect=fake_update_atlas,
     )
 
     with qtbot.waitSignal(
@@ -101,7 +101,7 @@ def test_double_click_on_not_yet_downloaded_atlas_row(
     dialog_exec_mock.assert_called_once()
 
 
-def test_download_confirmed_callback(atlas_manager_view, qtbot):
+def test_download_confirmed_callback(atlas_manager_view, qtbot, mocker):
     """Checks that confirming atlas download creates local copy of
     example atlas files and emits expected signal.
 
@@ -118,6 +118,11 @@ def test_download_confirmed_callback(atlas_manager_view, qtbot):
     assert not Path.exists(
         atlas_directory
     )  # sanity check that local copy is gone
+
+    mocker.patch(
+        "brainrender_napari.widgets.atlas_manager_view.install_atlas",
+        return_value="example_mouse_100um",
+    )
 
     with qtbot.waitSignal(
         atlas_manager_view.download_atlas_confirmed,
