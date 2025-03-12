@@ -27,8 +27,10 @@ class AtlasProgressBar(QProgressBar):
     """
     Update the progress bar with current download/update status.
     """
-    # Calculate percentage and ensure it doesn't exceed 100%
-    percentage = min(int((completed / total) * 100) if total > 0 else 0, 100)
+    # Ensure completed doesn't exceed total
+    completed = min(completed, total)
+    # Calculate percentage 
+    percentage = int((completed / total) * 100) if total > 0 else 0
 
     # Update progress bar state
     self.setMaximum(100)
