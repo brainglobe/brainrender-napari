@@ -64,12 +64,6 @@ class AtlasManagerView(QTableView):
         for col in self.hidden_columns:
             self.hideColumn(self.source_model.column_headers.index(col))
 
-    def _apply_filters(self, query: str):
-        """Filters the table view based on the query and
-        proxy's internal state."""
-        self.proxy_model.setFilterFixedString(query)
-        return
-
     def _on_row_double_clicked(self):
         atlas_name = self.selected_atlas_name()
         if atlas_name in get_downloaded_atlases():
@@ -189,7 +183,7 @@ class AtlasManagerFilter(QWidget):
 
     def apply(self):
         """Updates proxy's internal state based on input and
-        applies filters."""
+        applies filter."""
         query = self.query_field.text()
         column = self.column_field.currentText()
 
@@ -205,5 +199,6 @@ class AtlasManagerFilter(QWidget):
                 column_index
             )
 
-        self.atlas_manager_view._apply_filters(query)
+        # apply filter
+        self.atlas_manager_view.proxy_model.setFilterFixedString(query)
         return
