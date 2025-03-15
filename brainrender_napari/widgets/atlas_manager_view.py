@@ -50,6 +50,8 @@ class AtlasManagerView(QTableView):
         self.proxy_model.setSourceModel(self.source_model)
         self.setModel(self.proxy_model)
 
+        self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+
         self.setEnabled(True)
         self.verticalHeader().hide()
         self.resizeColumnsToContents()
@@ -203,8 +205,5 @@ class AtlasManagerFilter(QWidget):
                 column_index
             )
 
-        self.atlas_manager_view.proxy_model.setFilterCaseSensitivity(
-            Qt.CaseInsensitive
-        )
         self.atlas_manager_view._apply_filters(query)
         return
