@@ -13,10 +13,8 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from brainrender_napari.widgets.atlas_manager_view import (
-    AtlasManagerFilter,
-    AtlasManagerView,
-)
+from brainrender_napari.widgets.atlas_manager_filter import AtlasManagerFilter
+from brainrender_napari.widgets.atlas_manager_view import AtlasManagerView
 
 
 class BrainrenderManagerWidget(QWidget):
