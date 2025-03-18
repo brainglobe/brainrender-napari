@@ -1,6 +1,3 @@
-import shutil
-from pathlib import Path
-
 import pytest
 from qtpy.QtCore import Qt
 
@@ -12,29 +9,33 @@ from brainrender_napari.widgets.atlas_manager_view import AtlasManagerView
 def atlas_manager_view(qtbot):
     return AtlasManagerView()
 
+
 def test_update_atlas_confirmed(
     qtbot,
     mocker,
     atlas_manager_view,
 ):
     """
-    Test that confirming atlas update triggers the correct actions and emits signal.
+    Test that confirming atlas update triggers the correct actions
+    and emits signal.
     Uses mocks instead of filesystem fixtures.
     """
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.get_downloaded_atlases",
-        return_value=["example_mouse_100um"]
+        return_value=["example_mouse_100um"],
     )
-    
+
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.get_atlases_lastversions",
-        return_value={"example_mouse_100um": {"updated": False, "version": "1.2"}}
+        return_value={
+            "example_mouse_100um": {"updated": False, "version": "1.2"}
+        },
     )
-    
+
     mocker.patch.object(
         atlas_manager_view,
         "selected_atlas_name",
-        return_value="example_mouse_100um"
+        return_value="example_mouse_100um",
     )
 
     def fake_update_atlas(atlas_name, fn_update):
@@ -51,8 +52,9 @@ def test_update_atlas_confirmed(
         timeout=300000,  # assumes atlas can be updated in 5 minutes!
     ) as update_atlas_confirmed_signal:
         atlas_manager_view._on_update_atlas_confirmed()
-    
+
     assert update_atlas_confirmed_signal.args == ["example_mouse_100um"]
+
 
 def test_progress_signal_emission(atlas_manager_view, qtbot, mocker):
     """Test that progress_updated signal is emitted with correct parameters."""
@@ -143,12 +145,14 @@ def test_double_click_on_outdated_atlas_row(
     """
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.get_downloaded_atlases",
-        return_value=["example_mouse_100um"]
+        return_value=["example_mouse_100um"],
     )
-    
+
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.get_atlases_lastversions",
-        return_value={"example_mouse_100um": {"updated": False, "version": "1.2"}}
+        return_value={
+            "example_mouse_100um": {"updated": False, "version": "1.2"}
+        },
     )
 
     outdated_atlas_index = atlas_manager_view.model().index(0, 1)
@@ -180,12 +184,12 @@ def test_get_tooltip_not_locally_available(mocker):
     # Mock atlas is not downloaded
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.get_downloaded_atlases",
-        return_value=[]
+        return_value=[],
     )
-    
+
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.get_all_atlases_lastversions",
-        return_value={"allen_human_500um": {"version": "1.0"}}
+        return_value={"allen_human_500um": {"version": "1.0"}},
     )
 
     tooltip_text = AtlasManagerView.get_tooltip_text("allen_human_500um")
@@ -198,13 +202,15 @@ def test_get_tooltip_not_up_to_date(mocker):
     # Mock downloaded atlas
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.get_downloaded_atlases",
-        return_value=["example_mouse_100um"]
+        return_value=["example_mouse_100um"],
     )
-    
+
     # Mock old version atlas
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.get_atlases_lastversions",
-        return_value={"example_mouse_100um": {"updated": False, "version": "1.2"}}
+        return_value={
+            "example_mouse_100um": {"updated": False, "version": "1.2"}
+        },
     )
 
     tooltip_text = AtlasManagerView.get_tooltip_text("example_mouse_100um")
@@ -217,13 +223,15 @@ def test_get_tooltip_is_up_to_date(mocker):
     # Mock downloaded atlas
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.get_downloaded_atlases",
-        return_value=["example_mouse_100um"]
+        return_value=["example_mouse_100um"],
     )
-    
+
     # Mock latest version atlas
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.get_atlases_lastversions",
-        return_value={"example_mouse_100um": {"updated": True, "version": "1.2"}}
+        return_value={
+            "example_mouse_100um": {"updated": True, "version": "1.2"}
+        },
     )
 
     tooltip_text = AtlasManagerView.get_tooltip_text("example_mouse_100um")
@@ -236,9 +244,9 @@ def test_get_tooltip_invalid_name(mocker):
     # Mock all atlas lists
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.get_all_atlases_lastversions",
-        return_value={"valid_atlas": {"version": "1.0"}}
+        return_value={"valid_atlas": {"version": "1.0"}},
     )
-    
+
     with pytest.raises(ValueError) as e:
         _ = AtlasManagerView.get_tooltip_text("wrong_atlas_name")
         assert "invalid atlas name" in e
