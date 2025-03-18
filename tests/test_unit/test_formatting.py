@@ -10,3 +10,4 @@ def test_format_bytes():
     assert format_bytes(1500) == "1.46 KB"
     assert format_bytes(1500000) == "1.43 MB"
     assert format_bytes(1500000000) == "1.40 GB"
+    assert format_bytes(1500000000000) == "1.36 TB"
