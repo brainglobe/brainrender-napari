@@ -56,3 +56,16 @@ def test_completed_doesnt_exceed_total(progress_bar):
   progress_bar.update_progress(150, 100, "test_atlas", "Downloading")
 
   assert progress_bar.value() == 100
+
+def test_different_operation_types(progress_bar):
+  """
+  Test that different operation types are displayed correctly
+  """
+  progress_bar.update_progress(50, 100, "test_atlas", "Downloading")
+  assert "Downloading" in progress_bar.text()
+  assert "test_atlas" in progress_bar.text()
+
+  progress_bar.update_progress(50, 100, "test_atlas", "Updating")
+  assert "Updating" in progress_bar.text()
+  assert "test_atlas" in progress_bar.text()
+  
