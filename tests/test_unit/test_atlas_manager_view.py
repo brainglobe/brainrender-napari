@@ -26,7 +26,7 @@ def test_update_atlas_confirmed(
         "selected_atlas_name",
         return_value="example_mouse_100um",
     )
-    
+
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.update_atlas",
         return_value="example_mouse_100um",

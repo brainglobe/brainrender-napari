@@ -35,9 +35,25 @@ def test_atlas_manager_view_tooltip(manager_widget):
 def test_signal_connections(manager_widget, qtbot, mocker):
     """Test that signals are correctly connected between components."""
     # Check that each signal has exactly one receiver connected
-    assert manager_widget.atlas_manager_view.receivers(manager_widget.atlas_manager_view.progress_updated) == 1
-    assert manager_widget.atlas_manager_view.receivers(manager_widget.atlas_manager_view.download_atlas_confirmed) == 1
-    assert manager_widget.atlas_manager_view.receivers(manager_widget.atlas_manager_view.update_atlas_confirmed) == 1
+    assert (
+        manager_widget.atlas_manager_view.receivers(
+            manager_widget.atlas_manager_view.progress_updated
+        )
+        == 1
+    )
+    assert (
+        manager_widget.atlas_manager_view.receivers(
+            manager_widget.atlas_manager_view.download_atlas_confirmed
+        )
+        == 1
+    )
+    assert (
+        manager_widget.atlas_manager_view.receivers(
+            manager_widget.atlas_manager_view.update_atlas_confirmed
+        )
+        == 1
+    )
+
 
 def test_components_existence(manager_widget):
     """Test that all required components exist in the widget."""
