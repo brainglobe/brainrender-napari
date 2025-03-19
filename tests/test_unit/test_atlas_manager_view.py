@@ -14,37 +14,22 @@ def test_update_atlas_confirmed(
     qtbot,
     mocker,
     atlas_manager_view,
+    mock_newer_atlas_version_available,
 ):
     """
     Test that confirming atlas update triggers the correct actions
     and emits signal.
-    Uses mocks instead of filesystem fixtures.
+    Uses filesystem fixture to simulate an outdated atlas.
     """
-    mocker.patch(
-        "brainrender_napari.widgets.atlas_manager_view.get_downloaded_atlases",
-        return_value=["example_mouse_100um"],
-    )
-
-    mocker.patch(
-        "brainrender_napari.widgets.atlas_manager_view.get_atlases_lastversions",
-        return_value={
-            "example_mouse_100um": {"updated": False, "version": "1.2"}
-        },
-    )
-
     mocker.patch.object(
         atlas_manager_view,
         "selected_atlas_name",
         return_value="example_mouse_100um",
     )
-
-    def fake_update_atlas(atlas_name, fn_update):
-        fn_update(100, 100)
-        return atlas_name
-
+    
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.update_atlas",
-        side_effect=fake_update_atlas,
+        return_value="example_mouse_100um",
     )
 
     with qtbot.waitSignal(
