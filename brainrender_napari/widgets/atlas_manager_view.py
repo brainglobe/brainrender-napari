@@ -8,7 +8,7 @@ it's up to date.
 It is designed to be agnostic from the viewer framework by emitting signals
 that any interested observers can connect to.
 """
-
+import shutil
 from typing import Callable
 
 from brainglobe_atlasapi.list_atlases import (
@@ -16,6 +16,8 @@ from brainglobe_atlasapi.list_atlases import (
     get_atlases_lastversions,
     get_downloaded_atlases,
 )
+
+from brainglobe_atlasapi.bg_atlas import BrainGlobeAtlas
 from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
 from napari.qt import thread_worker
 from qtpy.QtCore import Signal
@@ -110,9 +112,36 @@ class AtlasManagerView(QTableView):
         """Updates the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
         self._start_worker(
-            update_atlas, atlas_name, self.update_atlas_confirmed, "Updating"
+            self._wrapped_update_atlas,
+            atlas_name,
+            self.update_atlas_confirmed,
+            "Updating",
         )
 
+    def _wrapped_update_atlas(self, atlas_name, fn_update=None):
+        """Wrapper around update_atlas to ensure progress updates are properly handled."""
+        if fn_update:
+            fn_update(0, 100)
+    
+        atlas = BrainGlobeAtlas(atlas_name=atlas_name, check_latest=False)
+    
+        if atlas.check_latest_version(print_warning=False):
+            if fn_update:
+                fn_update(100, 100)  # notify completed
+            return atlas_name
+    
+        # remove old atlas
+        fld = atlas.brainglobe_dir / atlas.local_full_name
+        shutil.rmtree(fld)
+    
+        BrainGlobeAtlas(atlas_name=atlas_name, fn_update=fn_update)
+    
+        if fn_update:
+            fn_update(100, 100)
+        
+        return atlas_name
+
+    
     def selected_atlas_name(self) -> str:
         """A single place to get a valid selected atlas name."""
         selected_index = self.selectionModel().currentIndex()
