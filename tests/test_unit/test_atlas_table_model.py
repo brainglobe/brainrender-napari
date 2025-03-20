@@ -1,11 +1,13 @@
 import pytest
+from napari.settings import get_settings
 from qtpy.QtCore import Qt
+from qtpy.QtGui import QBrush
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
 
 
 @pytest.fixture
-def atlas_table_model(mocker):
+def atlas_table_model(mocker, mock_newer_atlas_version_available):
     mock_view = mocker.Mock(spec=["get_tooltip_text"])
     return AtlasTableModel(view_type=mock_view)
 
@@ -48,3 +50,31 @@ def test_model_header_invalid_view():
         assert "Views" in error
         assert "classmethod" in error
         assert "get_tooltip_text" in error
+
+
+@pytest.mark.parametrize(
+    "theme, expected_rgb",
+    [
+        ("dark", (255, 140, 0)),
+        ("light", (255, 191, 0)),
+    ],
+)
+def test_background_color_for_outdated_atlas(
+    atlas_table_model, theme, expected_rgb, mock_newer_atlas_version_available
+):
+    """
+    For out-of-date atlas (local_version=“1.1”, latest_version=“1.2”),
+    Test to verify that the amber color is returned according to the theme.
+    """
+    get_settings().appearance.theme = theme
+
+    index = atlas_table_model.index(0, 0)
+    brush = atlas_table_model.data(index, role=Qt.BackgroundRole)
+    assert isinstance(brush, QBrush)
+
+    # Retrieve QColor from the retrieved QBrush
+    # and verify RGB (ignoring alpha values)
+    actual_rgb = brush.color().getRgb()[:3]
+    assert (
+        actual_rgb == expected_rgb
+    ), f"Expected RGB {expected_rgb}, but got {actual_rgb}"

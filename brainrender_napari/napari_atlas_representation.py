@@ -4,6 +4,7 @@ import numpy as np
 from brainglobe_atlasapi import BrainGlobeAtlas
 from meshio import Mesh
 from napari.settings import get_settings
+from napari.utils.notifications import show_info
 from napari.viewer import Viewer
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QCursor
@@ -57,6 +58,9 @@ class NapariAtlasRepresentation:
 
         structure_name: the id or acronym of the structure.
         """
+        if self.viewer.dims.ndisplay == 2:
+            show_info("Meshes will only show if the display is set to 3D.")
+
         mesh = self.bg_atlas.mesh_from_structure(structure_name)
         scale = [1.0 / resolution for resolution in self.bg_atlas.resolution]
         color = self.bg_atlas.structures[structure_name]["rgb_triplet"]
