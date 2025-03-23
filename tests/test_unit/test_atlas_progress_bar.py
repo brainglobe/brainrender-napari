@@ -1,7 +1,7 @@
 import pytest
 
 from brainrender_napari.widgets.atlas_progress_bar import AtlasProgressBar
-
+from qtpy.QtCore import QTimer
 
 @pytest.fixture
 def progress_bar(qtbot):

@@ -53,3 +53,4 @@ class AtlasProgressBar(QProgressBar):
         Called when an operation completes to reset and hide the progress bar.
         """
         self.setValue(self.maximum())
+        self.hide()
