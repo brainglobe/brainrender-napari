@@ -18,7 +18,7 @@ from brainglobe_atlasapi.list_atlases import (
     get_atlases_lastversions,
     get_downloaded_atlases,
 )
-from brainglobe_atlasapi.update_atlases import install_atlas
+from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
 from napari.qt import thread_worker
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import (
@@ -93,8 +93,8 @@ class AtlasManagerView(QTableView):
             self.progress_updated.emit(
                 completed, total, atlas_name, operation_type
             )
-
-        worker = self._apply_in_thread(operation, atlas_name, update_fn)
+        
+        worker = self._apply_in_thread(operation, atlas_name, fn_update=update_fn)
         worker.returned.connect(lambda result: signal.emit(result))
         worker.start()
 
@@ -112,37 +112,11 @@ class AtlasManagerView(QTableView):
         """Updates the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
         self._start_worker(
-            self._wrapped_update_atlas,
+            update_atlas,
             atlas_name,
             self.update_atlas_confirmed,
             "Updating",
         )
-
-    def _wrapped_update_atlas(self, atlas_name, fn_update=None):
-        """
-        Wrapper around update_atlas to
-        ensure progress updates are properly handled.
-        """
-        if fn_update:
-            fn_update(0, 100)
-
-        atlas = BrainGlobeAtlas(atlas_name=atlas_name, check_latest=False)
-
-        if atlas.check_latest_version(print_warning=False):
-            if fn_update:
-                fn_update(100, 100)  # notify completed
-            return atlas_name
-
-        # remove old atlas
-        fld = atlas.brainglobe_dir / atlas.local_full_name
-        shutil.rmtree(fld)
-
-        BrainGlobeAtlas(atlas_name=atlas_name, fn_update=fn_update)
-
-        if fn_update:
-            fn_update(100, 100)
-
-        return atlas_name
 
     def selected_atlas_name(self) -> str:
         """A single place to get a valid selected atlas name."""
