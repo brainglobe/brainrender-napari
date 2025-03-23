@@ -1,6 +1,6 @@
 import pytest
 
-from brainrender_napari.atlas_progress_bar import AtlasProgressBar
+from brainrender_napari.widgets.atlas_progress_bar import AtlasProgressBar
 
 
 @pytest.fixture
