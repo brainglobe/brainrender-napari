@@ -9,10 +9,8 @@ It is designed to be agnostic from the viewer framework by emitting signals
 that any interested observers can connect to.
 """
 
-import shutil
 from typing import Callable
 
-from brainglobe_atlasapi.bg_atlas import BrainGlobeAtlas
 from brainglobe_atlasapi.list_atlases import (
     get_all_atlases_lastversions,
     get_atlases_lastversions,
@@ -93,8 +91,10 @@ class AtlasManagerView(QTableView):
             self.progress_updated.emit(
                 completed, total, atlas_name, operation_type
             )
-        
-        worker = self._apply_in_thread(operation, atlas_name, fn_update=update_fn)
+
+        worker = self._apply_in_thread(
+            operation, atlas_name, fn_update=update_fn
+        )
         worker.returned.connect(lambda result: signal.emit(result))
         worker.start()
 

@@ -13,8 +13,8 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from brainrender_napari.widgets.atlas_progress_bar import AtlasProgressBar
 from brainrender_napari.widgets.atlas_manager_view import AtlasManagerView
+from brainrender_napari.widgets.atlas_progress_bar import AtlasProgressBar
 
 
 class BrainrenderManagerWidget(QWidget):
