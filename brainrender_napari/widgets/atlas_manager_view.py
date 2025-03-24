@@ -19,7 +19,10 @@ from brainglobe_atlasapi.list_atlases import (
 from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
 from napari.qt import thread_worker
 from qtpy.QtCore import Signal
-from qtpy.QtWidgets import QTableView, QWidget
+from qtpy.QtWidgets import (
+    QTableView,
+    QWidget,
+)
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
 from brainrender_napari.utils.formatting import format_atlas_name
@@ -29,6 +32,9 @@ from brainrender_napari.widgets.atlas_manager_dialog import AtlasManagerDialog
 class AtlasManagerView(QTableView):
     download_atlas_confirmed = Signal(str)
     update_atlas_confirmed = Signal(str)
+    progress_updated = Signal(
+        int, int, str, object
+    )  # completed, total, atlas_name, operation_type
 
     def __init__(self, parent: QWidget = None):
         """Initialises an atlas table view with latest atlas versions.
@@ -68,19 +74,50 @@ class AtlasManagerView(QTableView):
             )
             download_dialog.exec()
 
+    def _start_worker(
+        self,
+        operation: Callable,
+        atlas_name: str,
+        signal: Signal,
+        operation_type: str,
+    ):
+        """
+        Helper function that connects the `progress_updated` signal to
+        the underlying atlas API progress update function, and then starts
+        a download/update operation in separate thread,
+        ensuring it returns `signal` when the thread operation finishes.
+        """
+
+        def update_fn(completed, total):
+            self.progress_updated.emit(
+                completed, total, atlas_name, operation_type
+            )
+
+        worker = self._apply_in_thread(
+            operation, atlas_name, fn_update=update_fn
+        )
+        worker.returned.connect(lambda result: signal.emit(result))
+        worker.start()
+
     def _on_download_atlas_confirmed(self):
         """Downloads the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
-        worker = self._apply_in_thread(install_atlas, atlas_name)
-        worker.returned.connect(self.download_atlas_confirmed.emit)
-        worker.start()
+        self._start_worker(
+            install_atlas,
+            atlas_name,
+            self.download_atlas_confirmed,
+            "Downloading",
+        )
 
     def _on_update_atlas_confirmed(self):
         """Updates the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
-        worker = self._apply_in_thread(update_atlas, atlas_name)
-        worker.returned.connect(self.update_atlas_confirmed.emit)
-        worker.start()
+        self._start_worker(
+            update_atlas,
+            atlas_name,
+            self.update_atlas_confirmed,
+            "Updating",
+        )
 
     def selected_atlas_name(self) -> str:
         """A single place to get a valid selected atlas name."""
@@ -91,11 +128,10 @@ class AtlasManagerView(QTableView):
         return selected_atlas_name
 
     @thread_worker
-    def _apply_in_thread(self, apply: Callable, atlas_name: str):
-        """Calls `apply` on the given atlas in a separate thread."""
-        apply(atlas_name)
-        self.model().refresh_data()
-        return atlas_name
+    def _apply_in_thread(self, apply: Callable, *args, **kwargs):
+        """Helper function that executes the specified function
+        in a separate thread."""
+        return apply(*args, **kwargs)
 
     @classmethod
     def get_tooltip_text(cls, atlas_name: str):

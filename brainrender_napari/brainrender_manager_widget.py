@@ -14,6 +14,7 @@ from qtpy.QtWidgets import (
 )
 
 from brainrender_napari.widgets.atlas_manager_view import AtlasManagerView
+from brainrender_napari.widgets.atlas_progress_bar import AtlasProgressBar
 
 
 class BrainrenderManagerWidget(QWidget):
@@ -40,14 +41,29 @@ class BrainrenderManagerWidget(QWidget):
             )
         )
 
-        # create widgets
-        self.atlas_manager_view = AtlasManagerView(parent=self)
-
         # add widgets to the layout as group boxes
         self.atlas_manager_group = QGroupBox("Atlas Manager")
         self.atlas_manager_group.setToolTip(
             "Double-click on row to download/update an atlas"
         )
         self.atlas_manager_group.setLayout(QVBoxLayout())
-        self.atlas_manager_group.layout().addWidget(self.atlas_manager_view)
         self.layout().addWidget(self.atlas_manager_group)
+
+        # Create the atlas manager view
+        self.atlas_manager_view = AtlasManagerView(parent=self)
+        self.atlas_manager_group.layout().addWidget(self.atlas_manager_view)
+
+        # Create the progress bar
+        self.progress_bar = AtlasProgressBar(self)
+        self.atlas_manager_group.layout().addWidget(self.progress_bar)
+
+        # Connect signals
+        self.atlas_manager_view.progress_updated.connect(
+            self.progress_bar.update_progress
+        )
+        self.atlas_manager_view.download_atlas_confirmed.connect(
+            self.progress_bar.operation_completed
+        )
+        self.atlas_manager_view.update_atlas_confirmed.connect(
+            self.progress_bar.operation_completed
+        )
