@@ -83,7 +83,7 @@ class AtlasManagerView(QTableView):
     ):
         """
         Helper function that connects the `progress_updated` signal to the underlying atlas API progress update function, and then starts a download/update operation in separate thread, ensuring it returns `signal` when the thread operation finishes.
-        
+
         """
 
         def update_fn(completed, total):
