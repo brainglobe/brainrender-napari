@@ -63,11 +63,15 @@ class AtlasManagerView(QTableView):
             up_to_date = self.cached_atlas_versions[atlas_name]["updated"]
             if not up_to_date:
                 update_dialog = AtlasManagerDialog(atlas_name, "Update")
-                update_dialog.ok_button.clicked.connect(self._on_update_atlas_confirmed)
+                update_dialog.ok_button.clicked.connect(
+                    self._on_update_atlas_confirmed
+                )
                 update_dialog.open()  # Use .open() instead of .exec()
         else:
             download_dialog = AtlasManagerDialog(atlas_name, "Download")
-            download_dialog.ok_button.clicked.connect(self._on_download_atlas_confirmed)
+            download_dialog.ok_button.clicked.connect(
+                self._on_download_atlas_confirmed
+            )
             download_dialog.open()  # Use .open() instead of .exec()
 
     def _start_worker(
