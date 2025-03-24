@@ -82,9 +82,8 @@ class AtlasManagerView(QTableView):
         operation_type: str,
     ):
         """
-        Helper function that combines progress bar generation,
-        update processing, worker activation, and signal issuance.
-        Displays a QProgressBar in the plugin widget.
+        Helper function that connects the `progress_updated` signal to the underlying atlas API progress update function, and then starts a download/update operation in separate thread, ensuring it returns `signal` when the thread operation finishes.
+        
         """
 
         def update_fn(completed, total):
