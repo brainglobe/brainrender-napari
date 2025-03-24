@@ -17,6 +17,9 @@ def test_filter_atlas_manager(atlas_manager_view):
         {atlas_manager_view.source_model.rowCount()}\n"
     )
 
+    # TODO: edit AtlasManagerView with option to filter
+    # downloaded atlases only. Then this unit test should work.
+
     # atlas_manager_view.source_model.refresh_data()
     assert atlas_manager_view.proxy_model.rowCount() == 3
 
