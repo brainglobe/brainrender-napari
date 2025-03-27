@@ -74,50 +74,33 @@ class AtlasManagerView(QTableView):
             )
             download_dialog.exec()
 
-    def _start_worker(
-        self,
-        operation: Callable,
-        atlas_name: str,
-        signal: Signal,
-        operation_type: str,
-    ):
-        """
-        Helper function that connects the `progress_updated` signal to
-        the underlying atlas API progress update function, and then starts
-        a download/update operation in separate thread,
-        ensuring it returns `signal` when the thread operation finishes.
-        """
-
-        def update_fn(completed, total):
-            self.progress_updated.emit(
-                completed, total, atlas_name, operation_type
-            )
-
-        worker = self._apply_in_thread(
-            operation, atlas_name, fn_update=update_fn
-        )
-        worker.returned.connect(lambda result: signal.emit(result))
-        worker.start()
-
     def _on_download_atlas_confirmed(self):
         """Downloads the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
-        self._start_worker(
-            install_atlas,
-            atlas_name,
-            self.download_atlas_confirmed,
-            "Downloading",
+
+        # Define update function directly
+        update_fn = lambda completed, total: self.progress_updated.emit(
+            completed, total, atlas_name, "Downloading"
         )
+
+        # Create worker, connect signal, and start worker
+        worker = self._apply_in_thread(install_atlas, atlas_name, fn_update=update_fn)
+        worker.returned.connect(lambda result: self.download_atlas_confirmed.emit(result))
+        worker.start()        
 
     def _on_update_atlas_confirmed(self):
         """Updates the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
-        self._start_worker(
-            update_atlas,
-            atlas_name,
-            self.update_atlas_confirmed,
-            "Updating",
+
+        # Define update function directly
+        update_fn = lambda completed, total: self.progress_updated.emit(
+            completed, total, atlas_name, "Updating"
         )
+
+        # Create worker, connect signal, and start worker
+        worker = self._apply_in_thread(update_atlas, atlas_name, fn_update=update_fn)
+        worker.returned.connect(lambda result: self.update_atlas_confirmed.emit(result))
+        worker.start()                
 
     def selected_atlas_name(self) -> str:
         """A single place to get a valid selected atlas name."""
