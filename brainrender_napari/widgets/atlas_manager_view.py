@@ -78,29 +78,33 @@ class AtlasManagerView(QTableView):
         """Downloads the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
 
-        # Define update function directly
-        update_fn = lambda completed, total: self.progress_updated.emit(
-            completed, total, atlas_name, "Downloading"
+        worker = self._apply_in_thread(
+            install_atlas,
+            atlas_name,
+            fn_update=lambda completed, total: self.progress_updated.emit(
+                completed, total, atlas_name, "Downloading"
+            ),
         )
-
-        # Create worker, connect signal, and start worker
-        worker = self._apply_in_thread(install_atlas, atlas_name, fn_update=update_fn)
-        worker.returned.connect(lambda result: self.download_atlas_confirmed.emit(result))
-        worker.start()        
+        worker.returned.connect(
+            lambda result: self.download_atlas_confirmed.emit(result)
+        )
+        worker.start()
 
     def _on_update_atlas_confirmed(self):
         """Updates the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
 
-        # Define update function directly
-        update_fn = lambda completed, total: self.progress_updated.emit(
-            completed, total, atlas_name, "Updating"
+        worker = self._apply_in_thread(
+            update_atlas,
+            atlas_name,
+            fn_update=lambda completed, total: self.progress_updated.emit(
+                completed, total, atlas_name, "Updating"
+            ),
         )
-
-        # Create worker, connect signal, and start worker
-        worker = self._apply_in_thread(update_atlas, atlas_name, fn_update=update_fn)
-        worker.returned.connect(lambda result: self.update_atlas_confirmed.emit(result))
-        worker.start()                
+        worker.returned.connect(
+            lambda result: self.update_atlas_confirmed.emit(result)
+        )
+        worker.start()
 
     def selected_atlas_name(self) -> str:
         """A single place to get a valid selected atlas name."""
