@@ -1,5 +1,6 @@
 import math
 
+
 def format_atlas_name(name: str) -> str:
     """Format an atlas name nicely.
     Assumes input in the form of atlas_name_in_snake_case_RESOLUTIONum,
