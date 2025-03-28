@@ -1,3 +1,5 @@
+import math
+
 def format_atlas_name(name: str) -> str:
     """Format an atlas name nicely.
     Assumes input in the form of atlas_name_in_snake_case_RESOLUTIONum,
@@ -12,8 +14,9 @@ def format_bytes(num_bytes: float) -> str:
     """
     Format a byte count into a human-readable string with appropriate units.
     """
-    for unit in ["B", "KB", "MB", "GB"]:
-        if num_bytes < 1024:
-            return f"{num_bytes:.2f} {unit}"
-        num_bytes /= 1024
-    return f"{num_bytes:.2f} TB"
+    units = ["B", "KB", "MB", "GB", "TB"]
+    if num_bytes < 0:
+        return f"{num_bytes:.2f} B"
+    # ensuring the index doesn't exceed the units
+    i = min(math.floor(math.log(num_bytes, 1024)), len(units) - 1)
+    return f"{num_bytes / (1024 ** i):.2f} {units[i]}"
