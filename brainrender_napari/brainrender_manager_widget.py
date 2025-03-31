@@ -41,7 +41,7 @@ class BrainrenderManagerWidget(QWidget):
                 help_text="For help, hover the cursor over the " "atlases.",
             )
         )
-        
+
         # Create atlas manager layout as group box
         self.atlas_manager_group = QGroupBox("Atlas Manager")
         self.atlas_manager_group.setToolTip(
@@ -49,11 +49,11 @@ class BrainrenderManagerWidget(QWidget):
         )
         self.atlas_manager_group.setLayout(QVBoxLayout())
         self.layout().addWidget(self.atlas_manager_group)
-        
+
         # Create the atlas manager view
         self.atlas_manager_view = AtlasManagerView(parent=self)
         self.atlas_manager_group.layout().addWidget(self.atlas_manager_view)
-        
+
         # Create the atlas manager filter
         self.atlas_manager_filter = AtlasManagerFilter(self.atlas_manager_view)
         self.atlas_manager_group.layout().addWidget(self.atlas_manager_filter)
