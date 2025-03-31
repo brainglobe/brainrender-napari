@@ -43,16 +43,6 @@ class AtlasManagerFilter(QWidget):
         self.layout.addWidget(self.column_field)
         return
 
-    def clear(self):
-        self.atlas_manager_view.proxy_model.setFilterFixedString("")
-
-    def closeEvent(self, event):
-        """Cleans up the widget when it is closed."""
-        self.query_field.textChanged.disconnect(self.apply)
-        self.column_field.currentIndexChanged.disconnect(self.apply)
-        self.clear()
-        return
-
     def apply(self):
         """Updates proxy's internal state based on input and
         applies filter."""
