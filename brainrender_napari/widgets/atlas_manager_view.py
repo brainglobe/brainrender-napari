@@ -18,7 +18,7 @@ from brainglobe_atlasapi.list_atlases import (
 )
 from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
 from napari.qt import thread_worker
-from qtpy.QtCore import Signal
+from qtpy.QtCore import QSortFilterProxyModel, Qt, Signal
 from qtpy.QtWidgets import (
     QTableView,
     QWidget,
@@ -44,7 +44,13 @@ class AtlasManagerView(QTableView):
         """
         super().__init__(parent)
 
-        self.setModel(AtlasTableModel(AtlasManagerView))
+        self.source_model = AtlasTableModel(AtlasManagerView)
+        self.proxy_model = QSortFilterProxyModel()
+        self.proxy_model.setSourceModel(self.source_model)
+        self.setModel(self.proxy_model)
+
+        self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+
         self.setEnabled(True)
         self.verticalHeader().hide()
         self.resizeColumnsToContents()
@@ -53,9 +59,9 @@ class AtlasManagerView(QTableView):
         self.setSelectionMode(QTableView.SelectionMode.SingleSelection)
 
         self.doubleClicked.connect(self._on_row_double_clicked)
-        self.hideColumn(
-            self.model().column_headers.index("Raw name")
-        )  # hide raw name
+        self.hidden_columns = ["Raw name"]  # hide raw name
+        for col in self.hidden_columns:
+            self.hideColumn(self.source_model.column_headers.index(col))
 
     def _on_row_double_clicked(self):
         atlas_name = self.selected_atlas_name()
@@ -111,7 +117,7 @@ class AtlasManagerView(QTableView):
         selected_index = self.selectionModel().currentIndex()
         assert selected_index.isValid()
         selected_atlas_name_index = selected_index.siblingAtColumn(0)
-        selected_atlas_name = self.model().data(selected_atlas_name_index)
+        selected_atlas_name = self.source_model.data(selected_atlas_name_index)
         return selected_atlas_name
 
     @thread_worker
