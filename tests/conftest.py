@@ -1,4 +1,5 @@
 import json
+import tempfile
 import os
 import shutil
 from pathlib import Path
@@ -23,7 +24,10 @@ def mock_brainglobe_user_folders(monkeypatch):
     """
     if not os.getenv("GITHUB_ACTIONS"):
         home_path = Path.home()  # actual home path
-        mock_home_path = home_path / ".brainglobe-tests"
+        
+        test_dir = os.getenv("BRAINGLOBE_TEST_DIR", home_path / ".brainglobe-tests")
+        mock_home_path = Path(test_dir)
+        
         if not mock_home_path.exists():
             mock_home_path.mkdir()
 
@@ -125,3 +129,17 @@ def mock_newer_atlas_version_available():
         shutil.rmtree(path=older_version_path)
         _ = BrainGlobeAtlas("example_mouse_100um")
     assert current_version_path.exists() and not older_version_path.exists()
+
+def test_brainglobe_test_dir_config(monkeypatch):
+    """Test BRAINGLOBE_TEST_DIR environment variable override."""
+    # Setup - Use a temporary directory
+
+    monkeypatch.setattr("qtpy.QtWidgets.QApplication", lambda: None)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Set custom test dir
+        monkeypatch.setenv("BRAINGLOBE_TEST_DIR", tmpdir)
+        mock_brainglobe_user_folders(monkeypatch)
+        assert Path(tmpdir).exists()
+        assert (Path(tmpdir) / ".brainglobe").exists()
+        assert not (Path.home() / ".brainglobe-tests").exists()
