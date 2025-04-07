@@ -5,7 +5,7 @@ def format_atlas_name(name: str) -> str:
     formatted_name: list[str] = name.split("_")
     formatted_name[0] = formatted_name[0].capitalize()
     formatted_name[-1] = f"({formatted_name[-1].split('um')[0]} \u03bcm)"
-    return " ".join([formatted for formatted in formatted_name])
+    return " ".join(formatted_name)
 
 
 def format_bytes(num_bytes: float) -> str:
