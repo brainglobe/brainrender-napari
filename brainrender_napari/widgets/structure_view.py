@@ -21,7 +21,7 @@ class StructureTreeItem(QStandardItem):
     def __init__(self, data, parent=None) -> None:
         self.parent_item = parent
         self.item_data = data
-        self.child_items = []
+        self.child_items: List[StructureTreeItem] = []
 
     def appendChild(self, item) -> None:
         self.child_items.append(item)
@@ -59,14 +59,16 @@ class StructureTreeModel(QAbstractItemModel):
         self.root_item = StructureTreeItem(data=("acronym", "name", "id"))
         self.build_structure_tree(data, self.root_item)
 
-    def build_structure_tree(self, structures: List, root: StructureTreeItem) -> None:
+    def build_structure_tree(
+        self, structures: List, root: StructureTreeItem
+    ) -> None:
         """Build the structure tree given a list of structures."""
         tree = get_structures_tree(structures)
         structure_id_dict = {}
         for structure in structures:
             structure_id_dict[structure["id"]] = structure
 
-        inserted_items: Dict[int, StructureTreeItem] = {}
+        inserted_items: Dict[str, StructureTreeItem] = {}
         for n_id in tree.expand_tree():  # sorts nodes by default,
             # so parents will always be already in the QAbstractItemModel
             # before their children

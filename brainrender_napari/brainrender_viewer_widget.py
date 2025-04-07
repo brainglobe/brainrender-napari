@@ -122,8 +122,12 @@ class BrainrenderViewerWidget(QWidget):
         self, additional_reference_name: str
     ) -> None:
         """Add additional reference as napari atlas representation"""
-        atlas = BrainGlobeAtlas(atlas_name=self.atlas_viewer_view.selected_atlas_name())
-        atlas_representation = NapariAtlasRepresentation(bg_atlas=atlas, viewer=self._viewer)
+        atlas = BrainGlobeAtlas(
+            atlas_name=self.atlas_viewer_view.selected_atlas_name()
+        )
+        atlas_representation = NapariAtlasRepresentation(
+            bg_atlas=atlas, viewer=self._viewer
+        )
         atlas_representation.add_additional_reference(
             additional_reference_key=additional_reference_name
         )
@@ -147,4 +151,7 @@ class BrainrenderViewerWidget(QWidget):
     def _on_show_structure_names_clicked(self) -> None:
         atlas_name: str = self.atlas_viewer_view.selected_atlas_name()
         show_structure_names: bool = self.show_structure_names.isChecked()
-        self.structure_view.refresh(selected_atlas_name=atlas_name, show_structure_names=show_structure_names)
+        self.structure_view.refresh(
+            selected_atlas_name=atlas_name,
+            show_structure_names=show_structure_names,
+        )

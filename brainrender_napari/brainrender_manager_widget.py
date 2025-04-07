@@ -55,7 +55,9 @@ class BrainrenderManagerWidget(QWidget):
         self.atlas_manager_group.layout().addWidget(self.atlas_manager_view)
 
         # Create the atlas manager filter
-        self.atlas_manager_filter = AtlasManagerFilter(atlas_manager_view=self.atlas_manager_view)
+        self.atlas_manager_filter = AtlasManagerFilter(
+            atlas_manager_view=self.atlas_manager_view
+        )
         self.atlas_manager_group.layout().addWidget(self.atlas_manager_filter)
 
         # Create the progress bar
