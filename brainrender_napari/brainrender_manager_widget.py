@@ -35,7 +35,7 @@ class BrainrenderManagerWidget(QWidget):
             header_widget(
                 "brainrender",
                 "Atlas management",
-                tutorial_file_name="manage-atlas-napari.html",
+                tutorial_file_name="manage-atlases-in-GUI.html",
                 citation_doi="https://doi.org/10.21105/joss.02668",
                 github_repo_name="brainrender-napari",
                 help_text="For help, hover the cursor over the " "atlases.",
