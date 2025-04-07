@@ -10,6 +10,7 @@ from meshio import Mesh
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QLabel
+from typing import Any
 
 
 @dataclass
@@ -82,11 +83,11 @@ class NapariAtlasRepresentation:
         """
         points = mesh.points
         cells = mesh.cells[0].data
-        viewer_kwargs = dict(
-            name=name,
-            opacity=self.mesh_opacity,
-            blending=self.mesh_blending,
-        )
+        viewer_kwargs: dict[str, Any] = {
+            "name": name,
+            "opacity": self.mesh_opacity,
+            "blending": self.mesh_blending,
+        }
         if color:
             # convert RGB (0-255) to rgb (0.0-1.0)
             viewer_kwargs["vertex_colors"] = np.repeat(
