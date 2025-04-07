@@ -13,7 +13,7 @@ class AtlasProgressBar(QProgressBar):
     Displays operation type, atlas name, and transfer progress.
     """
 
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, parent: QWidget = None) -> None:
         """
         Initialize the progress bar with appropriate styling.
         """
@@ -25,12 +25,12 @@ class AtlasProgressBar(QProgressBar):
 
     def update_progress(
         self, completed: int, total: int, atlas_name: str, operation_type: str
-    ):
+    ) -> None:
         """
         Update the progress bar with current download/update status.
         """
         # Calculate percentage and ensure it doesn't exceed 100%
-        percentage = min(
+        percentage: int = min(
             int((completed / total) * 100) if total > 0 else 0, 100
         )
 
@@ -48,7 +48,7 @@ class AtlasProgressBar(QProgressBar):
         # show the progress bar
         self.show()
 
-    def operation_completed(self):
+    def operation_completed(self) -> None:
         """
         Called when an operation completes to reset and hide the progress bar.
         """

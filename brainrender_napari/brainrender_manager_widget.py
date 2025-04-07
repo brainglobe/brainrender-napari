@@ -24,12 +24,12 @@ class BrainrenderManagerWidget(QWidget):
     * coordinate between these widgets and napari
     """
 
-    def __init__(self, napari_viewer: Viewer):
+    def __init__(self, napari_viewer: Viewer) -> None:
         """Instantiates the atlas viewer widget
         and sets up coordinating connections"""
         super().__init__()
 
-        self._viewer = napari_viewer
+        self._viewer: Viewer = napari_viewer
         self.setLayout(QVBoxLayout())
         self.layout().addWidget(
             header_widget(
@@ -55,11 +55,11 @@ class BrainrenderManagerWidget(QWidget):
         self.atlas_manager_group.layout().addWidget(self.atlas_manager_view)
 
         # Create the atlas manager filter
-        self.atlas_manager_filter = AtlasManagerFilter(self.atlas_manager_view)
+        self.atlas_manager_filter = AtlasManagerFilter(atlas_manager_view=self.atlas_manager_view)
         self.atlas_manager_group.layout().addWidget(self.atlas_manager_filter)
 
         # Create the progress bar
-        self.progress_bar = AtlasProgressBar(self)
+        self.progress_bar = AtlasProgressBar(parent=self)
         self.atlas_manager_group.layout().addWidget(self.progress_bar)
 
         # Connect signals

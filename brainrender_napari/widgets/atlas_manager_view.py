@@ -11,6 +11,7 @@ that any interested observers can connect to.
 
 from typing import Callable
 
+from PyQt5.QtCore import QModelIndex
 from brainglobe_atlasapi.list_atlases import (
     get_all_atlases_lastversions,
     get_atlases_lastversions,
@@ -36,7 +37,7 @@ class AtlasManagerView(QTableView):
         int, int, str, object
     )  # completed, total, atlas_name, operation_type
 
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, parent: QWidget = None) -> None:
         """Initialises an atlas table view with latest atlas versions.
 
         Also responsible for appearance, behaviour on selection, and
@@ -63,7 +64,7 @@ class AtlasManagerView(QTableView):
         for col in self.hidden_columns:
             self.hideColumn(self.source_model.column_headers.index(col))
 
-    def _on_row_double_clicked(self):
+    def _on_row_double_clicked(self) -> None:
         atlas_name = self.selected_atlas_name()
         if atlas_name in get_downloaded_atlases():
             up_to_date = get_atlases_lastversions()[atlas_name]["updated"]
@@ -74,15 +75,15 @@ class AtlasManagerView(QTableView):
                 )
                 update_dialog.exec()
         else:
-            download_dialog = AtlasManagerDialog(atlas_name, "Download")
+            download_dialog = AtlasManagerDialog(atlas_name=atlas_name, action="Download")
             download_dialog.ok_button.clicked.connect(
                 self._on_download_atlas_confirmed
             )
             download_dialog.exec()
 
-    def _on_download_atlas_confirmed(self):
+    def _on_download_atlas_confirmed(self) -> None:
         """Downloads the currently selected atlas and signals this."""
-        atlas_name = self.selected_atlas_name()
+        atlas_name: str = self.selected_atlas_name()
 
         worker = self._apply_in_thread(
             install_atlas,
@@ -99,7 +100,7 @@ class AtlasManagerView(QTableView):
         )
         worker.start()
 
-    def _on_update_atlas_confirmed(self):
+    def _on_update_atlas_confirmed(self) -> None:
         """Updates the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
 
@@ -120,9 +121,9 @@ class AtlasManagerView(QTableView):
 
     def selected_atlas_name(self) -> str:
         """A single place to get a valid selected atlas name."""
-        selected_index = self.selectionModel().currentIndex()
+        selected_index: QModelIndex = self.selectionModel().currentIndex()
         assert selected_index.isValid()
-        selected_atlas_name_index = selected_index.siblingAtColumn(0)
+        selected_atlas_name_index: QModelIndex = selected_index.siblingAtColumn(0)
         selected_atlas_name = self.source_model.data(selected_atlas_name_index)
         return selected_atlas_name
 
@@ -133,13 +134,13 @@ class AtlasManagerView(QTableView):
         return apply(*args, **kwargs)
 
     @classmethod
-    def get_tooltip_text(cls, atlas_name: str):
+    def get_tooltip_text(cls, atlas_name: str) -> str:
         """Returns the atlas name as a formatted string,
         as well as instructions on how to interact with the atlas."""
         if atlas_name in get_downloaded_atlases():
             is_up_to_date = get_atlases_lastversions()[atlas_name]["updated"]
             if is_up_to_date:
-                tooltip_text = f"{format_atlas_name(atlas_name)} is up-to-date"
+                tooltip_text: str = f"{format_atlas_name(atlas_name)} is up-to-date"
             else:  # needs updating
                 tooltip_text = (
                     f"{format_atlas_name(atlas_name)} (double-click to update)"

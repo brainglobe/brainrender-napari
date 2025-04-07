@@ -32,12 +32,12 @@ class BrainrenderViewerWidget(QWidget):
     * coordinate between these widgets and napari
     """
 
-    def __init__(self, napari_viewer: Viewer):
+    def __init__(self, napari_viewer: Viewer) -> None:
         """Instantiates the atlas viewer widget
         and sets up coordinating connections"""
         super().__init__()
 
-        self._viewer = napari_viewer
+        self._viewer: Viewer = napari_viewer
         self.setLayout(QVBoxLayout())
         self.layout().addWidget(
             header_widget(
@@ -108,43 +108,43 @@ class BrainrenderViewerWidget(QWidget):
             self._on_add_structure_requested
         )
 
-    def _on_add_structure_requested(self, structure_name: str):
+    def _on_add_structure_requested(self, structure_name: str) -> None:
         """Add given structure as napari atlas representation"""
         selected_atlas = BrainGlobeAtlas(
-            self.atlas_viewer_view.selected_atlas_name()
+            atlas_name=self.atlas_viewer_view.selected_atlas_name()
         )
         selected_atlas_representation = NapariAtlasRepresentation(
-            selected_atlas, self._viewer
+            bg_atlas=selected_atlas, viewer=self._viewer
         )
         selected_atlas_representation.add_structure_to_viewer(structure_name)
 
     def _on_additional_reference_requested(
         self, additional_reference_name: str
-    ):
+    ) -> None:
         """Add additional reference as napari atlas representation"""
-        atlas = BrainGlobeAtlas(self.atlas_viewer_view.selected_atlas_name())
-        atlas_representation = NapariAtlasRepresentation(atlas, self._viewer)
+        atlas = BrainGlobeAtlas(atlas_name=self.atlas_viewer_view.selected_atlas_name())
+        atlas_representation = NapariAtlasRepresentation(bg_atlas=atlas, viewer=self._viewer)
         atlas_representation.add_additional_reference(
-            additional_reference_name
+            additional_reference_key=additional_reference_name
         )
 
-    def _on_atlas_selection_changed(self, atlas_name: str):
+    def _on_atlas_selection_changed(self, atlas_name: str) -> None:
         """Refreshes the structure view to match the changed atlas selection"""
-        show_structure_names = self.show_structure_names.isChecked()
+        show_structure_names: bool = self.show_structure_names.isChecked()
         self.structure_view.refresh(atlas_name, show_structure_names)
         is_downloaded = atlas_name in get_downloaded_atlases()
         self.show_structure_names.setVisible(is_downloaded)
         self.structure_tree_group.setVisible(is_downloaded)
 
-    def _on_add_atlas_requested(self, atlas_name: str):
+    def _on_add_atlas_requested(self, atlas_name: str) -> None:
         """Add reference and annotation as napari atlas representation"""
-        selected_atlas = BrainGlobeAtlas(atlas_name)
+        selected_atlas = BrainGlobeAtlas(atlas_name=atlas_name)
         selected_atlas_representation = NapariAtlasRepresentation(
-            selected_atlas, self._viewer
+            bg_atlas=selected_atlas, viewer=self._viewer
         )
         selected_atlas_representation.add_to_viewer()
 
-    def _on_show_structure_names_clicked(self):
-        atlas_name = self.atlas_viewer_view.selected_atlas_name()
-        show_structure_names = self.show_structure_names.isChecked()
-        self.structure_view.refresh(atlas_name, show_structure_names)
+    def _on_show_structure_names_clicked(self) -> None:
+        atlas_name: str = self.atlas_viewer_view.selected_atlas_name()
+        show_structure_names: bool = self.show_structure_names.isChecked()
+        self.structure_view.refresh(selected_atlas_name=atlas_name, show_structure_names=show_structure_names)
