@@ -9,14 +9,14 @@ class AtlasManagerFilter(QWidget):
 
     def __init__(
         self, atlas_manager_view: AtlasManagerView, parent: QWidget = None
-    ):
+    ) -> None:
         super().__init__(parent)
 
         self.atlas_manager_view = atlas_manager_view
         self.setup_ui()
         return
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         """Creates embedded widgets and attaches these within a layout."""
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -43,7 +43,7 @@ class AtlasManagerFilter(QWidget):
         self.layout.addWidget(self.column_field)
         return
 
-    def apply(self):
+    def apply(self) -> None:
         """Updates proxy's internal state based on input and
         applies filter."""
         query = self.query_field.text()
