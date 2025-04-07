@@ -23,9 +23,10 @@ class AtlasTableModel(QAbstractTableModel):
             "Local version",
             "Latest version",
         ]
-        assert hasattr(
-            view_type, "get_tooltip_text"
-        ), "Views for this model must implement a `classmethod` called `get_tooltip_text`"
+        assert hasattr(view_type, "get_tooltip_text"), (
+            "Views for this model must implement"
+            "a `classmethod` called `get_tooltip_text`"
+        )
         self.view_type: QTableView = view_type
         self.refresh_data()
 

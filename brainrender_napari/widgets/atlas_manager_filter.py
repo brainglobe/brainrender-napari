@@ -12,7 +12,7 @@ class AtlasManagerFilter(QWidget):
     ) -> None:
         super().__init__(parent)
 
-        self.atlas_manager_view = atlas_manager_view
+        self.atlas_manager_view: AtlasManagerView = atlas_manager_view
         self.setup_ui()
 
     def setup_ui(self) -> None:
