@@ -9,11 +9,10 @@ that interested observers can connect to.
 
 from typing import Tuple
 
-from PyQt5.QtCore import QModelIndex
 from brainglobe_atlasapi.list_atlases import (
     get_downloaded_atlases,
 )
-from qtpy.QtCore import Qt, Signal
+from qtpy.QtCore import QModelIndex, Qt, Signal
 from qtpy.QtWidgets import QMenu, QTableView, QWidget
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
@@ -70,7 +69,9 @@ class AtlasViewerView(QTableView):
         """A single place to get a valid selected atlas name."""
         selected_index: QModelIndex = self.selectionModel().currentIndex()
         assert selected_index.isValid()
-        selected_atlas_name_index: QModelIndex = selected_index.siblingAtColumn(0)
+        selected_atlas_name_index: QModelIndex = (
+            selected_index.siblingAtColumn(0)
+        )
         selected_atlas_name = self.model().data(selected_atlas_name_index)
         assert selected_atlas_name in get_downloaded_atlases()
         return selected_atlas_name
@@ -81,7 +82,9 @@ class AtlasViewerView(QTableView):
         of the additional references, this is signalled.
         """
         selected_atlas_name: str = self.selected_atlas_name()
-        metadata = read_atlas_metadata_from_file(atlas_name=selected_atlas_name)
+        metadata = read_atlas_metadata_from_file(
+            atlas_name=selected_atlas_name
+        )
         if (
             "additional_references" in metadata.keys()
             and metadata["additional_references"]
@@ -115,9 +118,11 @@ class AtlasViewerView(QTableView):
             metadata_as_string = ""
             for key, value in metadata.items():
                 metadata_as_string += f"{key}:\t{value}\n"
-            tooltip_text: str = f"{format_atlas_name(name=atlas_name)}\
+            tooltip_text: str = (
+                f"{format_atlas_name(name=atlas_name)}\
                 (double-click to add to viewer)\
                 \n{metadata_as_string}"
+            )
         else:
             raise ValueError("Tooltip text called with invalid atlas name.")
         return tooltip_text
