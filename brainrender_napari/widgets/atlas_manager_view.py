@@ -11,7 +11,6 @@ that any interested observers can connect to.
 
 from typing import Callable
 
-from PyQt5.QtCore import QModelIndex
 from brainglobe_atlasapi.list_atlases import (
     get_all_atlases_lastversions,
     get_atlases_lastversions,
@@ -19,6 +18,7 @@ from brainglobe_atlasapi.list_atlases import (
 )
 from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
 from napari.qt import thread_worker
+from PyQt5.QtCore import QModelIndex
 from qtpy.QtCore import QSortFilterProxyModel, Qt, Signal
 from qtpy.QtWidgets import (
     QTableView,
@@ -75,7 +75,9 @@ class AtlasManagerView(QTableView):
                 )
                 update_dialog.exec()
         else:
-            download_dialog = AtlasManagerDialog(atlas_name=atlas_name, action="Download")
+            download_dialog = AtlasManagerDialog(
+                atlas_name=atlas_name, action="Download"
+            )
             download_dialog.ok_button.clicked.connect(
                 self._on_download_atlas_confirmed
             )
@@ -117,7 +119,9 @@ class AtlasManagerView(QTableView):
         """A single place to get a valid selected atlas name."""
         selected_index: QModelIndex = self.selectionModel().currentIndex()
         assert selected_index.isValid()
-        selected_atlas_name_index: QModelIndex = selected_index.siblingAtColumn(0)
+        selected_atlas_name_index: QModelIndex = (
+            selected_index.siblingAtColumn(0)
+        )
         selected_atlas_name = self.source_model.data(selected_atlas_name_index)
         return selected_atlas_name
 
@@ -134,7 +138,9 @@ class AtlasManagerView(QTableView):
         if atlas_name in get_downloaded_atlases():
             is_up_to_date = get_atlases_lastversions()[atlas_name]["updated"]
             if is_up_to_date:
-                tooltip_text: str = f"{format_atlas_name(atlas_name)} is up-to-date"
+                tooltip_text: str = (
+                    f"{format_atlas_name(atlas_name)} is up-to-date"
+                )
             else:  # needs updating
                 tooltip_text = (
                     f"{format_atlas_name(atlas_name)} (double-click to update)"

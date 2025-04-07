@@ -59,7 +59,9 @@ class StructureTreeModel(QAbstractItemModel):
         self.root_item = StructureTreeItem(data=("acronym", "name", "id"))
         self.build_structure_tree(data, self.root_item)
 
-    def build_structure_tree(self, structures: List, root: StructureTreeItem) -> None:
+    def build_structure_tree(
+        self, structures: List, root: StructureTreeItem
+    ) -> None:
         """Build the structure tree given a list of structures."""
         tree = get_structures_tree(structures)
         structure_id_dict = {}
