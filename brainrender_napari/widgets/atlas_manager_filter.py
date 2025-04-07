@@ -14,7 +14,6 @@ class AtlasManagerFilter(QWidget):
 
         self.atlas_manager_view = atlas_manager_view
         self.setup_ui()
-        return
 
     def setup_ui(self) -> None:
         """Creates embedded widgets and attaches these within a layout."""
@@ -41,7 +40,6 @@ class AtlasManagerFilter(QWidget):
 
         self.layout.addWidget(QLabel("Column:"))
         self.layout.addWidget(self.column_field)
-        return
 
     def apply(self) -> None:
         """Updates proxy's internal state based on input and
@@ -63,4 +61,3 @@ class AtlasManagerFilter(QWidget):
 
         # apply filter
         self.atlas_manager_view.proxy_model.setFilterFixedString(query)
-        return
