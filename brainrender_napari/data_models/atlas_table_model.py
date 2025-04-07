@@ -25,8 +25,7 @@ class AtlasTableModel(QAbstractTableModel):
         ]
         assert hasattr(
             view_type, "get_tooltip_text"
-        ), "Views for this model must implement"
-        "a `classmethod` called `get_tooltip_text`"
+        ), "Views for this model must implement a `classmethod` called `get_tooltip_text`"
         self.view_type: QTableView = view_type
         self.refresh_data()
 
@@ -66,19 +65,16 @@ class AtlasTableModel(QAbstractTableModel):
             if local_version == "n/a":
                 if theme == "dark":
                     return QBrush(QColor(80, 80, 80))  # dark grey
-                else:
-                    return QBrush(Qt.lightGray)  # light grey
+                return QBrush(Qt.lightGray)  # light grey
             else:
                 latest_version = self._data[index.row()][3]
                 if local_version == latest_version:
                     # Up-to-date atlas: normal background (default)
                     return None
-                else:
-                    # Out-of-date atlas:
-                    if theme == "dark":
-                        return QBrush(QColor(255, 140, 0))  # dark amber
-                    else:
-                        return QBrush(QColor(255, 191, 0))
+                # Out-of-date atlas:
+                if theme == "dark":
+                    return QBrush(QColor(255, 140, 0))  # dark amber
+                return QBrush(QColor(255, 191, 0))  # light amber
 
         return None
 
