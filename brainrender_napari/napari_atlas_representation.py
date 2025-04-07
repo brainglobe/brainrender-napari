@@ -1,16 +1,16 @@
 from dataclasses import dataclass
+from typing import Any
 
+import numpy as np
+from brainglobe_atlasapi import BrainGlobeAtlas
+from meshio import Mesh
 from napari.settings import get_settings
 from napari.settings._napari_settings import NapariSettings
 from napari.utils.notifications import show_info
 from napari.viewer import Viewer
-import numpy as np
-from brainglobe_atlasapi import BrainGlobeAtlas
-from meshio import Mesh
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QLabel
-from typing import Any
 
 
 @dataclass
@@ -73,7 +73,9 @@ class NapariAtlasRepresentation:
             color=color,
         )
 
-    def _add_mesh(self, mesh: Mesh, scale: list, name: str, color=None) -> None:
+    def _add_mesh(
+        self, mesh: Mesh, scale: list, name: str, color=None
+    ) -> None:
         """Helper function to add a mesh as a surface layer to the viewer.
 
         mesh: the mesh to add
