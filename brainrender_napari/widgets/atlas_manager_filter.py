@@ -1,15 +1,14 @@
-from qtpy.QtWidgets import QComboBox, QHBoxLayout, QLabel, QLineEdit, QWidget
+from qtpy.QtWidgets import QComboBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, QWidget
 
 from brainrender_napari.widgets.atlas_manager_view import AtlasManagerView
 
 
 class AtlasManagerFilter(QWidget):
     """Implements simple query-based filtering for the atlas table view,
-    allowing users to search for specific atlases."""
+    allowing users to search for specific atlases.
+    """
 
-    def __init__(
-        self, atlas_manager_view: AtlasManagerView, parent: QWidget = None
-    ):
+    def __init__(self, atlas_manager_view: AtlasManagerView, parent: QWidget = None):
         super().__init__(parent)
 
         self.atlas_manager_view = atlas_manager_view
@@ -30,9 +29,7 @@ class AtlasManagerFilter(QWidget):
         self.layout.addWidget(self.query_field)
 
         self.column_field = QComboBox()
-        self.column_field.addItems(
-            self.atlas_manager_view.source_model.column_headers
-        )
+        self.column_field.addItems(self.atlas_manager_view.source_model.column_headers)
         self.column_field.insertItem(0, "Any")
         for col in self.atlas_manager_view.hidden_columns:
             self.column_field.removeItem(self.column_field.findText(col))
@@ -41,26 +38,31 @@ class AtlasManagerFilter(QWidget):
 
         self.layout.addWidget(QLabel("Column:"))
         self.layout.addWidget(self.column_field)
+
+        # ✅ Add Clear button
+        self.clear_button = QPushButton("Clear", self)
+        self.clear_button.clicked.connect(self.clear_filter)
+        self.layout.addWidget(self.clear_button)
+
         return
 
     def apply(self):
-        """Updates proxy's internal state based on input and
-        applies filter."""
+        """Updates proxy's internal state based on input and applies filter."""
         query = self.query_field.text()
         column = self.column_field.currentText()
 
         if column == "Any":
             self.atlas_manager_view.proxy_model.setFilterKeyColumn(-1)
         else:
-            column_index = (
-                self.atlas_manager_view.source_model.column_headers.index(
-                    column
-                )
-            )
-            self.atlas_manager_view.proxy_model.setFilterKeyColumn(
-                column_index
-            )
+            column_index = self.atlas_manager_view.source_model.column_headers.index(column)
+            self.atlas_manager_view.proxy_model.setFilterKeyColumn(column_index)
 
         # apply filter
         self.atlas_manager_view.proxy_model.setFilterFixedString(query)
         return
+
+    def clear_filter(self):
+        """Clears both the query field and resets the column filter."""
+        self.query_field.clear()
+        self.column_field.setCurrentIndex(0)
+        self.apply()
