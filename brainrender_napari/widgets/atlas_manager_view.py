@@ -94,7 +94,10 @@ class AtlasManagerView(QTableView):
             ),
         )
         worker.returned.connect(
-            lambda result: self.download_atlas_confirmed.emit(result)
+            lambda result: [
+                self.download_atlas_confirmed.emit(result),
+                self.source_model.refresh_data(),
+            ]
         )
         worker.start()
 
@@ -110,7 +113,10 @@ class AtlasManagerView(QTableView):
             ),
         )
         worker.returned.connect(
-            lambda result: self.update_atlas_confirmed.emit(result)
+            lambda result: [
+                self.update_atlas_confirmed.emit(result),
+                self.source_model.refresh_data(),
+            ]
         )
         worker.start()
 
