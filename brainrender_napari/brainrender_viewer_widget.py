@@ -129,7 +129,7 @@ class BrainrenderViewerWidget(QWidget):
             bg_atlas=atlas, viewer=self._viewer
         )
         atlas_representation.add_additional_reference(
-            additional_reference_key=additional_reference_name
+            additional_reference_name
         )
 
     def _on_atlas_selection_changed(self, atlas_name: str) -> None:
@@ -152,6 +152,6 @@ class BrainrenderViewerWidget(QWidget):
         atlas_name: str = self.atlas_viewer_view.selected_atlas_name()
         show_structure_names: bool = self.show_structure_names.isChecked()
         self.structure_view.refresh(
-            selected_atlas_name=atlas_name,
-            show_structure_names=show_structure_names,
+            atlas_name,
+            show_structure_names,
         )
