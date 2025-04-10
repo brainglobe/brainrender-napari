@@ -72,10 +72,18 @@ def test_model_initialization(structure_tree_model):
     assert (
         structure_tree_model.rowCount(QModelIndex()) == 1
     )  # Only 'root' under the invisible model root
+    # The model's top-level item should correspond to the data's root node (ID 997)
+    assert (
+        structure_tree_model.rowCount(QModelIndex()) == 1
+    )  # Only 'root' under the invisible model root
     first_level_index = structure_tree_model.index(0, 0, QModelIndex())
+    assert first_level_index.isValid()  # Good practice to check validity
     assert first_level_index.isValid()  # Good practice to check validity
 
     # Assert that the first top-level item's acronym is 'root'
+    assert (
+        structure_tree_model.data(first_level_index, Qt.DisplayRole) == "root"
+    )  # <-- Changed 'grey' to 'root'
     assert (
         structure_tree_model.data(first_level_index, Qt.DisplayRole) == "root"
     )  # <-- Changed 'grey' to 'root'
@@ -184,10 +192,14 @@ def test_index_method_invalid(structure_tree_model):
     assert (
         not invalid_index_created.isValid()
     ), "Index created with invalid row/col should be invalid"
+    assert (
+        not invalid_index_created.isValid()
+    ), "Index created with invalid row/col should be invalid"
 
     # Optional: Test invalid row/column relative to a *valid* item deeper
     # in the tree
     root_data_index = structure_tree_model.index(0, 0, QModelIndex())
+    assert root_data_index.isValid()  # Ensure we have a valid parent first
     assert root_data_index.isValid()  # Ensure we have a valid parent first
 
     # Invalid row relative to the 'root' data node
@@ -197,10 +209,9 @@ def test_index_method_invalid(structure_tree_model):
     )
 
     # Invalid column relative to the 'root' data node
-    assert not structure_tree_model.index(0, 99, root_data_index).isValid(), (
-        "Should return invalid index for out-of-bounds"
-        " column relative to valid parent"
-    )
+    assert not structure_tree_model.index(
+        0, 99, root_data_index
+    ).isValid(), "Should return invalid index for out-of-bounds column relative to valid parent"
 
 
 # --- Tests for StructureTreeItem (though mostly tested via the model) ---
