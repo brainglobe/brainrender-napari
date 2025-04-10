@@ -15,7 +15,7 @@ from brainrender_napari.utils.formatting import format_atlas_name
 class AtlasTableModel(QAbstractTableModel):
     """A table data model for atlases."""
 
-    def __init__(self, view_type: QTableView) -> None:
+    def __init__(self, view_type: QTableView):
         super().__init__()
         self.column_headers: list[str] = [
             "Raw name",
