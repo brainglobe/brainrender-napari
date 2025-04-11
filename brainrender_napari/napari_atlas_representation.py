@@ -1,9 +1,11 @@
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 from brainglobe_atlasapi import BrainGlobeAtlas
 from meshio import Mesh
 from napari.settings import get_settings
+from napari.settings._napari_settings import NapariSettings
 from napari.utils.notifications import show_info
 from napari.viewer import Viewer
 from qtpy.QtCore import Qt
@@ -32,7 +34,7 @@ class NapariAtlasRepresentation:
         napari_settings = get_settings()
         napari_settings.appearance.layer_tooltip_visibility = True
 
-    def add_to_viewer(self):
+    def add_to_viewer(self) -> None:
         """Adds the reference and annotation images as layers to the viewer.
 
         The layers are connected to the mouse move callback to set tooltip.
@@ -52,7 +54,7 @@ class NapariAtlasRepresentation:
         annotation.mouse_move_callbacks.append(self._on_mouse_move)
         reference.mouse_move_callbacks.append(self._on_mouse_move)
 
-    def add_structure_to_viewer(self, structure_name: str):
+    def add_structure_to_viewer(self, structure_name: str) -> None:
         """Adds the mesh of a structure to the viewer.
         The mesh will be rescaled to pixel space.
 
@@ -71,7 +73,9 @@ class NapariAtlasRepresentation:
             color=color,
         )
 
-    def _add_mesh(self, mesh: Mesh, scale: list, name: str, color=None):
+    def _add_mesh(
+        self, mesh: Mesh, scale: list, name: str, color=None
+    ) -> None:
         """Helper function to add a mesh as a surface layer to the viewer.
 
         mesh: the mesh to add
@@ -81,11 +85,11 @@ class NapariAtlasRepresentation:
         """
         points = mesh.points
         cells = mesh.cells[0].data
-        viewer_kwargs = dict(
-            name=name,
-            opacity=self.mesh_opacity,
-            blending=self.mesh_blending,
-        )
+        viewer_kwargs: dict[str, Any] = {
+            "name": name,
+            "opacity": self.mesh_opacity,
+            "blending": self.mesh_blending,
+        }
         if color:
             # convert RGB (0-255) to rgb (0.0-1.0)
             viewer_kwargs["vertex_colors"] = np.repeat(
@@ -93,7 +97,7 @@ class NapariAtlasRepresentation:
             )
         self.viewer.add_surface((points, cells), scale=scale, **viewer_kwargs)
 
-    def add_additional_reference(self, additional_reference_key: str):
+    def add_additional_reference(self, additional_reference_key: str) -> None:
         """Adds a given additional reference as a layer to the viewer.
         and connects it to the mouse move callback to set tooltip.
         """
@@ -103,7 +107,7 @@ class NapariAtlasRepresentation:
         )
         additional_reference.mouse_move_callbacks.append(self._on_mouse_move)
 
-    def _on_mouse_move(self, layer, event):
+    def _on_mouse_move(self, layer, event) -> None:
         """Adapts the tooltip according to the cursor position.
 
         The tooltip is only displayed if
@@ -118,8 +122,8 @@ class NapariAtlasRepresentation:
         * the (napari) cursor position
         """
         cursor_position = self.viewer.cursor.position
-        napari_settings = get_settings()
-        tooltip_visibility = (
+        napari_settings: NapariSettings = get_settings()
+        tooltip_visibility: bool = (
             napari_settings.appearance.layer_tooltip_visibility
         )
         if (
@@ -138,7 +142,7 @@ class NapariAtlasRepresentation:
                 hemisphere = self.bg_atlas.hemisphere_from_coords(
                     cursor_position, as_string=True, microns=False
                 ).capitalize()
-                tooltip_text = f"{structure_name} | {hemisphere}"
+                tooltip_text: str = f"{structure_name} | {hemisphere}"
                 self._tooltip.setText(tooltip_text)
                 self._tooltip.adjustSize()
                 self._tooltip.show()
