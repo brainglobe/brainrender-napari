@@ -78,12 +78,8 @@ def test_model_initialization(structure_tree_model):
     )  # Only 'root' under the invisible model root
     first_level_index = structure_tree_model.index(0, 0, QModelIndex())
     assert first_level_index.isValid()  # Good practice to check validity
-    assert first_level_index.isValid()  # Good practice to check validity
 
     # Assert that the first top-level item's acronym is 'root'
-    assert (
-        structure_tree_model.data(first_level_index, Qt.DisplayRole) == "root"
-    )  # <-- Changed 'grey' to 'root'
     assert (
         structure_tree_model.data(first_level_index, Qt.DisplayRole) == "root"
     )  # <-- Changed 'grey' to 'root'

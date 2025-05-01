@@ -5,7 +5,6 @@ import numpy as np
 from brainglobe_atlasapi import BrainGlobeAtlas
 from meshio import Mesh
 from napari.settings import get_settings
-from napari.settings._napari_settings import NapariSettings
 from napari.utils.notifications import show_info
 from napari.viewer import Viewer
 from qtpy.QtCore import Qt
@@ -122,7 +121,7 @@ class NapariAtlasRepresentation:
         * the (napari) cursor position
         """
         cursor_position = self.viewer.cursor.position
-        napari_settings: NapariSettings = get_settings()
+        napari_settings = get_settings()
         tooltip_visibility: bool = (
             napari_settings.appearance.layer_tooltip_visibility
         )

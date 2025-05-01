@@ -4,7 +4,6 @@ from brainglobe_atlasapi.list_atlases import (
     get_local_atlas_version,
 )
 from napari.settings import get_settings
-from napari.settings._fields import Theme
 from qtpy.QtCore import QAbstractTableModel, QModelIndex, Qt
 from qtpy.QtGui import QBrush, QColor
 from qtpy.QtWidgets import QTableView
@@ -60,7 +59,7 @@ class AtlasTableModel(QAbstractTableModel):
             return self.view_type.get_tooltip_text(hovered_atlas_name)
         if role == Qt.BackgroundRole:
 
-            theme: Theme = get_settings().appearance.theme  # 'dark' or 'light'
+            theme = get_settings().appearance.theme  # 'dark' or 'light'
 
             local_version = self._data[index.row()][2]
             if local_version == "n/a":
