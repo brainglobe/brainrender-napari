@@ -12,7 +12,7 @@ from typing import Tuple
 from brainglobe_atlasapi.list_atlases import (
     get_downloaded_atlases,
 )
-from qtpy.QtCore import Qt, Signal
+from qtpy.QtCore import QModelIndex, Qt, Signal
 from qtpy.QtWidgets import QMenu, QTableView, QWidget
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
@@ -28,7 +28,7 @@ class AtlasViewerView(QTableView):
     additional_reference_requested = Signal(str)
     selected_atlas_changed = Signal(str)
 
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, parent: QWidget = None) -> None:
         """Initialises a table view with locally available atlas versions.
 
         Also responsible for appearance, behaviour on selection, and
@@ -67,9 +67,11 @@ class AtlasViewerView(QTableView):
 
     def selected_atlas_name(self) -> str:
         """A single place to get a valid selected atlas name."""
-        selected_index = self.selectionModel().currentIndex()
+        selected_index: QModelIndex = self.selectionModel().currentIndex()
         assert selected_index.isValid()
-        selected_atlas_name_index = selected_index.siblingAtColumn(0)
+        selected_atlas_name_index: QModelIndex = (
+            selected_index.siblingAtColumn(0)
+        )
         selected_atlas_name = self.model().data(selected_atlas_name_index)
         assert selected_atlas_name in get_downloaded_atlases()
         return selected_atlas_name
@@ -79,8 +81,10 @@ class AtlasViewerView(QTableView):
         currently selected atlas if the atlas has any. If the user selects one
         of the additional references, this is signalled.
         """
-        selected_atlas_name = self.selected_atlas_name()
-        metadata = read_atlas_metadata_from_file(selected_atlas_name)
+        selected_atlas_name: str = self.selected_atlas_name()
+        metadata = read_atlas_metadata_from_file(
+            atlas_name=selected_atlas_name
+        )
         if (
             "additional_references" in metadata.keys()
             and metadata["additional_references"]
@@ -106,17 +110,19 @@ class AtlasViewerView(QTableView):
         self.selected_atlas_changed.emit(self.selected_atlas_name())
 
     @classmethod
-    def get_tooltip_text(cls, atlas_name: str):
+    def get_tooltip_text(cls, atlas_name: str) -> str:
         """Returns the atlas metadata as a formatted string,
         as well as instructions on how to interact with the atlas."""
         if atlas_name in get_downloaded_atlases():
-            metadata = read_atlas_metadata_from_file(atlas_name)
+            metadata = read_atlas_metadata_from_file(atlas_name=atlas_name)
             metadata_as_string = ""
             for key, value in metadata.items():
                 metadata_as_string += f"{key}:\t{value}\n"
-            tooltip_text = f"{format_atlas_name(atlas_name)}\
+            tooltip_text: str = (
+                f"{format_atlas_name(name=atlas_name)}\
                 (double-click to add to viewer)\
                 \n{metadata_as_string}"
+            )
         else:
             raise ValueError("Tooltip text called with invalid atlas name.")
         return tooltip_text
