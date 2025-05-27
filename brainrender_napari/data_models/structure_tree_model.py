@@ -1,28 +1,29 @@
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from brainglobe_atlasapi.structure_tree_util import get_structures_tree
 from qtpy.QtCore import QAbstractItemModel, QModelIndex, Qt
 from qtpy.QtGui import QStandardItem
+from treelib.tree import Tree
 
 
 class StructureTreeItem(QStandardItem):
     """A class to hold items in a tree model."""
 
-    def __init__(self, data, parent=None):
+    def __init__(self, data, parent=None) -> None:
         self.parent_item = parent
         self.item_data = data
-        self.child_items = []
+        self.child_items: list[Any] = []
 
-    def appendChild(self, item):
+    def appendChild(self, item) -> None:
         self.child_items.append(item)
 
     def child(self, row):
         return self.child_items[row]
 
-    def childCount(self):
+    def childCount(self) -> int:
         return len(self.child_items)
 
-    def columnCount(self):
+    def columnCount(self) -> int:
         return len(self.item_data)
 
     def data(self, column):
@@ -44,19 +45,21 @@ class StructureTreeModel(QAbstractItemModel):
     """Implementation of a read-only QAbstractItemModel to hold
     the structure tree information provided by the Atlas API in a Qt Model"""
 
-    def __init__(self, data: List, parent=None):
+    def __init__(self, data: List, parent=None) -> None:
         super().__init__()
         self.root_item = StructureTreeItem(data=("acronym", "name", "id"))
         self.build_structure_tree(data, self.root_item)
 
-    def build_structure_tree(self, structures: List, root: StructureTreeItem):
+    def build_structure_tree(
+        self, structures: List, root: StructureTreeItem
+    ) -> None:
         """Build the structure tree given a list of structures."""
-        tree = get_structures_tree(structures)
+        tree: Tree = get_structures_tree(structures)
         structure_id_dict = {}
         for structure in structures:
             structure_id_dict[structure["id"]] = structure
 
-        inserted_items: Dict[int, StructureTreeItem] = {}
+        inserted_items: Dict[str, StructureTreeItem] = {}
         for n_id in tree.expand_tree():  # sorts nodes by default,
             # so parents will always be already in the QAbstractItemModel
             # before their children
@@ -67,9 +70,9 @@ class StructureTreeModel(QAbstractItemModel):
                 len(structure_id_dict[node.identifier]["structure_id_path"])
                 == 1
             ):
-                parent_item = root
+                parent_item: StructureTreeItem = root
             else:
-                parent_id = tree.parent(node.identifier).identifier
+                parent_id: str = tree.parent(node.identifier).identifier
                 parent_item = inserted_items[parent_id]
 
             item = StructureTreeItem(
@@ -110,7 +113,7 @@ class StructureTreeModel(QAbstractItemModel):
         else:
             return self.root_item.columnCount()
 
-    def parent(self, index: QModelIndex):
+    def parent(self, index: QModelIndex) -> QModelIndex:
         """The first-column index of parent of the item
         at a given index. Returns an empty index if the root,
         or an invalid index, is passed.
@@ -126,14 +129,14 @@ class StructureTreeModel(QAbstractItemModel):
 
         return self.createIndex(parent_item.row(), 0, parent_item)
 
-    def index(self, row, column, parent=QModelIndex()):
+    def index(self, row, column, parent=QModelIndex()) -> QModelIndex:
         """The index of the item at (row, column) with a given parent.
         By default, the given parent is assumed to be the root."""
         if not self.hasIndex(row, column, parent):
             return QModelIndex()
 
         if not parent.isValid():
-            parent_item = self.root_item
+            parent_item: StructureTreeItem = self.root_item
         else:
             parent_item = parent.internalPointer()
 

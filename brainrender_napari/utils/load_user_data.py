@@ -9,7 +9,7 @@ def read_atlas_metadata_from_file(atlas_name: str):
     brainglobe_dir = Path.home() / ".brainglobe"
     with open(
         brainglobe_dir
-        / f"{atlas_name}_v{get_local_atlas_version(atlas_name)}"
+        / f"{atlas_name}_v{get_local_atlas_version(atlas_name=atlas_name)}"
         / "metadata.json",
     ) as metadata_file:
         return json.loads(metadata_file.read())
@@ -20,7 +20,7 @@ def read_atlas_structures_from_file(atlas_name: str):
     brainglobe_dir = Path.home() / ".brainglobe"
     with open(
         brainglobe_dir
-        / f"{atlas_name}_v{get_local_atlas_version(atlas_name)}"
+        / f"{atlas_name}_v{get_local_atlas_version(atlas_name=atlas_name)}"
         / "structures.json",
     ) as metadata_file:
         return json.loads(metadata_file.read())
