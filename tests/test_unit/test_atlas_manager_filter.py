@@ -46,3 +46,10 @@ def test_filter_query(atlas_manager_view, query, data, column_name):
     atlas_manager_view.proxy_model.setFilterFixedString(query)
     atlas_manager_view.proxy_model.setFilterKeyColumn(column_index)
     assert atlas_manager_view.proxy_model.rowCount() == len(filtered_data)
+
+
+def test_filter_and_selected_name(atlas_manager_view):
+    atlas_manager_view.proxy_model.setFilterFixedString("kim_dev_mouse")
+    atlas_manager_view.proxy_model.setFilterKeyColumn(-1)
+    atlas_manager_view.selectRow(0)
+    assert "kim_dev_mouse" in atlas_manager_view.selected_atlas_name()
