@@ -127,7 +127,7 @@ class AtlasManagerView(QTableView):
         selected_atlas_name_index: QModelIndex = (
             selected_index.siblingAtColumn(0)
         )
-        selected_atlas_name = self.source_model.data(selected_atlas_name_index)
+        selected_atlas_name = self.proxy_model.data(selected_atlas_name_index)
         return selected_atlas_name
 
     @thread_worker
