@@ -5,7 +5,6 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/brainrender-napari.svg?color=green)](https://python.org)
 [![tests](https://github.com/brainglobe/brainrender-napari/workflows/tests/badge.svg)](https://github.com/brainglobe/brainrender-napari/actions)
 [![codecov](https://codecov.io/gh/brainglobe/brainrender-napari/branch/main/graph/badge.svg)](https://codecov.io/gh/brainglobe/brainrender-napari)
-[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/brainrender-napari)](https://napari-hub.org/plugins/brainrender-napari)
 
 Visualisation and management of BrainGlobe atlases in napari.
 
