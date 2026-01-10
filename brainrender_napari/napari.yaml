@@ -8,8 +8,13 @@ contributions:
     - id: brainrender-napari.make_brainrender_manager_widget
       python_name: brainrender_napari.brainrender_manager_widget:BrainrenderManagerWidget
       title: Make Brainrender Napari Manager
+    - id: brainrender-napari.make_brainrender_dataset_widget
+      python_name: brainrender_napari.brainrender_dataset_widget:BrainrenderDatasetWidget
+      title: Make Brainrender Dataset Widget
   widgets:
     - command: brainrender-napari.make_brainrender_viewer_widget
       display_name: Brainrender
     - command: brainrender-napari.make_brainrender_manager_widget
       display_name: Manage atlas versions
+    - command: brainrender-napari.make_brainrender_dataset_widget
+      display_name: Atlas-registered datasets

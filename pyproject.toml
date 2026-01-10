@@ -26,9 +26,12 @@ dependencies = [
     "brainglobe-atlasapi>=2.2.0",
     "brainglobe-utils>=0.4.3",
     "meshio",
+    "morphapi>=0.3.0",
     "napari>=0.6.1",
     "numpy",
+    "pandas",
     "qtpy",
+    "requests",
 ]
 
 [project.urls]
