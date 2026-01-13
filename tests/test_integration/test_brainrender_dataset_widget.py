@@ -17,8 +17,8 @@ def dataset_widget(make_napari_viewer):
 def test_dataset_widget_init(dataset_widget):
     """Test that the dataset widget can be instantiated."""
     assert dataset_widget is not None
-    assert hasattr(dataset_widget, 'dataset_manager_view')
-    assert hasattr(dataset_widget, 'database_search_widget')
+    assert hasattr(dataset_widget, "dataset_manager_view")
+    assert hasattr(dataset_widget, "database_search_widget")
 
 
 def test_dataset_widget_has_search_widget(dataset_widget):

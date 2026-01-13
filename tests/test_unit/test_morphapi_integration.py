@@ -1,6 +1,6 @@
 """Tests for morphapi integration functionality."""
 
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -22,7 +22,7 @@ class TestDatabaseSearcher:
         """Test that get_database_searcher returns a singleton."""
         searcher1 = get_database_searcher()
         searcher2 = get_database_searcher()
-        
+
         assert searcher1 is searcher2
         assert isinstance(searcher1, DatabaseSearcher)
 
@@ -31,20 +31,25 @@ class TestDatabaseSearcher:
         """Test searching Allen Brain Atlas neurons."""
         # Mock AllenMorphology
         mock_allen = Mock()
-        
+
         # Create mock DataFrame
         import pandas as pd
-        mock_df = pd.DataFrame({
-            "id": [1, 2, 3],
-            "name": ["Neuron1", "Neuron2", "Neuron3"],
-            "species": ["Mus musculus", "Mus musculus", "Mus musculus"],
-            "structure_area_abbrev": ["VISp", "VISp", "MOs"],
-        })
+
+        mock_df = pd.DataFrame(
+            {
+                "id": [1, 2, 3],
+                "name": ["Neuron1", "Neuron2", "Neuron3"],
+                "species": ["Mus musculus", "Mus musculus", "Mus musculus"],
+                "structure_area_abbrev": ["VISp", "VISp", "MOs"],
+            }
+        )
         mock_allen.neurons = mock_df
         mock_allen_class.return_value = mock_allen
-        
-        results = searcher.search_allen_neurons(structure_area="VISp", limit=10)
-        
+
+        results = searcher.search_allen_neurons(
+            structure_area="VISp", limit=10
+        )
+
         assert isinstance(results, list)
         assert len(results) > 0
         assert all("id" in r for r in results)
@@ -64,9 +69,11 @@ class TestDatabaseSearcher:
         ]
         mock_ml.fetch_neurons_metadata = Mock(return_value=mock_results)
         mock_ml_class.return_value = mock_ml
-        
-        results = searcher.search_mouselight_neurons(filter_regions=["MOs"], limit=10)
-        
+
+        results = searcher.search_mouselight_neurons(
+            filter_regions=["MOs"], limit=10
+        )
+
         assert isinstance(results, list)
         assert len(results) > 0
         assert all("database" in r for r in results)
@@ -86,11 +93,14 @@ class TestDatabaseSearcher:
         ]
         mock_nm.get_neurons_metadata = Mock(return_value=(mock_results, {}))
         mock_nm_class.return_value = mock_nm
-        
+
         results = searcher.search_neuromorpho_neurons(
-            species="mouse", cell_type="pyramidal", brain_region="neocortex", limit=10
+            species="mouse",
+            cell_type="pyramidal",
+            brain_region="neocortex",
+            limit=10,
         )
-        
+
         assert isinstance(results, list)
         assert all("database" in r for r in results)
         assert all(r["database"] == "neuromorpho" for r in results)
@@ -100,12 +110,15 @@ class TestDatabaseSearcher:
         """Test searching Allen when no results found."""
         mock_allen = Mock()
         import pandas as pd
+
         mock_df = pd.DataFrame()  # Empty DataFrame
         mock_allen.neurons = mock_df
         mock_allen_class.return_value = mock_allen
-        
-        results = searcher.search_allen_neurons(structure_area="NONEXISTENT", limit=10)
-        
+
+        results = searcher.search_allen_neurons(
+            structure_area="NONEXISTENT", limit=10
+        )
+
         assert isinstance(results, list)
         assert len(results) == 0
 
@@ -114,10 +127,14 @@ class TestDatabaseSearcher:
         # This test verifies the import error handling logic exists in the code
         # Complex property mocking required - functionality verified in code review
         # Skip this test as it requires complex mocking of read-only properties
-        pytest.skip("Complex property mocking required - import error handling verified in code")
+        pytest.skip(
+            "Complex property mocking required - import error handling verified in code"
+        )
 
     def test_download_neuron_allen(self, searcher, tmp_path):
         """Test downloading an Allen neuron."""
         # This test would require complex mocking of properties and file operations
         # Skip for now - integration tests will cover actual download functionality
-        pytest.skip("Complex property and file operation mocking required - tested at integration level")
+        pytest.skip(
+            "Complex property and file operation mocking required - tested at integration level"
+        )

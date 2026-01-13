@@ -9,15 +9,14 @@ import csv
 import json
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
-from urllib.error import URLError
 from urllib.request import urlretrieve
+
 import numpy as np
 
 from brainrender_napari.utils.dataset_apis import download_from_api
 from brainrender_napari.utils.morphapi_integration import (
     get_database_searcher,
 )
-
 
 # Registry of available datasets
 # This now primarily contains database templates for dynamic discovery
@@ -30,12 +29,12 @@ AVAILABLE_DATASETS: Dict[str, Dict] = {
 def register_dynamic_dataset(neuron_data: Dict) -> str:
     """
     Register a dynamically discovered dataset (from database search).
-    
+
     Parameters
     ----------
     neuron_data : Dict
         Neuron metadata dictionary
-        
+
     Returns
     -------
     str
@@ -44,7 +43,7 @@ def register_dynamic_dataset(neuron_data: Dict) -> str:
     database = neuron_data.get("database", "unknown")
     neuron_id = neuron_data.get("id", "unknown")
     dataset_id = f"{database}_{neuron_id}"
-    
+
     # Add to available datasets
     AVAILABLE_DATASETS[dataset_id] = {
         "name": neuron_data.get("name", f"{database} Neuron {neuron_id}"),
@@ -58,14 +57,16 @@ def register_dynamic_dataset(neuron_data: Dict) -> str:
         "neuron_id": neuron_id,
         "format": neuron_data.get("format", "swc"),
         "atlas": neuron_data.get("atlas", "allen_mouse_25um"),
-        "species": neuron_data.get("species", "mouse").lower().replace("mus musculus", "mouse"),
+        "species": neuron_data.get("species", "mouse")
+        .lower()
+        .replace("mus musculus", "mouse"),
         "data_type": neuron_data.get("data_type", "streamlines"),
         "file_name": f"{neuron_id}.swc",
         "size_mb": 0.2,  # Estimated
         "structure_area": neuron_data.get("structure_area"),
         "structure_name": neuron_data.get("structure_name"),
     }
-    
+
     return dataset_id
 
 
@@ -74,7 +75,7 @@ def get_available_datasets(
 ) -> Dict[str, Dict]:
     """
     Get list of available datasets, optionally filtered by species or data type.
-    
+
     Note: Datasets are now primarily discovered dynamically via database searches.
 
     Parameters
@@ -98,7 +99,9 @@ def get_available_datasets(
 
     if data_type:
         datasets = {
-            k: v for k, v in datasets.items() if v.get("data_type") == data_type
+            k: v
+            for k, v in datasets.items()
+            if v.get("data_type") == data_type
         }
 
     return datasets
@@ -133,14 +136,21 @@ def get_downloaded_datasets() -> List[str]:
                             downloaded.append(dataset_id)
                         elif not file_name:
                             # If no file_name in metadata, check for common file extensions
-                            data_files = list(dataset_dir.glob("*.swc")) + list(dataset_dir.glob("*.csv")) + list(dataset_dir.glob("*.nrrd"))
+                            data_files = (
+                                list(dataset_dir.glob("*.swc"))
+                                + list(dataset_dir.glob("*.csv"))
+                                + list(dataset_dir.glob("*.nrrd"))
+                            )
                             if data_files:
                                 downloaded.append(dataset_id)
             except (json.JSONDecodeError, KeyError, OSError) as e:
                 # Skip corrupted or unreadable metadata files
                 import logging
+
                 logger = logging.getLogger(__name__)
-                logger.warning(f"Could not read metadata from {dataset_dir}: {e}")
+                logger.warning(
+                    f"Could not read metadata from {dataset_dir}: {e}"
+                )
                 continue
 
     return downloaded
@@ -215,28 +225,30 @@ def download_dataset(
     dataset_dir.mkdir(exist_ok=True)
 
     metadata_path = dataset_dir / "metadata.json"
-    
+
     # Download data files - check if using API or direct URL
     api_source = dataset_metadata.get("api_source")
     url = dataset_metadata.get("url")
-    
+
     # Determine filename from metadata or default to 'data'
-    filename = dataset_metadata.get("file_name", f"data.{dataset_metadata.get('format', 'dat')}")
+    filename = dataset_metadata.get(
+        "file_name", f"data.{dataset_metadata.get('format', 'dat')}"
+    )
     data_file_path = dataset_dir / filename
-    
+
     try:
         # Use morphapi for downloading neurons from databases
         if api_source in ["mouselight", "allen", "neuromorpho"]:
             try:
                 searcher = get_database_searcher()
                 neuron_id = dataset_metadata.get("neuron_id")
-                
+
                 if neuron_id is None:
                     raise ValueError(
                         f"Dataset '{dataset_id}' requires a neuron_id. "
                         "This dataset was likely not properly registered from a database search."
                     )
-                
+
                 downloaded_file = searcher.download_neuron(
                     database=api_source,
                     neuron_id=neuron_id,
@@ -259,9 +271,12 @@ def download_dataset(
                         )
                     return dataset_dir
                 else:
-                    raise FileNotFoundError(f"Downloaded file not found: {downloaded_file}")
+                    raise FileNotFoundError(
+                        f"Downloaded file not found: {downloaded_file}"
+                    )
             except ImportError as e:
                 import shutil
+
                 shutil.rmtree(dataset_dir, ignore_errors=True)
                 raise RuntimeError(
                     f"morphapi is required for downloading from {api_source}. "
@@ -269,13 +284,18 @@ def download_dataset(
                 ) from e
             except Exception as e:
                 import shutil
+
                 shutil.rmtree(dataset_dir, ignore_errors=True)
-                raise RuntimeError(f"Failed to download from {api_source}: {str(e)}") from e
-        
+                raise RuntimeError(
+                    f"Failed to download from {api_source}: {str(e)}"
+                ) from e
+
         # If we reach here, we need to download via URL (for non-API datasets)
         if not url:
-            raise ValueError(f"No URL or API source provided for dataset {dataset_id}")
-        
+            raise ValueError(
+                f"No URL or API source provided for dataset {dataset_id}"
+            )
+
         # Download using requests (better for progress tracking) or urlretrieve
         try:
             # Try using the API download function first (better progress tracking)
@@ -286,13 +306,13 @@ def download_dataset(
                 if progress_callback and total_size > 0:
                     downloaded = block_num * block_size
                     progress_callback(min(downloaded, total_size), total_size)
-            
+
             urlretrieve(
                 url,
                 str(data_file_path),
                 reporthook=report_progress if progress_callback else None,
             )
-        
+
         # For URL-based downloads, save metadata after successful download
         with open(metadata_path, "w") as f:
             json.dump(
@@ -306,10 +326,9 @@ def download_dataset(
     except Exception as e:
         # Clean up on failure
         import shutil
+
         shutil.rmtree(dataset_dir, ignore_errors=True)
-        raise RuntimeError(
-            f"Failed to download dataset: {str(e)}"
-        ) from e
+        raise RuntimeError(f"Failed to download dataset: {str(e)}") from e
 
     return dataset_dir
 
@@ -317,7 +336,7 @@ def download_dataset(
 def load_dataset_data(dataset_id: str) -> Any:
     """
     Load data from a downloaded dataset.
-    
+
     For 'points' (csv) and 'streamlines' (swc), returns numpy arrays of coordinates.
     For 'volume' (nrrd), returns the Path object (as loading nrrd requires extra deps).
 
@@ -352,7 +371,7 @@ def load_dataset_data(dataset_id: str) -> Any:
         # Fallback to older naming convention if file_name wasn't found
         data_file = dataset_path / f"data.{file_format}"
         if not data_file.exists():
-             return None
+            return None
 
     # Handle different formats
     if file_format == "npy":
@@ -361,11 +380,11 @@ def load_dataset_data(dataset_id: str) -> Any:
     elif file_format == "json":
         with open(data_file) as f:
             return json.load(f)
-            
+
     elif file_format == "csv":
         # Assumes CSV with header, columns for x, y, z
         points = []
-        with open(data_file, 'r') as f:
+        with open(data_file, "r") as f:
             reader = csv.reader(f)
             # Skip header if it exists (heuristic: check if first item is string)
             # For robustness in this demo, we just try to parse floats
@@ -375,7 +394,7 @@ def load_dataset_data(dataset_id: str) -> Any:
                     coords = [float(x) for x in row[:3]]
                     points.append(coords)
                 except ValueError:
-                    continue # Skip header or malformed lines
+                    continue  # Skip header or malformed lines
         return np.array(points)
 
     elif file_format == "swc":
@@ -383,10 +402,10 @@ def load_dataset_data(dataset_id: str) -> Any:
         # SWC format: id, type, x, y, z, radius, parent_id
         # Returns a dictionary with 'points' (coordinates) and 'connections' (parent-child pairs)
         nodes = {}  # id -> [x, y, z, radius, type, parent_id]
-        with open(data_file, 'r') as f:
+        with open(data_file, "r") as f:
             for line in f:
                 line = line.strip()
-                if not line or line.startswith('#'):
+                if not line or line.startswith("#"):
                     continue
                 parts = line.split()
                 if len(parts) >= 7:
@@ -397,35 +416,61 @@ def load_dataset_data(dataset_id: str) -> Any:
                         y = float(parts[3])  # Y coordinate (microns)
                         z = float(parts[4])  # Z coordinate (microns)
                         radius = float(parts[5])  # Radius
-                        parent_id = int(float(parts[6]))  # Parent ID (-1 for root)
-                        nodes[node_id] = [x, y, z, radius, node_type, parent_id]
+                        parent_id = int(
+                            float(parts[6])
+                        )  # Parent ID (-1 for root)
+                        nodes[node_id] = [
+                            x,
+                            y,
+                            z,
+                            radius,
+                            node_type,
+                            parent_id,
+                        ]
                     except (ValueError, IndexError):
                         continue
-        
+
         # Convert to numpy array for backward compatibility, but also return connection info
         if nodes:
             # Sort by node ID to maintain order
             sorted_ids = sorted(nodes.keys())
-            points = np.array([[nodes[nid][0], nodes[nid][1], nodes[nid][2]] for nid in sorted_ids])
-            
+            points = np.array(
+                [
+                    [nodes[nid][0], nodes[nid][1], nodes[nid][2]]
+                    for nid in sorted_ids
+                ]
+            )
+
             # Build connections list (parent -> child pairs)
             connections = []
             id_to_index = {nid: idx for idx, nid in enumerate(sorted_ids)}
             for node_id, node_data in nodes.items():
                 parent_id = node_data[5]  # parent_id
-                if parent_id != -1 and parent_id in id_to_index and node_id in id_to_index:
+                if (
+                    parent_id != -1
+                    and parent_id in id_to_index
+                    and node_id in id_to_index
+                ):
                     # Connect parent to child
-                    connections.append((id_to_index[parent_id], id_to_index[node_id]))
-            
+                    connections.append(
+                        (id_to_index[parent_id], id_to_index[node_id])
+                    )
+
             # Return both points and connections as a dictionary
             return {
-                'points': points,  # (N, 3) array of [x, y, z] in microns
-                'connections': connections,  # List of (parent_idx, child_idx) tuples
-                'radii': np.array([nodes[nid][3] for nid in sorted_ids]),  # Radii for each point
+                "points": points,  # (N, 3) array of [x, y, z] in microns
+                "connections": connections,  # List of (parent_idx, child_idx) tuples
+                "radii": np.array(
+                    [nodes[nid][3] for nid in sorted_ids]
+                ),  # Radii for each point
             }
         else:
-            return {'points': np.array([]), 'connections': [], 'radii': np.array([])}
-        
+            return {
+                "points": np.array([]),
+                "connections": [],
+                "radii": np.array([]),
+            }
+
     elif file_format == "nrrd":
         # Return the path so napari can open it directly with 'viewer.open(path)'
         # This avoids adding a pynrrd dependency to this specific file.

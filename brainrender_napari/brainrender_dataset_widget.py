@@ -9,7 +9,7 @@ from typing import Dict
 
 from brainglobe_utils.qtpy.logo import header_widget
 from napari.qt import thread_worker
-from napari.utils.notifications import show_error, show_info
+from napari.utils.notifications import show_error
 from napari.viewer import Viewer
 from qtpy.QtWidgets import (
     QComboBox,
@@ -27,7 +27,9 @@ from brainrender_napari.utils.download_datasets import (
 )
 from brainrender_napari.utils.visualize_datasets import add_dataset_to_viewer
 from brainrender_napari.widgets.atlas_progress_bar import AtlasProgressBar
-from brainrender_napari.widgets.database_search_widget import DatabaseSearchWidget
+from brainrender_napari.widgets.database_search_widget import (
+    DatabaseSearchWidget,
+)
 from brainrender_napari.widgets.dataset_manager_view import DatasetManagerView
 
 
@@ -89,7 +91,9 @@ class BrainrenderDatasetWidget(QWidget):
         self.data_type_filter = QComboBox()
         self.data_type_filter.addItem("All")
         self.data_type_filter.addItems(["points", "volume", "streamlines"])
-        self.data_type_filter.currentTextChanged.connect(self._on_filter_changed)
+        self.data_type_filter.currentTextChanged.connect(
+            self._on_filter_changed
+        )
 
         filter_group.layout().addWidget(species_label)
         filter_group.layout().addWidget(self.species_filter)
@@ -101,7 +105,9 @@ class BrainrenderDatasetWidget(QWidget):
 
         # Create the dataset manager view
         self.dataset_manager_view = DatasetManagerView(parent=self)
-        self.dataset_manager_group.layout().addWidget(self.dataset_manager_view)
+        self.dataset_manager_group.layout().addWidget(
+            self.dataset_manager_view
+        )
 
         self.layout().addWidget(self.dataset_manager_group)
 
@@ -156,7 +162,7 @@ class BrainrenderDatasetWidget(QWidget):
         try:
             # Register the neuron as a dataset
             dataset_id = register_dynamic_dataset(neuron)
-            
+
             # Trigger download using thread worker
             @thread_worker
             def download_worker():
@@ -164,21 +170,30 @@ class BrainrenderDatasetWidget(QWidget):
                     self.dataset_manager_view.progress_updated.emit(
                         current, total, dataset_id, "Downloading"
                     )
-                return download_dataset(dataset_id, progress_callback=progress_callback)
-            
+
+                return download_dataset(
+                    dataset_id, progress_callback=progress_callback
+                )
+
             worker = download_worker()
             worker.returned.connect(
-                lambda result: self._on_neuron_download_complete(dataset_id, neuron)
+                lambda result: self._on_neuron_download_complete(
+                    dataset_id, neuron
+                )
             )
             worker.errored.connect(
-                lambda error: show_error(f"Failed to download neuron: {str(error)}")
+                lambda error: show_error(
+                    f"Failed to download neuron: {str(error)}"
+                )
             )
             worker.start()
-            
+
         except Exception as e:
             show_error(f"Failed to download selected neuron: {str(e)}")
 
-    def _on_neuron_download_complete(self, dataset_id: str, neuron: Dict) -> None:
+    def _on_neuron_download_complete(
+        self, dataset_id: str, neuron: Dict
+    ) -> None:
         """Handle completion of neuron download."""
         # Don't show notification here - it will be shown by _on_download_complete in dataset_manager_view
         # Just refresh and update progress bar

@@ -16,11 +16,12 @@ from napari.utils.notifications import show_error, show_info
 from qtpy.QtCore import QModelIndex, QSortFilterProxyModel, Qt, QTimer, Signal
 from qtpy.QtWidgets import QMenu, QTableView, QWidget
 
-from brainrender_napari.data_models.dataset_table_model import DatasetTableModel
+from brainrender_napari.data_models.dataset_table_model import (
+    DatasetTableModel,
+)
 from brainrender_napari.utils.download_datasets import (
     download_dataset,
     get_available_datasets,
-    get_downloaded_datasets,
 )
 
 
@@ -59,11 +60,15 @@ class DatasetManagerView(QTableView):
 
         # Hide Dataset ID column (internal use only)
         self.hideColumn(self.source_model.column_headers.index("Dataset ID"))
-        
+
         # Set row height to show 4-5 rows at a time
-        self.verticalHeader().setDefaultSectionSize(30)  # Reasonable row height
+        self.verticalHeader().setDefaultSectionSize(
+            30
+        )  # Reasonable row height
         self.setMinimumHeight(150)  # Minimum height to show ~5 rows
-        self.setMaximumHeight(600)  # Maximum height to avoid taking too much space
+        self.setMaximumHeight(
+            600
+        )  # Maximum height to avoid taking too much space
 
     def _on_row_double_clicked(self) -> None:
         """Handle double-click on a row."""
@@ -148,9 +153,9 @@ class DatasetManagerView(QTableView):
             raise ValueError("No dataset selected")
 
         # Get dataset ID from first column (which is hidden)
-        dataset_id_index: QModelIndex = (
-            self.proxy_model.mapToSource(selected_index).siblingAtColumn(0)
-        )
+        dataset_id_index: QModelIndex = self.proxy_model.mapToSource(
+            selected_index
+        ).siblingAtColumn(0)
         dataset_id = self.source_model.data(dataset_id_index)
         return dataset_id
 
@@ -174,8 +179,10 @@ class DatasetManagerView(QTableView):
     def _on_download_complete(self, dataset_id: str):
         """Handle successful download completion."""
         # Small delay to ensure file system operations complete
-        QTimer.singleShot(100, lambda: self._refresh_after_download(dataset_id))
-    
+        QTimer.singleShot(
+            100, lambda: self._refresh_after_download(dataset_id)
+        )
+
     def _refresh_after_download(self, dataset_id: str):
         """Refresh the table after download completes."""
         # Refresh the model to update status

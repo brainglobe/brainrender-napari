@@ -5,7 +5,9 @@ from unittest.mock import Mock, patch
 import pytest
 from qtpy.QtCore import Qt
 
-from brainrender_napari.data_models.dataset_table_model import DatasetTableModel
+from brainrender_napari.data_models.dataset_table_model import (
+    DatasetTableModel,
+)
 
 
 @pytest.fixture
@@ -26,15 +28,18 @@ def test_dataset_table_model_init(dataset_table_model):
 def test_dataset_table_model_header(dataset_table_model):
     """Test model header data."""
     for i, expected_header in enumerate(dataset_table_model.column_headers):
-        assert dataset_table_model.headerData(
-            i, Qt.Orientation.Horizontal, Qt.DisplayRole
-        ) == expected_header
+        assert (
+            dataset_table_model.headerData(
+                i, Qt.Orientation.Horizontal, Qt.DisplayRole
+            )
+            == expected_header
+        )
 
 
 def test_dataset_table_model_set_filters(dataset_table_model):
     """Test setting filters on the model."""
     dataset_table_model.set_filters(species="mouse", data_type="streamlines")
-    
+
     assert dataset_table_model._species_filter == "mouse"
     assert dataset_table_model._data_type_filter == "streamlines"
 
@@ -42,9 +47,15 @@ def test_dataset_table_model_set_filters(dataset_table_model):
 def test_dataset_table_model_refresh_data(dataset_table_model):
     """Test refreshing model data."""
     # Mock the get_available_datasets and get_downloaded_datasets functions
-    with patch("brainrender_napari.data_models.dataset_table_model.get_available_datasets") as mock_available, \
-         patch("brainrender_napari.data_models.dataset_table_model.get_downloaded_datasets") as mock_downloaded:
-        
+    with (
+        patch(
+            "brainrender_napari.data_models.dataset_table_model.get_available_datasets"
+        ) as mock_available,
+        patch(
+            "brainrender_napari.data_models.dataset_table_model.get_downloaded_datasets"
+        ) as mock_downloaded,
+    ):
+
         mock_available.return_value = {
             "test_dataset": {
                 "name": "Test Dataset",
@@ -55,44 +66,53 @@ def test_dataset_table_model_refresh_data(dataset_table_model):
             }
         }
         mock_downloaded.return_value = set()
-        
+
         dataset_table_model.refresh_data()
-        
+
         assert mock_available.called
         assert mock_downloaded.called
 
 
-def test_dataset_table_model_data_with_downloaded_status(tmp_path, monkeypatch):
+def test_dataset_table_model_data_with_downloaded_status(
+    tmp_path, monkeypatch
+):
     """Test model data display with downloaded status."""
     from pathlib import Path
-    
+
     # Set up mock environment
     datasets_dir = tmp_path / ".brainglobe" / "datasets"
     datasets_dir.mkdir(parents=True)
-    
+
     dataset_dir = datasets_dir / "test_dataset"
     dataset_dir.mkdir()
-    (dataset_dir / "metadata.json").write_text('{"dataset_id": "test_dataset"}')
+    (dataset_dir / "metadata.json").write_text(
+        '{"dataset_id": "test_dataset"}'
+    )
     (dataset_dir / "test.swc").write_text("# SWC file\n")
-    
+
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    
+
     mock_view = Mock()
     model = DatasetTableModel(view_type=mock_view)
-    
+
     # Register a test dataset
-    from brainrender_napari.utils.download_datasets import register_dynamic_dataset
-    register_dynamic_dataset({
-        "database": "allen",
-        "id": "test_dataset",
-        "name": "Test Dataset",
-        "species": "mouse",
-        "atlas": "allen_mouse_25um",
-        "data_type": "streamlines",
-    })
-    
+    from brainrender_napari.utils.download_datasets import (
+        register_dynamic_dataset,
+    )
+
+    register_dynamic_dataset(
+        {
+            "database": "allen",
+            "id": "test_dataset",
+            "name": "Test Dataset",
+            "species": "mouse",
+            "atlas": "allen_mouse_25um",
+            "data_type": "streamlines",
+        }
+    )
+
     model.refresh_data()
-    
+
     # Find the row with our test dataset
     for row in range(model.rowCount()):
         dataset_id_index = model.index(row, 0)
@@ -103,9 +123,10 @@ def test_dataset_table_model_data_with_downloaded_status(tmp_path, monkeypatch):
             status = model.data(status_index)
             # Status should be "Downloaded" if file exists
             break
-    
+
     # Cleanup
     import brainrender_napari.utils.download_datasets as ddm
+
     ddm.AVAILABLE_DATASETS.clear()
 
 

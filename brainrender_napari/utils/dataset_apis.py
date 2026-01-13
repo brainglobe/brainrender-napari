@@ -5,10 +5,9 @@ This module provides API interaction classes similar to morphapi's pattern,
 for fetching data from Allen Brain Atlas, MouseLight, and other sources.
 """
 
-import json
 import logging
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import requests
 
@@ -63,14 +62,20 @@ class AllenBrainAtlasAPI:
                         elif download_link.startswith("/api/v2/"):
                             return f"https://api.brain-map.org{download_link}"
                         else:
-                            return f"{AllenBrainAtlasAPI.BASE_URL}{download_link}"
+                            return (
+                                f"{AllenBrainAtlasAPI.BASE_URL}{download_link}"
+                            )
             return None
         except Exception as e:
-            logger.error(f"Error fetching reconstruction URL for neuron {neuron_id}: {e}")
+            logger.error(
+                f"Error fetching reconstruction URL for neuron {neuron_id}: {e}"
+            )
             return None
 
     @staticmethod
-    def get_projection_image_url(experiment_id: int, downsample: int = 3) -> str:
+    def get_projection_image_url(
+        experiment_id: int, downsample: int = 3
+    ) -> str:
         """Get URL for projection density image."""
         return (
             f"{AllenBrainAtlasAPI.BASE_URL}/projection_image_download/"
@@ -85,14 +90,14 @@ class AllenBrainAtlasAPI:
     ) -> List[Dict]:
         """Search for neurons matching criteria."""
         criteria = ["model::ApiCellTypesSpecimenDetail"]
-        
+
         if structure_id:
             criteria.append(f"rma::criteria,[structure__id$eq{structure_id}]")
         if transgenic_line:
             criteria.append(f"rma::criteria,[line_name$eq{transgenic_line}]")
-        
+
         criteria.append("rma::options[num_rows$eq{}]".format(limit))
-        
+
         query = f"{AllenBrainAtlasAPI.BASE_URL}/data/query.json?criteria={','.join(criteria)}"
         try:
             response = requests.get(query)

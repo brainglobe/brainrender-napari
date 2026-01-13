@@ -7,9 +7,7 @@ download neurons from Allen Brain Atlas, MouseLight, and NeuroMorpho.org.
 
 import logging
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple
-
-import pandas as pd
+from typing import Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +38,9 @@ class DatabaseSearcher:
     def allen_api(self):
         """Lazy-load Allen API."""
         if not MORPHAPI_AVAILABLE:
-            raise ImportError("morphapi is not installed. Install with: pip install morphapi")
+            raise ImportError(
+                "morphapi is not installed. Install with: pip install morphapi"
+            )
         if self._allen_api is None:
             try:
                 self._allen_api = AllenMorphology()
@@ -53,7 +53,9 @@ class DatabaseSearcher:
     def mouselight_api(self):
         """Lazy-load MouseLight API."""
         if not MORPHAPI_AVAILABLE:
-            raise ImportError("morphapi is not installed. Install with: pip install morphapi")
+            raise ImportError(
+                "morphapi is not installed. Install with: pip install morphapi"
+            )
         if self._mouselight_api is None:
             try:
                 self._mouselight_api = MorphAPI_MouseLight()
@@ -66,7 +68,9 @@ class DatabaseSearcher:
     def neuromorpho_api(self):
         """Lazy-load NeuroMorpho API."""
         if not MORPHAPI_AVAILABLE:
-            raise ImportError("morphapi is not installed. Install with: pip install morphapi")
+            raise ImportError(
+                "morphapi is not installed. Install with: pip install morphapi"
+            )
         if self._neuromorpho_api is None:
             try:
                 self._neuromorpho_api = NeuroMorpOrgAPI()
@@ -121,20 +125,30 @@ class DatabaseSearcher:
             # Convert to list of dicts
             results = []
             for _, row in neurons_df.iterrows():
-                results.append({
-                    "id": int(row.get("id", 0)),
-                    "name": str(row.get("name", "Unknown")),
-                    "species": str(row.get("species", "Unknown")),
-                    "structure_area": str(row.get("structure_area_abbrev", "Unknown")),
-                    "structure_name": str(row.get("structure_area_name", "Unknown")),
-                    "hemisphere": str(row.get("structure_hemisphere", "Unknown")),
-                    "transgenic_line": str(row.get("transgenic_line", "N/A")),
-                    "source": "Allen Brain Atlas",
-                    "database": "allen",
-                    "format": "swc",
-                    "data_type": "streamlines",
-                    "atlas": "allen_mouse_25um",  # Default for mouse
-                })
+                results.append(
+                    {
+                        "id": int(row.get("id", 0)),
+                        "name": str(row.get("name", "Unknown")),
+                        "species": str(row.get("species", "Unknown")),
+                        "structure_area": str(
+                            row.get("structure_area_abbrev", "Unknown")
+                        ),
+                        "structure_name": str(
+                            row.get("structure_area_name", "Unknown")
+                        ),
+                        "hemisphere": str(
+                            row.get("structure_hemisphere", "Unknown")
+                        ),
+                        "transgenic_line": str(
+                            row.get("transgenic_line", "N/A")
+                        ),
+                        "source": "Allen Brain Atlas",
+                        "database": "allen",
+                        "format": "swc",
+                        "data_type": "streamlines",
+                        "atlas": "allen_mouse_25um",  # Default for mouse
+                    }
+                )
             return results
         except Exception as e:
             logger.error(f"Error searching Allen neurons: {e}")
@@ -169,8 +183,7 @@ class DatabaseSearcher:
             # Fetch metadata
             if filter_regions:
                 metadata = api.fetch_neurons_metadata(
-                    filterby="soma",
-                    filter_regions=filter_regions
+                    filterby="soma", filter_regions=filter_regions
                 )
             else:
                 # Fetch all available (may be limited by API)
@@ -182,18 +195,28 @@ class DatabaseSearcher:
             # Convert to standardized format
             results = []
             for neuron in metadata:
-                results.append({
-                    "id": neuron.get("idString", neuron.get("id", "Unknown")),
-                    "name": neuron.get("idString", neuron.get("name", "Unknown")),
-                    "species": "Mus musculus",
-                    "structure_area": neuron.get("somaLocation", {}).get("brainAcronym", "Unknown"),
-                    "structure_name": neuron.get("somaLocation", {}).get("brainName", "Unknown"),
-                    "source": "Janelia MouseLight",
-                    "database": "mouselight",
-                    "format": "swc",
-                    "data_type": "streamlines",
-                    "atlas": "allen_mouse_25um",
-                })
+                results.append(
+                    {
+                        "id": neuron.get(
+                            "idString", neuron.get("id", "Unknown")
+                        ),
+                        "name": neuron.get(
+                            "idString", neuron.get("name", "Unknown")
+                        ),
+                        "species": "Mus musculus",
+                        "structure_area": neuron.get("somaLocation", {}).get(
+                            "brainAcronym", "Unknown"
+                        ),
+                        "structure_name": neuron.get("somaLocation", {}).get(
+                            "brainName", "Unknown"
+                        ),
+                        "source": "Janelia MouseLight",
+                        "database": "mouselight",
+                        "format": "swc",
+                        "data_type": "streamlines",
+                        "atlas": "allen_mouse_25um",
+                    }
+                )
             return results
         except Exception as e:
             logger.error(f"Error searching MouseLight neurons: {e}")
@@ -242,18 +265,28 @@ class DatabaseSearcher:
             # Convert to standardized format
             results = []
             for neuron in metadata:
-                results.append({
-                    "id": neuron.get("neuron_name", "Unknown"),
-                    "name": neuron.get("neuron_name", "Unknown"),
-                    "species": neuron.get("species", species),
-                    "cell_type": neuron.get("cell_type", cell_type or "Unknown"),
-                    "brain_region": neuron.get("brain_region", brain_region or "Unknown"),
-                    "source": "NeuroMorpho.org",
-                    "database": "neuromorpho",
-                    "format": "swc",
-                    "data_type": "streamlines",
-                    "atlas": "allen_mouse_25um" if "mouse" in species.lower() else None,
-                })
+                results.append(
+                    {
+                        "id": neuron.get("neuron_name", "Unknown"),
+                        "name": neuron.get("neuron_name", "Unknown"),
+                        "species": neuron.get("species", species),
+                        "cell_type": neuron.get(
+                            "cell_type", cell_type or "Unknown"
+                        ),
+                        "brain_region": neuron.get(
+                            "brain_region", brain_region or "Unknown"
+                        ),
+                        "source": "NeuroMorpho.org",
+                        "database": "neuromorpho",
+                        "format": "swc",
+                        "data_type": "streamlines",
+                        "atlas": (
+                            "allen_mouse_25um"
+                            if "mouse" in species.lower()
+                            else None
+                        ),
+                    }
+                )
             return results
         except Exception as e:
             logger.error(f"Error searching NeuroMorpho neurons: {e}")
@@ -296,16 +329,22 @@ class DatabaseSearcher:
             if isinstance(neuron_id, str) and neuron_id.isdigit():
                 neuron_id = int(neuron_id)
             elif isinstance(neuron_id, str):
-                raise ValueError(f"Allen neuron ID must be numeric, got: {neuron_id}")
-            
+                raise ValueError(
+                    f"Allen neuron ID must be numeric, got: {neuron_id}"
+                )
+
             # Download using morphapi
             # morphapi's download_neurons returns paths to downloaded files (as strings or Path objects)
             try:
-                downloaded_paths = api.download_neurons([neuron_id], load_neurons=False)
+                downloaded_paths = api.download_neurons(
+                    [neuron_id], load_neurons=False
+                )
             except Exception as e:
                 logger.error(f"morphapi download_neurons failed: {e}")
-                raise RuntimeError(f"Failed to download Allen neuron {neuron_id}: {str(e)}") from e
-            
+                raise RuntimeError(
+                    f"Failed to download Allen neuron {neuron_id}: {str(e)}"
+                ) from e
+
             if downloaded_paths and len(downloaded_paths) > 0:
                 # Handle both string paths and Path objects
                 source_path = downloaded_paths[0]
@@ -313,33 +352,40 @@ class DatabaseSearcher:
                     source_file = Path(source_path)
                 else:
                     source_file = Path(str(source_path))
-                
+
                 if source_file.exists():
                     # Copy to our destination
                     dest_file = destination_dir / source_file.name
                     import shutil
+
                     shutil.copy2(source_file, dest_file)
                     return dest_file
                 else:
                     # Try looking in morphapi cache directory (morphapi may cache files there)
                     try:
                         from morphapi.paths_manager import Paths
+
                         paths = Paths()
                         # Try common cache locations
                         cache_dirs = [
                             Path(paths.allen_morphology_cache),
-                            Path.home() / ".brainglobe" / "allen_morphology_cache",
+                            Path.home()
+                            / ".brainglobe"
+                            / "allen_morphology_cache",
                         ]
                         for cache_dir in cache_dirs:
                             cache_file = cache_dir / f"{neuron_id}.swc"
                             if cache_file.exists():
                                 dest_file = destination_dir / cache_file.name
                                 import shutil
+
                                 shutil.copy2(cache_file, dest_file)
                                 return dest_file
                     except Exception as cache_error:
-                        logger.debug(f"Could not find file in cache: {cache_error}")
-                    
+                        logger.debug(
+                            f"Could not find file in cache: {cache_error}"
+                        )
+
                     raise FileNotFoundError(
                         f"Downloaded file not found at: {source_file}. "
                         f"morphapi returned: {downloaded_paths}"
@@ -355,32 +401,40 @@ class DatabaseSearcher:
             # Create a mock neuron dict for download
             neuron_dict = {"idString": str(neuron_id)}
             file_path = api.download_neurons(neuron_dict)
-            
+
             if file_path and Path(file_path).exists():
                 # Copy to destination
                 dest_file = destination_dir / Path(file_path).name
                 import shutil
+
                 shutil.copy2(file_path, dest_file)
                 return dest_file
             else:
-                raise ValueError(f"Failed to download MouseLight neuron {neuron_id}")
+                raise ValueError(
+                    f"Failed to download MouseLight neuron {neuron_id}"
+                )
 
         elif database == "neuromorpho":
             api = self.neuromorpho_api
             # Download by neuron name
             file_paths = api.download_neurons([str(neuron_id)])
-            
+
             if file_paths and len(file_paths) > 0:
                 source_file = Path(file_paths[0])
                 if source_file.exists():
                     dest_file = destination_dir / source_file.name
                     import shutil
+
                     shutil.copy2(source_file, dest_file)
                     return dest_file
                 else:
-                    raise FileNotFoundError(f"Downloaded file not found: {source_file}")
+                    raise FileNotFoundError(
+                        f"Downloaded file not found: {source_file}"
+                    )
             else:
-                raise ValueError(f"Failed to download NeuroMorpho neuron {neuron_id}")
+                raise ValueError(
+                    f"Failed to download NeuroMorpho neuron {neuron_id}"
+                )
         else:
             raise ValueError(f"Unknown database: {database}")
 

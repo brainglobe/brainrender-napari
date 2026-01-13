@@ -43,7 +43,7 @@ class DatasetTableModel(QAbstractTableModel):
     def refresh_data(self):
         """Refresh model data by fetching available datasets."""
         self.beginResetModel()  # Notify view that we're about to change data
-        
+
         available_datasets = get_available_datasets(
             species=self._species_filter, data_type=self._data_type_filter
         )
@@ -54,10 +54,16 @@ class DatasetTableModel(QAbstractTableModel):
             # Check if required atlas is downloaded
             required_atlas = metadata.get("atlas")
             atlas_downloaded = (
-                required_atlas in get_downloaded_atlases() if required_atlas else True
+                required_atlas in get_downloaded_atlases()
+                if required_atlas
+                else True
             )
 
-            status = "Downloaded" if dataset_id in downloaded_datasets else "Available"
+            status = (
+                "Downloaded"
+                if dataset_id in downloaded_datasets
+                else "Available"
+            )
             if required_atlas and not atlas_downloaded:
                 status = "Atlas Required"
 
@@ -85,7 +91,9 @@ class DatasetTableModel(QAbstractTableModel):
             available_datasets = get_available_datasets()
             if dataset_id in available_datasets:
                 metadata = available_datasets[dataset_id]
-                description = metadata.get("description", "No description available")
+                description = metadata.get(
+                    "description", "No description available"
+                )
                 return f"{metadata.get('name')}\n\n{description}\n\nStatus: {self._data[index.row()][6]}"
 
         if role == Qt.BackgroundRole:

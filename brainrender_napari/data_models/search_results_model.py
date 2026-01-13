@@ -41,7 +41,11 @@ class SearchResultsModel(QAbstractTableModel):
             0: str(neuron.get("id", "N/A")),
             1: str(neuron.get("name", "Unknown")),
             2: str(neuron.get("source", "Unknown")),
-            3: str(neuron.get("structure_area", neuron.get("structure_name", "N/A"))),
+            3: str(
+                neuron.get(
+                    "structure_area", neuron.get("structure_name", "N/A")
+                )
+            ),
             4: str(neuron.get("species", "Unknown")),
             5: str(neuron.get("database", "unknown")),
         }
