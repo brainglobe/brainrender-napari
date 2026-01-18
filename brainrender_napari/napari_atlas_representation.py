@@ -53,8 +53,9 @@ class NapariAtlasRepresentation:
         annotation.mouse_move_callbacks.append(self._on_mouse_move)
         reference.mouse_move_callbacks.append(self._on_mouse_move)
 
-    def add_structure_to_viewer(self, structure_name: str, hemisphere: str = "Both") -> None:
-
+    def add_structure_to_viewer(
+        self, structure_name: str, hemisphere: str = "Both"
+    ) -> None:
         """Adds the mesh of a structure to the viewer.
         The mesh will be rescaled to pixel space.
 
@@ -69,8 +70,6 @@ class NapariAtlasRepresentation:
             return
         else:
             print(f"Rendering {structure_name}")
-
-
 
         if self.viewer.dims.ndisplay == 2:
             show_info("Meshes will only show if the display is set to 3D.")
