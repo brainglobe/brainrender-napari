@@ -25,6 +25,8 @@ from brainrender_napari.napari_atlas_representation import (
 from brainrender_napari.widgets.atlas_viewer_view import AtlasViewerView
 from brainrender_napari.widgets.structure_view import StructureView
 
+from qtpy.QtWidgets import QComboBox , QLabel
+
 
 class BrainrenderViewerWidget(QWidget):
     """The purpose of this class is
@@ -55,6 +57,13 @@ class BrainrenderViewerWidget(QWidget):
         self.atlas_viewer_view = AtlasViewerView(parent=self)
 
         self.show_structure_names = QCheckBox()
+
+        # defining the hemisphere selector 
+        self.hemisphere_selector=QComboBox()
+        self.hemisphere_selector.addItems(["Both","Left","Right"])
+        self.hemisphere_selector.setToolTip("Filter regions by hemisphere")
+        self.selected_hemisphere="Both"
+
         self.show_structure_names.setChecked(False)
         self.show_structure_names.setText("Show region names")
         self.show_structure_names.setToolTip(
@@ -84,6 +93,10 @@ class BrainrenderViewerWidget(QWidget):
         self.structure_tree_group.setLayout(QVBoxLayout())
         self.structure_tree_group.layout().addWidget(self.show_structure_names)
         self.structure_tree_group.layout().addWidget(self.structure_view)
+
+        # displaying the hemisphere selector 
+        self.structure_tree_group.layout().addWidget(self.hemisphere_selector)
+
         self.structure_tree_group.hide()
         self.layout().addWidget(self.structure_tree_group)
 
@@ -103,6 +116,11 @@ class BrainrenderViewerWidget(QWidget):
             self._on_show_structure_names_clicked
         )
 
+        self.hemisphere_selector.currentTextChanged.connect(
+        self._on_hemisphere_changed
+        )
+        
+
         # connect structure view signals
         self.structure_view.add_structure_requested.connect(
             self._on_add_structure_requested
@@ -110,6 +128,18 @@ class BrainrenderViewerWidget(QWidget):
 
     def _on_add_structure_requested(self, structure_name: str) -> None:
         """Add given structure as napari atlas representation"""
+        selected_atlas = BrainGlobeAtlas(
+        atlas_name=self.atlas_viewer_view.selected_atlas_name()
+        )
+        selected_atlas_representation = NapariAtlasRepresentation(
+            bg_atlas=selected_atlas, viewer=self._viewer
+        )
+        selected_atlas_representation.add_structure_to_viewer(
+            structure_name,
+            hemisphere=self.selected_hemisphere
+        )
+
+
         selected_atlas = BrainGlobeAtlas(
             atlas_name=self.atlas_viewer_view.selected_atlas_name()
         )
@@ -155,3 +185,6 @@ class BrainrenderViewerWidget(QWidget):
             atlas_name,
             show_structure_names,
         )
+    def _on_hemisphere_changed(self, hemisphere: str) -> None:
+        self.selected_hemisphere = hemisphere
+        print(f"Hemisphere selected: {hemisphere}")

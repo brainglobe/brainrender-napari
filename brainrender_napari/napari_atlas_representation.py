@@ -53,12 +53,25 @@ class NapariAtlasRepresentation:
         annotation.mouse_move_callbacks.append(self._on_mouse_move)
         reference.mouse_move_callbacks.append(self._on_mouse_move)
 
-    def add_structure_to_viewer(self, structure_name: str) -> None:
+    def add_structure_to_viewer(self, structure_name: str, hemisphere: str = "Both") -> None:
+
         """Adds the mesh of a structure to the viewer.
         The mesh will be rescaled to pixel space.
 
         structure_name: the id or acronym of the structure.
         """
+
+        if hemisphere == "Left" and not structure_name.endswith("_L"):
+            print(f"Skipping {structure_name} — not a Left hemisphere region")
+            return
+        elif hemisphere == "Right" and not structure_name.endswith("_R"):
+            print(f"Skipping {structure_name} — not a Right hemisphere region")
+            return
+        else:
+            print(f"Rendering {structure_name}")
+
+
+
         if self.viewer.dims.ndisplay == 2:
             show_info("Meshes will only show if the display is set to 3D.")
 
