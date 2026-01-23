@@ -2,11 +2,12 @@ import json
 from pathlib import Path
 
 from brainglobe_atlasapi.list_atlases import get_local_atlas_version
+from brainglobe_atlasapi import config
 
 
 def read_atlas_metadata_from_file(atlas_name: str):
     """Reads atlas metadata stored in a `.json` in the BrainGlobe directory."""
-    brainglobe_dir = Path.home() / ".brainglobe"
+    brainglobe_dir = config.get_brainglobe_dir()
     with open(
         brainglobe_dir
         / f"{atlas_name}_v{get_local_atlas_version(atlas_name=atlas_name)}"
@@ -17,7 +18,7 @@ def read_atlas_metadata_from_file(atlas_name: str):
 
 def read_atlas_structures_from_file(atlas_name: str):
     """Reads structure info from a '.json' in the BrainGlobe directory."""
-    brainglobe_dir = Path.home() / ".brainglobe"
+    brainglobe_dir = config.get_brainglobe_dir()
     with open(
         brainglobe_dir
         / f"{atlas_name}_v{get_local_atlas_version(atlas_name=atlas_name)}"
