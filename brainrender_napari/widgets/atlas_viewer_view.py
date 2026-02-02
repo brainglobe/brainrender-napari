@@ -118,11 +118,9 @@ class AtlasViewerView(QTableView):
             metadata_as_string = ""
             for key, value in metadata.items():
                 metadata_as_string += f"{key}:\t{value}\n"
-            tooltip_text: str = (
-                f"{format_atlas_name(name=atlas_name)}\
+            tooltip_text: str = f"{format_atlas_name(name=atlas_name)}\
                 (double-click to add to viewer)\
                 \n{metadata_as_string}"
-            )
         else:
             raise ValueError("Tooltip text called with invalid atlas name.")
         return tooltip_text
