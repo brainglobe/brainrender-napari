@@ -33,9 +33,7 @@ def atlas_viewer_view(qtbot) -> AtlasViewerView:
         "allen_mouse_100um",
     ],
 )
-def test_atlas_view_valid_selection(
-    expected_atlas_name, atlas_viewer_view
-):
+def test_atlas_view_valid_selection(expected_atlas_name, atlas_viewer_view):
     """Checks selected_atlas_name for valid current indices"""
     index = _find_proxy_index_by_atlas_name(
         atlas_viewer_view, expected_atlas_name
