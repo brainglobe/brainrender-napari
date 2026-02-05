@@ -55,7 +55,6 @@ class BrainrenderViewerWidget(QWidget):
         # create widgets
         self.atlas_viewer_view = AtlasViewerView(parent=self)
 
-        # --- NEW WIDGET INITIALIZATION ---
         # Initialize filter with reference to the view
         self.atlas_viewer_filter = AtlasViewerFilter(
             self.atlas_viewer_view, parent=self

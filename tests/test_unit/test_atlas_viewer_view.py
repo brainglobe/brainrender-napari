@@ -6,7 +6,6 @@ from qtpy.QtCore import QModelIndex, Qt
 from brainrender_napari.utils.formatting import format_atlas_name
 from brainrender_napari.widgets.atlas_viewer_view import (
     AtlasViewerView,
-    DownloadedOnlyProxyModel,
 )
 
 
@@ -140,7 +139,7 @@ def test_get_tooltip_invalid_name():
 def test_downloaded_only_proxy_model_filters_non_downloaded(
     atlas_viewer_view,
 ):
-    """Test that DownloadedOnlyProxyModel filters out non-downloaded atlases."""
+    """Test DownloadedOnlyProxyModel filters non-downloaded atlases."""
     # The proxy model should only show downloaded atlases
     from brainglobe_atlasapi.list_atlases import get_downloaded_atlases
 
