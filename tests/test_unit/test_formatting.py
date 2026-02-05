@@ -1,4 +1,6 @@
-from brainrender_napari.utils.formatting import format_bytes
+import pytest
+
+from brainrender_napari.utils.formatting import format_atlas_name, format_bytes
 
 
 def test_format_bytes():
@@ -11,3 +13,43 @@ def test_format_bytes():
     assert format_bytes(1500000) == "1.43 MB"
     assert format_bytes(1500000000) == "1.40 GB"
     assert format_bytes(1500000000000) == "1.36 TB"
+
+
+@pytest.mark.parametrize(
+    "input_name, expected_output",
+    [
+        ("allen_mouse_100um", "Allen mouse (100 µm)"),
+        ("example_mouse_100um", "Example mouse (100 µm)"),
+        ("osten_mouse_100um", "Osten mouse (100 µm)"),
+        ("allen_mouse_10um", "Allen mouse (10 µm)"),
+        ("allen_human_500um", "Allen human (500 µm)"),
+        ("kim_dev_mouse_25um", "Kim dev mouse (25 µm)"),
+    ],
+)
+def test_format_atlas_name(input_name, expected_output):
+    """Test that atlas names are formatted correctly with proper capitalization
+    and micron symbol."""
+    assert format_atlas_name(input_name) == expected_output
+
+
+def test_format_atlas_name_capitalization():
+    """Test that only the first word is capitalized."""
+    result = format_atlas_name("allen_mouse_100um")
+    assert result.startswith("Allen")
+    assert "mouse" in result  # Should not be capitalized
+
+
+def test_format_atlas_name_micron_symbol():
+    """Test that the micron symbol (µm) is properly inserted."""
+    result = format_atlas_name("example_mouse_100um")
+    assert "µm" in result
+    assert "(100 µm)" in result
+
+
+def test_format_atlas_name_handles_different_resolutions():
+    """Test formatting with various resolution values."""
+    assert "(10 µm)" in format_atlas_name("test_atlas_10um")
+    assert "(25 µm)" in format_atlas_name("test_atlas_25um")
+    assert "(50 µm)" in format_atlas_name("test_atlas_50um")
+    assert "(100 µm)" in format_atlas_name("test_atlas_100um")
+    assert "(500 µm)" in format_atlas_name("test_atlas_500um")

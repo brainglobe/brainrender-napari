@@ -7,12 +7,12 @@ It is designed to be agnostic from the viewer framework by emitting signals
 that interested observers can connect to.
 """
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 from brainglobe_atlasapi.list_atlases import (
     get_downloaded_atlases,
 )
-from qtpy.QtCore import QModelIndex, Qt, Signal, QSortFilterProxyModel
+from qtpy.QtCore import QSortFilterProxyModel, Qt, Signal
 from qtpy.QtWidgets import QMenu, QTableView, QWidget
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
@@ -27,6 +27,7 @@ class DownloadedOnlyProxyModel(QSortFilterProxyModel):
     A Custom Proxy Model that filters out any atlas not currently downloaded.
     This replaces the need for manually hiding rows, which breaks when sorting.
     """
+
     def filterAcceptsRow(self, source_row, source_parent):
         # 1. Check if it matches the Search Bar text (Standard behavior)
         matches_search = super().filterAcceptsRow(source_row, source_parent)
@@ -89,31 +90,34 @@ class AtlasViewerView(QTableView):
 
         for column_header in self.hidden_columns:
             if column_header in self.source_model.column_headers:
-                index_to_hide = self.source_model.column_headers.index(column_header)
+                index_to_hide = self.source_model.column_headers.index(
+                    column_header
+                )
                 self.hideColumn(index_to_hide)
 
         if len(get_downloaded_atlases()) == 0:
             self.no_atlas_available.emit()
 
-        # Note: We no longer need the loop to hideRow() here.
-        # The DownloadedOnlyProxyModel handles it automatically.
-
-    def selected_atlas_name(self) -> str:
+    def selected_atlas_name(
+        self,
+    ) -> Optional[str]:
         """A single place to get a valid selected atlas name.
         Updated to handle Proxy mapping."""
         # Get the index from the View (Sorted/Filtered Index)
-        selected_proxy_index: QModelIndex = self.selectionModel().currentIndex()
-        
+        selected_proxy_index = self.selectionModel().currentIndex()
+
         if not selected_proxy_index.isValid():
             return None
 
         # Map Proxy Index -> Source Index
-        selected_source_index = self.proxy_model.mapToSource(selected_proxy_index)
-        
+        selected_source_index = self.proxy_model.mapToSource(
+            selected_proxy_index
+        )
+
         # Get data from Source Model
         selected_atlas_name_index = selected_source_index.siblingAtColumn(0)
         selected_atlas_name = self.source_model.data(selected_atlas_name_index)
-        
+
         assert selected_atlas_name in get_downloaded_atlases()
         return selected_atlas_name
 
@@ -122,7 +126,7 @@ class AtlasViewerView(QTableView):
         currently selected atlas if the atlas has any. If the user selects one
         of the additional references, this is signalled.
         """
-        selected_atlas_name: str = self.selected_atlas_name()
+        selected_atlas_name: Optional[str] = self.selected_atlas_name()
         # Guard clause in case selection is empty
         if not selected_atlas_name:
             return

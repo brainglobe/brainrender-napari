@@ -35,7 +35,7 @@ class AtlasViewerFilter(QWidget):
             self.atlas_viewer_view.source_model.column_headers
         )
         self.column_field.insertItem(0, "Any")
-        
+
         # Remove hidden columns from the dropdown
         for col in self.atlas_viewer_view.hidden_columns:
             idx = self.column_field.findText(col)

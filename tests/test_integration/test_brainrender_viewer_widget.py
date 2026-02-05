@@ -148,3 +148,82 @@ def test_atlas_viewer_view_tooltip(viewer_widget):
             expected_keyword
             in viewer_widget.atlas_viewer_group.toolTip().lower()
         )
+
+
+def test_filter_widget_exists(viewer_widget):
+    """Test that the filter widget exists in the viewer widget."""
+    assert hasattr(viewer_widget, "atlas_viewer_filter")
+    assert viewer_widget.atlas_viewer_filter is not None
+
+
+def test_filter_integration_with_view(viewer_widget):
+    """Test that the filter widget is properly integrated with the view."""
+    # Verify filter is connected to the same view
+    assert (
+        viewer_widget.atlas_viewer_filter.atlas_viewer_view
+        == viewer_widget.atlas_viewer_view
+    )
+
+
+def test_filter_reduces_visible_atlases(viewer_widget, qtbot):
+    """Test that applying a filter reduces the number of visible atlases."""
+    # Get initial row count
+    initial_count = viewer_widget.atlas_viewer_view.proxy_model.rowCount()
+    assert initial_count > 0
+
+    # Apply a filter
+    viewer_widget.atlas_viewer_filter.query_field.setText("example")
+
+    # Wait for filter to apply
+    qtbot.wait(100)
+
+    # Verify row count decreased
+    filtered_count = viewer_widget.atlas_viewer_view.proxy_model.rowCount()
+    assert filtered_count < initial_count
+    assert filtered_count > 0  # Should still have example_mouse_100um
+
+
+def test_filter_preserves_selection_functionality(viewer_widget, mocker):
+    """Test that filtering doesn't break atlas selection functionality."""
+    # Apply a filter
+    viewer_widget.atlas_viewer_filter.query_field.setText("example")
+
+    # Select the first row
+    viewer_widget.atlas_viewer_view.selectRow(0)
+
+    # Verify selection works correctly
+    selected_atlas = viewer_widget.atlas_viewer_view.selected_atlas_name()
+    assert selected_atlas is not None
+    assert "example" in selected_atlas.lower()
+
+    # Verify that atlas selection change signal works
+    structure_view_refresh_mock = mocker.patch(
+        "brainrender_napari.brainrender_viewer_widget.StructureView.refresh"
+    )
+
+    # Trigger selection change
+    viewer_widget._on_atlas_selection_changed(selected_atlas)
+
+    # Verify structure view was refreshed
+    structure_view_refresh_mock.assert_called_once()
+
+
+def test_filter_clears_and_restores_view(viewer_widget, qtbot):
+    """Test that clearing a filter restores the full atlas list."""
+    # Get initial count
+    initial_count = viewer_widget.atlas_viewer_view.proxy_model.rowCount()
+
+    # Apply a filter
+    viewer_widget.atlas_viewer_filter.query_field.setText("osten")
+    qtbot.wait(100)
+
+    filtered_count = viewer_widget.atlas_viewer_view.proxy_model.rowCount()
+    assert filtered_count < initial_count
+
+    # Clear the filter
+    viewer_widget.atlas_viewer_filter.query_field.clear()
+    qtbot.wait(100)
+
+    # Verify we're back to initial state
+    final_count = viewer_widget.atlas_viewer_view.proxy_model.rowCount()
+    assert final_count == initial_count
