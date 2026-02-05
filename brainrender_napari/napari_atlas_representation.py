@@ -5,6 +5,7 @@ import numpy as np
 from brainglobe_atlasapi import BrainGlobeAtlas
 from meshio import Mesh
 from napari.settings import get_settings
+from napari.utils.colormaps import DirectLabelColormap
 from napari.utils.notifications import show_info
 from napari.viewer import Viewer
 from qtpy.QtCore import Qt
@@ -33,6 +34,30 @@ class NapariAtlasRepresentation:
         napari_settings = get_settings()
         napari_settings.appearance.layer_tooltip_visibility = True
 
+    def _get_atlas_colormap(self) -> DirectLabelColormap:
+        """Generates a DirectLabelColormap using the atlas' official colors.
+
+        BrainGlobe stores colors as [255, 255, 255] (Integers).
+        Napari requires [1.0, 1.0, 1.0, 1.0] (Floats with alpha).
+        """
+        structures = self.bg_atlas.structures
+        color_map = {}
+
+        for region_id, region_data in structures.items():
+            rgb = region_data["rgb_triplet"]
+            # Convert 0-255 RGB to 0.0-1.0 RGBA
+            color_map[region_id] = [
+                rgb[0] / 255,
+                rgb[1] / 255,
+                rgb[2] / 255,
+                1.0,
+            ]
+
+        # Ensure background (ID 0) is transparent
+        color_map[0] = [0.0, 0.0, 0.0, 0.0]
+
+        return DirectLabelColormap(color_dict=color_map)
+
     def add_to_viewer(self) -> None:
         """Adds the reference and annotation images as layers to the viewer.
 
@@ -48,6 +73,7 @@ class NapariAtlasRepresentation:
         annotation = self.viewer.add_labels(
             self.bg_atlas.annotation,
             name=f"{self.bg_atlas.atlas_name}_annotation",
+            colormap=self._get_atlas_colormap(),
         )
 
         annotation.mouse_move_callbacks.append(self._on_mouse_move)
