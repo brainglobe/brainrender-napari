@@ -13,7 +13,6 @@ class AtlasViewerFilter(QWidget):
         super().__init__(parent)
         self.atlas_viewer_view = atlas_viewer_view
         self.setup_ui()
-        return
 
     def setup_ui(self):
         """Creates embedded widgets and attaches these within a layout."""
@@ -46,7 +45,6 @@ class AtlasViewerFilter(QWidget):
         self.column_field.currentIndexChanged.connect(self.apply)
         self.layout.addWidget(QLabel("Column:"))
         self.layout.addWidget(self.column_field)
-        return
 
     def apply(self):
         """Updates proxy's internal state based on input and
@@ -66,4 +64,3 @@ class AtlasViewerFilter(QWidget):
 
         # apply filter
         self.atlas_viewer_view.proxy_model.setFilterFixedString(query)
-        return

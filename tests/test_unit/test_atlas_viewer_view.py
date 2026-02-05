@@ -6,6 +6,7 @@ from qtpy.QtCore import QModelIndex, Qt
 from brainrender_napari.utils.formatting import format_atlas_name
 from brainrender_napari.widgets.atlas_viewer_view import (
     AtlasViewerView,
+    DownloadedOnlyProxyModel,
 )
 
 
@@ -134,3 +135,75 @@ def test_get_tooltip_invalid_name():
     with pytest.raises(ValueError) as e:
         _ = AtlasViewerView.get_tooltip_text("wrong_atlas_name")
         assert "invalid atlas name" in e
+
+
+def test_downloaded_only_proxy_model_filters_non_downloaded(
+    atlas_viewer_view,
+):
+    """Test that DownloadedOnlyProxyModel filters out non-downloaded atlases."""
+    # The proxy model should only show downloaded atlases
+    from brainglobe_atlasapi.list_atlases import get_downloaded_atlases
+
+    downloaded_count = len(get_downloaded_atlases())
+    proxy_count = atlas_viewer_view.proxy_model.rowCount()
+
+    # Should match exactly
+    assert proxy_count == downloaded_count
+
+
+def test_downloaded_only_proxy_model_with_filter(atlas_viewer_view):
+    """Test that DownloadedOnlyProxyModel works with text filtering."""
+    # Apply a text filter
+    atlas_viewer_view.proxy_model.setFilterFixedString("mouse")
+
+    # Should still only show downloaded atlases that match "mouse"
+    assert atlas_viewer_view.proxy_model.rowCount() > 0
+
+    # Verify all visible rows are downloaded
+    from brainglobe_atlasapi.list_atlases import get_downloaded_atlases
+
+    downloaded = get_downloaded_atlases()
+    for row in range(atlas_viewer_view.proxy_model.rowCount()):
+        index = atlas_viewer_view.proxy_model.index(row, 0)
+        atlas_name = atlas_viewer_view.proxy_model.data(index)
+        assert atlas_name in downloaded
+
+
+def test_proxy_model_sorting_maintains_download_filter(
+    atlas_viewer_view, qtbot
+):
+    """Test that sorting doesn't break the downloaded-only filter."""
+    from brainglobe_atlasapi.list_atlases import get_downloaded_atlases
+
+    initial_count = atlas_viewer_view.proxy_model.rowCount()
+    downloaded_count = len(get_downloaded_atlases())
+
+    assert initial_count == downloaded_count
+
+    # Sort by column 1 (Atlas name)
+    atlas_viewer_view.sortByColumn(1, Qt.AscendingOrder)
+    qtbot.wait(100)
+
+    # Count should remain the same after sorting
+    sorted_count = atlas_viewer_view.proxy_model.rowCount()
+    assert sorted_count == downloaded_count
+    assert sorted_count == initial_count
+
+
+def test_proxy_model_rejects_non_matching_search(atlas_viewer_view):
+    """Test that proxy model correctly rejects rows that don't match search."""
+    # Set a filter that won't match any atlas
+    atlas_viewer_view.proxy_model.setFilterFixedString("xyznonexistent")
+
+    # Should show 0 rows
+    assert atlas_viewer_view.proxy_model.rowCount() == 0
+
+    # Clear filter
+    atlas_viewer_view.proxy_model.setFilterFixedString("")
+
+    # Should show downloaded atlases again
+    from brainglobe_atlasapi.list_atlases import get_downloaded_atlases
+
+    assert atlas_viewer_view.proxy_model.rowCount() == len(
+        get_downloaded_atlases()
+    )
