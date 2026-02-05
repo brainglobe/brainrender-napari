@@ -25,6 +25,9 @@ from brainrender_napari.napari_atlas_representation import (
 from brainrender_napari.widgets.atlas_viewer_view import AtlasViewerView
 from brainrender_napari.widgets.structure_view import StructureView
 
+# --- NEW IMPORT ---
+from brainrender_napari.widgets.atlas_viewer_filter import AtlasViewerFilter
+
 
 class BrainrenderViewerWidget(QWidget):
     """The purpose of this class is
@@ -53,6 +56,12 @@ class BrainrenderViewerWidget(QWidget):
 
         # create widgets
         self.atlas_viewer_view = AtlasViewerView(parent=self)
+        
+        # --- NEW WIDGET INITIALIZATION ---
+        # Initialize filter with reference to the view
+        self.atlas_viewer_filter = AtlasViewerFilter(
+            self.atlas_viewer_view, parent=self
+        )
 
         self.show_structure_names = QCheckBox()
         self.show_structure_names.setChecked(False)
@@ -71,7 +80,12 @@ class BrainrenderViewerWidget(QWidget):
             "Right-click to add additional reference images (if any exist)"
         )
         self.atlas_viewer_group.setLayout(QVBoxLayout())
+        
+        # --- ADD FILTER TO LAYOUT ---
+        # Add filter BEFORE the view so it appears on top
+        self.atlas_viewer_group.layout().addWidget(self.atlas_viewer_filter)
         self.atlas_viewer_group.layout().addWidget(self.atlas_viewer_view)
+        
         self.layout().addWidget(self.atlas_viewer_group)
 
         self.structure_tree_group = QGroupBox("3D Atlas region meshes")
@@ -134,6 +148,9 @@ class BrainrenderViewerWidget(QWidget):
 
     def _on_atlas_selection_changed(self, atlas_name: str) -> None:
         """Refreshes the structure view to match the changed atlas selection"""
+        if atlas_name is None:
+            return 
+            
         show_structure_names: bool = self.show_structure_names.isChecked()
         self.structure_view.refresh(atlas_name, show_structure_names)
         is_downloaded = atlas_name in get_downloaded_atlases()
