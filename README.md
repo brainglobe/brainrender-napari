@@ -3,8 +3,13 @@
 [![License BSD-3](https://img.shields.io/pypi/l/brainrender-napari.svg?color=green)](https://github.com/brainglobe/brainrender-napari/raw/main/LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/brainrender-napari.svg?color=green)](https://pypi.org/project/brainrender-napari)
 [![Python Version](https://img.shields.io/pypi/pyversions/brainrender-napari.svg?color=green)](https://python.org)
+[![Anaconda version](https://anaconda.org/conda-forge/brainrender-napari/badges/version.svg)](https://anaconda.org/conda-forge/brainrender-napari)
+[![Napari hub](https://img.shields.io/endpoint?url=https://npe2api-git-add-shields-napari.vercel.app/api/shields/brainrender-napari)](https://napari-hub.org/plugins/brainrender-napari.html)
 [![tests](https://github.com/brainglobe/brainrender-napari/workflows/tests/badge.svg)](https://github.com/brainglobe/brainrender-napari/actions)
 [![codecov](https://codecov.io/gh/brainglobe/brainrender-napari/branch/main/graph/badge.svg)](https://codecov.io/gh/brainglobe/brainrender-napari)
+[![image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fbrainglobe.json&query=%24.topic_list.tags.0.topic_count&colorB=brightgreen&suffix=%20topics&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tag/brainglobe)
+[![Bluesky](https://img.shields.io/badge/Bluesky-0285FF?logo=bluesky&logoColor=fff)](https://bsky.app/profile/brainglobe.info)
+[![Mastodon](https://img.shields.io/badge/Mastodon-6364FF?logo=mastodon&logoColor=fff)](https://mastodon.online/@brainglobe)
 
 Visualisation and management of BrainGlobe atlases in napari.
 
