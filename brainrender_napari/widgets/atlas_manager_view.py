@@ -18,6 +18,7 @@ from brainglobe_atlasapi.list_atlases import (
 )
 from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
 from napari.qt import thread_worker
+from qt_niu.dialog import display_warning
 from qtpy.QtCore import QModelIndex, QSortFilterProxyModel, Qt, Signal
 from qtpy.QtWidgets import (
     QTableView,
@@ -26,7 +27,6 @@ from qtpy.QtWidgets import (
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
 from brainrender_napari.utils.formatting import format_atlas_name
-from brainrender_napari.widgets.atlas_manager_dialog import AtlasManagerDialog
 
 
 class AtlasManagerView(QTableView):
@@ -65,22 +65,29 @@ class AtlasManagerView(QTableView):
 
     def _on_row_double_clicked(self) -> None:
         atlas_name = self.selected_atlas_name()
+        if atlas_name not in get_all_atlases_lastversions().keys():
+            raise ValueError(
+                f"Double-click handler called with invalid atlas name: "
+                f"{atlas_name}"
+            )
         if atlas_name in get_downloaded_atlases():
             up_to_date = get_atlases_lastversions()[atlas_name]["updated"]
             if not up_to_date:
-                update_dialog = AtlasManagerDialog(atlas_name, "Update")
-                update_dialog.ok_button.clicked.connect(
-                    self._on_update_atlas_confirmed
+                confirmed = display_warning(
+                    self,
+                    f"Update {atlas_name} Atlas",
+                    "Are you sure?\n(It may take a while)",
                 )
-                update_dialog.exec()
+                if confirmed:
+                    self._on_update_atlas_confirmed()
         else:
-            download_dialog = AtlasManagerDialog(
-                atlas_name=atlas_name, action="Download"
+            confirmed = display_warning(
+                self,
+                f"Download {atlas_name} Atlas",
+                "Are you sure?\n(It may take a while)",
             )
-            download_dialog.ok_button.clicked.connect(
-                self._on_download_atlas_confirmed
-            )
-            download_dialog.exec()
+            if confirmed:
+                self._on_download_atlas_confirmed()
 
     def _on_download_atlas_confirmed(self) -> None:
         """Downloads the currently selected atlas and signals this."""
