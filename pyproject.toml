@@ -28,7 +28,7 @@ dependencies = [
     "meshio",
     "napari>=0.6.1",
     "numpy",
-    "qt-niu @ git+https://github.com/neuroinformatics-unit/qt-niu.git@1688dcae6d14ee460e5ca9bb4d1b432dc173e52c",
+    "qt-niu",
     "qtpy",
 ]
 
