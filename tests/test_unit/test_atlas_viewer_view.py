@@ -1,6 +1,7 @@
 import traceback
 
 import pytest
+from brainglobe_atlasapi.list_atlases import get_downloaded_atlases
 from qtpy.QtCore import QModelIndex, Qt
 
 from brainrender_napari.utils.formatting import format_atlas_name
@@ -134,3 +135,64 @@ def test_get_tooltip_invalid_name():
     with pytest.raises(ValueError) as e:
         _ = AtlasViewerView.get_tooltip_text("wrong_atlas_name")
         assert "invalid atlas name" in e
+
+
+def test_sort_by_column(atlas_viewer_view):
+    atlas_column_index = atlas_viewer_view.source_model.column_headers.index(
+        "Atlas"
+    )
+
+    atlas_viewer_view.sortByColumn(atlas_column_index, Qt.AscendingOrder)
+    ascending_visible_names = [
+        atlas_viewer_view.model().data(
+            atlas_viewer_view.model().index(row, atlas_column_index)
+        )
+        for row in range(atlas_viewer_view.model().rowCount())
+        if not atlas_viewer_view.isRowHidden(row)
+    ]
+    assert ascending_visible_names == sorted(
+        ascending_visible_names, key=str.casefold
+    )
+
+    atlas_viewer_view.sortByColumn(atlas_column_index, Qt.DescendingOrder)
+    descending_visible_names = [
+        atlas_viewer_view.model().data(
+            atlas_viewer_view.model().index(row, atlas_column_index)
+        )
+        for row in range(atlas_viewer_view.model().rowCount())
+        if not atlas_viewer_view.isRowHidden(row)
+    ]
+    assert descending_visible_names == sorted(
+        descending_visible_names, key=str.casefold, reverse=True
+    )
+
+
+def test_sort_keeps_non_local_atlases_hidden(atlas_viewer_view):
+    atlas_column_index = atlas_viewer_view.source_model.column_headers.index(
+        "Atlas"
+    )
+    downloaded_atlases = set(get_downloaded_atlases())
+
+    atlas_viewer_view.sortByColumn(atlas_column_index, Qt.AscendingOrder)
+
+    for row in range(atlas_viewer_view.model().rowCount()):
+        raw_name = atlas_viewer_view.model().data(
+            atlas_viewer_view.model().index(row, 0)
+        )
+        is_downloaded = raw_name in downloaded_atlases
+        assert atlas_viewer_view.isRowHidden(row) is (not is_downloaded)
+
+
+def test_initial_proxy_order_matches_source_model(atlas_viewer_view):
+    source_raw_names = [
+        atlas_viewer_view.source_model.data(
+            atlas_viewer_view.source_model.index(row, 0)
+        )
+        for row in range(atlas_viewer_view.source_model.rowCount())
+    ]
+    proxy_raw_names = [
+        atlas_viewer_view.model().data(atlas_viewer_view.model().index(row, 0))
+        for row in range(atlas_viewer_view.model().rowCount())
+    ]
+
+    assert proxy_raw_names == source_raw_names

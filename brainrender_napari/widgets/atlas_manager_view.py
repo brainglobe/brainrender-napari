@@ -18,7 +18,7 @@ from brainglobe_atlasapi.list_atlases import (
 )
 from brainglobe_atlasapi.update_atlases import install_atlas, update_atlas
 from napari.qt import thread_worker
-from qtpy.QtCore import QModelIndex, QSortFilterProxyModel, Qt, Signal
+from qtpy.QtCore import QModelIndex, Signal
 from qtpy.QtWidgets import (
     QTableView,
     QWidget,
@@ -27,6 +27,10 @@ from qtpy.QtWidgets import (
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
 from brainrender_napari.utils.formatting import format_atlas_name
 from brainrender_napari.widgets.atlas_manager_dialog import AtlasManagerDialog
+from brainrender_napari.widgets.atlas_table_proxy_model import (
+    create_atlas_proxy_model,
+    enable_table_sorting,
+)
 
 
 class AtlasManagerView(QTableView):
@@ -45,11 +49,9 @@ class AtlasManagerView(QTableView):
         super().__init__(parent)
 
         self.source_model = AtlasTableModel(AtlasManagerView)
-        self.proxy_model = QSortFilterProxyModel()
-        self.proxy_model.setSourceModel(self.source_model)
+        self.proxy_model = create_atlas_proxy_model(self.source_model)
         self.setModel(self.proxy_model)
-
-        self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        enable_table_sorting(self)
 
         self.setEnabled(True)
         self.verticalHeader().hide()

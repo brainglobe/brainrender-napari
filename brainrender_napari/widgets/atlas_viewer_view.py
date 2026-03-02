@@ -20,6 +20,10 @@ from brainrender_napari.utils.formatting import format_atlas_name
 from brainrender_napari.utils.load_user_data import (
     read_atlas_metadata_from_file,
 )
+from brainrender_napari.widgets.atlas_table_proxy_model import (
+    create_atlas_proxy_model,
+    enable_table_sorting,
+)
 
 
 class AtlasViewerView(QTableView):
@@ -36,7 +40,10 @@ class AtlasViewerView(QTableView):
         """
         super().__init__(parent)
 
-        self.setModel(AtlasTableModel(AtlasViewerView))
+        self.source_model = AtlasTableModel(AtlasViewerView)
+        self.proxy_model = create_atlas_proxy_model(self.source_model)
+        self.setModel(self.proxy_model)
+        enable_table_sorting(self)
 
         self.setEnabled(True)
         self.verticalHeader().hide()
@@ -51,19 +58,20 @@ class AtlasViewerView(QTableView):
 
         self.doubleClicked.connect(self._on_row_double_clicked)
         self.selectionModel().currentChanged.connect(self._on_current_changed)
+        self.horizontalHeader().sortIndicatorChanged.connect(
+            self._on_sort_indicator_changed
+        )
 
         for column_header in ["Raw name", "Local version", "Latest version"]:
-            index_to_hide = self.model().column_headers.index(column_header)
+            index_to_hide = self.source_model.column_headers.index(
+                column_header
+            )
             self.hideColumn(index_to_hide)
 
         if len(get_downloaded_atlases()) == 0:
             self.no_atlas_available.emit()
 
-        # hide atlases not available locally
-        for row_index in range(self.model().rowCount()):
-            index = self.model().index(row_index, 0)
-            if self.model().data(index) not in get_downloaded_atlases():
-                self.hideRow(row_index)
+        self._refresh_row_visibility()
 
     def selected_atlas_name(self) -> str:
         """A single place to get a valid selected atlas name."""
@@ -72,9 +80,19 @@ class AtlasViewerView(QTableView):
         selected_atlas_name_index: QModelIndex = (
             selected_index.siblingAtColumn(0)
         )
-        selected_atlas_name = self.model().data(selected_atlas_name_index)
+        selected_atlas_name = self.proxy_model.data(selected_atlas_name_index)
         assert selected_atlas_name in get_downloaded_atlases()
         return selected_atlas_name
+
+    def _refresh_row_visibility(self) -> None:
+        downloaded_atlases = set(get_downloaded_atlases())
+        for row_index in range(self.proxy_model.rowCount()):
+            index = self.proxy_model.index(row_index, 0)
+            atlas_name = self.proxy_model.data(index)
+            self.setRowHidden(row_index, atlas_name not in downloaded_atlases)
+
+    def _on_sort_indicator_changed(self, *_args) -> None:
+        self._refresh_row_visibility()
 
     def _on_context_menu_requested(self, position: Tuple[float]) -> None:
         """Returns a context menu with a list of additional references for the
@@ -99,13 +117,13 @@ class AtlasViewerView(QTableView):
             if selected_item:
                 self.additional_reference_requested.emit(selected_item.text())
 
-    def _on_row_double_clicked(self) -> None:
+    def _on_row_double_clicked(self, *_args) -> None:
         """Emits add_atlas_requested if the currently
         selected atlas is available locally."""
         atlas_name = self.selected_atlas_name()
         self.add_atlas_requested.emit(atlas_name)
 
-    def _on_current_changed(self) -> None:
+    def _on_current_changed(self, *_args) -> None:
         """Emits a signal with the newly selected atlas name"""
         self.selected_atlas_changed.emit(self.selected_atlas_name())
 

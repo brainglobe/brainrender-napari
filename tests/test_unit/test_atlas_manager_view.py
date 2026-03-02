@@ -263,3 +263,29 @@ def test_apply_in_thread(qtbot, mocker):
 
     # Restore the original _apply_in_thread
     atlas_manager_view._apply_in_thread = original_apply_in_thread
+
+
+def test_sort_by_column(atlas_manager_view):
+    atlas_column_index = atlas_manager_view.source_model.column_headers.index(
+        "Atlas"
+    )
+
+    atlas_manager_view.sortByColumn(atlas_column_index, Qt.AscendingOrder)
+    ascending_names = [
+        atlas_manager_view.model().data(
+            atlas_manager_view.model().index(row, atlas_column_index)
+        )
+        for row in range(atlas_manager_view.model().rowCount())
+    ]
+    assert ascending_names == sorted(ascending_names, key=str.casefold)
+
+    atlas_manager_view.sortByColumn(atlas_column_index, Qt.DescendingOrder)
+    descending_names = [
+        atlas_manager_view.model().data(
+            atlas_manager_view.model().index(row, atlas_column_index)
+        )
+        for row in range(atlas_manager_view.model().rowCount())
+    ]
+    assert descending_names == sorted(
+        descending_names, key=str.casefold, reverse=True
+    )
