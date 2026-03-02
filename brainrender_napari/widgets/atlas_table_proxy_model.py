@@ -1,5 +1,4 @@
-from qtpy.QtCore import Qt
-from qtpy.QtCore import QSortFilterProxyModel
+from qtpy.QtCore import QSortFilterProxyModel, Qt
 from qtpy.QtWidgets import QTableView
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
