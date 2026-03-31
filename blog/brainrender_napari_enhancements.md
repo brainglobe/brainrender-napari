@@ -30,7 +30,7 @@ Finding the right atlas just got a lot easier. A new **species filter dropdown**
 
 Select "Mouse", "Zebrafish", "Human", or any other available species, and the table instantly filters to show only atlases for that species. Select "All Species" to reset the filter.
 
-**How Species is Determined**: For downloaded atlases, the species is reliably read from the `metadata.json` file (e.g., "Mus musculus" maps to "Mouse"). For atlases not yet downloaded, we parse the species heuristically from the atlas name using the core BrainGlobe atlas naming convention (e.g., `allen_human_500um` is mapped to "Human"). 
+**How Species is Determined**: For downloaded atlases, the species is reliably read from the `metadata.json` file (e.g., "Mus musculus" maps to "Mouse"). For atlases not yet downloaded, we parse the species heuristically from the atlas name using the core BrainGlobe atlas naming convention (e.g., `allen_human_500um` is mapped to "Human").
 
 ### 3. Preset Annotation Colors
 
@@ -71,7 +71,7 @@ All 133 tests in the `brainrender-napari` test suite are fully operational and p
 
 ## Get Involved
 
-I had a wonderful time working closely with the BrainGlobe maintainers. `brainrender-napari` is an open-source project and strongly welcomes contributions! 
+I had a wonderful time working closely with the BrainGlobe maintainers. `brainrender-napari` is an open-source project and strongly welcomes contributions!
 
 Check out the [GitHub repository](https://github.com/brainglobe/brainrender-napari) to get started, and feel free to open issues or submit pull requests.
 

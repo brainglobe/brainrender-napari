@@ -60,7 +60,10 @@ class AtlasManagerView(QTableView):
         self.setSelectionMode(QTableView.SelectionMode.SingleSelection)
 
         self.doubleClicked.connect(self._on_row_double_clicked)
-        self.hidden_columns = ["Raw name", "Species"]  # hide raw name + species
+        self.hidden_columns = [
+            "Raw name",
+            "Species",
+        ]  # hide raw name + species
         for col in self.hidden_columns:
             self.hideColumn(self.source_model.column_headers.index(col))
 

@@ -87,9 +87,7 @@ class AtlasViewerView(QTableView):
         selected_atlas_name_index: QModelIndex = (
             selected_index.siblingAtColumn(0)
         )
-        selected_atlas_name = self.proxy_model.data(
-            selected_atlas_name_index
-        )
+        selected_atlas_name = self.proxy_model.data(selected_atlas_name_index)
         assert selected_atlas_name in get_downloaded_atlases()
         return selected_atlas_name
 

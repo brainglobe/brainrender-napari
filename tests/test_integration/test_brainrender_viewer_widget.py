@@ -65,9 +65,7 @@ def test_double_click_on_locally_available_atlas_row(
         "brainrender_napari.brainrender_viewer_widget"
         ".NapariAtlasRepresentation.add_to_viewer"
     )
-    with qtbot.waitSignal(
-        viewer_widget.atlas_viewer_view.add_atlas_requested
-    ):
+    with qtbot.waitSignal(viewer_widget.atlas_viewer_view.add_atlas_requested):
         viewer_widget.atlas_viewer_view.add_atlas_requested.emit(
             expected_atlas_name
         )
@@ -90,9 +88,7 @@ def test_structure_row_double_clicked(viewer_widget, mocker):
     add_structure_to_viewer_mock.assert_called_once_with("VS")
 
 
-def test_structure_row_double_clicked_with_custom_color(
-    viewer_widget, mocker
-):
+def test_structure_row_double_clicked_with_custom_color(viewer_widget, mocker):
     """Checks that the custom color signal forwards correctly."""
     add_structure_to_viewer_mock = mocker.patch(
         "brainrender_napari.brainrender_viewer_widget"
@@ -145,9 +141,7 @@ def test_show_structures_checkbox(viewer_widget, mocker):
 
     viewer_widget.show_structure_names.click()
     assert structure_view_refresh_mock.call_count == 2
-    structure_view_refresh_mock.assert_called_with(
-        "example_mouse_100um", True
-    )
+    structure_view_refresh_mock.assert_called_with("example_mouse_100um", True)
 
 
 def test_structure_view_tooltip(viewer_widget):
@@ -201,9 +195,7 @@ def test_add_atlas_with_preset_colors(viewer_widget, mocker, qtbot):
         ".NapariAtlasRepresentation.add_to_viewer"
     )
     viewer_widget.use_preset_colors.setChecked(True)
-    with qtbot.waitSignal(
-        viewer_widget.atlas_viewer_view.add_atlas_requested
-    ):
+    with qtbot.waitSignal(viewer_widget.atlas_viewer_view.add_atlas_requested):
         viewer_widget.atlas_viewer_view.add_atlas_requested.emit(
             "example_mouse_100um"
         )
@@ -217,9 +209,7 @@ def test_add_atlas_without_preset_colors(viewer_widget, mocker, qtbot):
         ".NapariAtlasRepresentation.add_to_viewer"
     )
     viewer_widget.use_preset_colors.setChecked(False)
-    with qtbot.waitSignal(
-        viewer_widget.atlas_viewer_view.add_atlas_requested
-    ):
+    with qtbot.waitSignal(viewer_widget.atlas_viewer_view.add_atlas_requested):
         viewer_widget.atlas_viewer_view.add_atlas_requested.emit(
             "example_mouse_100um"
         )

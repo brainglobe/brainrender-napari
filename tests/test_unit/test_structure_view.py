@@ -113,9 +113,7 @@ def test_context_menu_default_color(structure_view, qtbot, mocker):
     )
     qmenu_exec_mock.return_value = mock_action
 
-    with qtbot.waitSignal(
-        structure_view.add_structure_requested
-    ) as signal:
+    with qtbot.waitSignal(structure_view.add_structure_requested) as signal:
         structure_view._on_context_menu_requested(position)
 
     assert signal.args == ["VS"]
@@ -160,4 +158,3 @@ def test_context_menu_custom_color(structure_view, qtbot, mocker):
 
     assert signal.args[0] == "VS"
     assert signal.args[1] == [255, 0, 0]
-

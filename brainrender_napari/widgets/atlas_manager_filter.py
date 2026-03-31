@@ -45,9 +45,7 @@ class AtlasManagerFilter(QWidget):
         self.species_field = QComboBox()
         self.species_field.setToolTip("Filter atlases by species")
         self._populate_species()
-        self.species_field.currentTextChanged.connect(
-            self._on_species_changed
-        )
+        self.species_field.currentTextChanged.connect(self._on_species_changed)
 
         self.layout.addWidget(QLabel("Species:"))
         self.layout.addWidget(self.species_field)
@@ -56,9 +54,7 @@ class AtlasManagerFilter(QWidget):
         """Populate species combo from the source model."""
         self.species_field.clear()
         self.species_field.addItem("All Species")
-        if hasattr(
-            self.atlas_manager_view.source_model, "get_unique_species"
-        ):
+        if hasattr(self.atlas_manager_view.source_model, "get_unique_species"):
             species_list = (
                 self.atlas_manager_view.source_model.get_unique_species()
             )
@@ -75,9 +71,7 @@ class AtlasManagerFilter(QWidget):
                     "Species"
                 )
             )
-            self.atlas_manager_view.proxy_model.setFilterKeyColumn(
-                species_col
-            )
+            self.atlas_manager_view.proxy_model.setFilterKeyColumn(species_col)
             self.atlas_manager_view.proxy_model.setFilterFixedString(species)
 
     def apply(self) -> None:

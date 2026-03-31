@@ -77,9 +77,7 @@ class AtlasTableModel(QAbstractTableModel):
                         read_atlas_metadata_from_file,
                     )
 
-                    metadata = read_atlas_metadata_from_file(
-                        atlas_name=name
-                    )
+                    metadata = read_atlas_metadata_from_file(atlas_name=name)
                     if "species" in metadata:
                         # metadata species is like "Mus musculus"
                         # use common name from it

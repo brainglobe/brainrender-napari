@@ -61,9 +61,7 @@ def test_species_filter_in_manager_filter(atlas_manager_view, qtbot):
         AtlasManagerFilter,
     )
 
-    manager_filter = AtlasManagerFilter(
-        atlas_manager_view=atlas_manager_view
-    )
+    manager_filter = AtlasManagerFilter(atlas_manager_view=atlas_manager_view)
     qtbot.addWidget(manager_filter)
 
     # Check species combo exists and has "All Species"
@@ -74,14 +72,9 @@ def test_species_filter_in_manager_filter(atlas_manager_view, qtbot):
     if mouse_idx >= 0:
         manager_filter.species_field.setCurrentIndex(mouse_idx)
         # All visible rows should be Mouse
-        species_col = (
-            atlas_manager_view.source_model.column_headers.index("Species")
+        species_col = atlas_manager_view.source_model.column_headers.index(
+            "Species"
         )
         for row in range(atlas_manager_view.proxy_model.rowCount()):
-            index = atlas_manager_view.proxy_model.index(
-                row, species_col
-            )
-            assert (
-                atlas_manager_view.proxy_model.data(index) == "Mouse"
-            )
-
+            index = atlas_manager_view.proxy_model.index(row, species_col)
+            assert atlas_manager_view.proxy_model.data(index) == "Mouse"

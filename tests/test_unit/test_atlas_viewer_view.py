@@ -33,9 +33,7 @@ def test_atlas_view_valid_selection_example(atlas_viewer_view):
     assert row is not None
     model_index = atlas_viewer_view.model().index(row, 0)
     atlas_viewer_view.setCurrentIndex(model_index)
-    assert (
-        atlas_viewer_view.selected_atlas_name() == "example_mouse_100um"
-    )
+    assert atlas_viewer_view.selected_atlas_name() == "example_mouse_100um"
 
 
 def test_atlas_view_valid_selection_allen(atlas_viewer_view):
@@ -44,9 +42,7 @@ def test_atlas_view_valid_selection_allen(atlas_viewer_view):
     assert row is not None
     model_index = atlas_viewer_view.model().index(row, 0)
     atlas_viewer_view.setCurrentIndex(model_index)
-    assert (
-        atlas_viewer_view.selected_atlas_name() == "allen_mouse_100um"
-    )
+    assert atlas_viewer_view.selected_atlas_name() == "allen_mouse_100um"
 
 
 def test_atlas_view_invalid_selection(atlas_viewer_view):
@@ -82,9 +78,10 @@ def test_atlas_view_not_downloaded_selection(qtbot, atlas_viewer_view):
         assert len(exceptions) == 1
         _, exception, collected_traceback = exceptions[0]
         assert isinstance(exception, AssertionError)
-        assert "selected_atlas_name" in traceback.format_tb(
-            collected_traceback
-        )[0]
+        assert (
+            "selected_atlas_name"
+            in traceback.format_tb(collected_traceback)[0]
+        )
 
 
 def test_hover_atlas_viewer_view(atlas_viewer_view, mocker):
@@ -120,9 +117,7 @@ def test_double_click_on_locally_available_atlas_row(
     them on the atlas table view emits a signal with their expected names.
     """
     row = _find_row_for_atlas(atlas_viewer_view, expected_atlas_name)
-    assert row is not None, (
-        f"Could not find {expected_atlas_name} in viewer"
-    )
+    assert row is not None, f"Could not find {expected_atlas_name} in viewer"
     model_index = atlas_viewer_view.model().index(row, 1)
     atlas_viewer_view.setCurrentIndex(model_index)
 

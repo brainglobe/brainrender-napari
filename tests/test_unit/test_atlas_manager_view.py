@@ -276,4 +276,3 @@ def test_species_column_hidden(atlas_manager_view):
         "Species"
     )
     assert atlas_manager_view.isColumnHidden(species_col)
-

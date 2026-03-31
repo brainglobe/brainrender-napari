@@ -293,4 +293,3 @@ def test_add_structure_default_color_used_when_none(make_napari_viewer):
     actual_rgb = viewer.layers[0].vertex_colors[0]
     for a, e in zip(actual_rgb, expected_RGB):
         assert a * 255 == e
-

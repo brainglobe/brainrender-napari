@@ -219,9 +219,7 @@ class StructureView(QTreeView):
 
         global_position = self.viewport().mapToGlobal(position)
         context_menu = QMenu()
-        add_default_action = context_menu.addAction(
-            "Add mesh (default color)"
-        )
+        add_default_action = context_menu.addAction("Add mesh (default color)")
         add_custom_action = context_menu.addAction(
             "Add mesh with custom color..."
         )

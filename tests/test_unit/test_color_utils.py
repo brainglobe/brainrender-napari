@@ -29,9 +29,7 @@ def test_background_is_transparent():
     atlas = BrainGlobeAtlas(atlas_name="example_mouse_100um")
     color_dict = build_colormap_from_structures(atlas)
     assert 0 in color_dict
-    np.testing.assert_array_almost_equal(
-        color_dict[0], [0.0, 0.0, 0.0, 0.0]
-    )
+    np.testing.assert_array_almost_equal(color_dict[0], [0.0, 0.0, 0.0, 0.0])
 
 
 def test_colormap_values_are_normalized():
