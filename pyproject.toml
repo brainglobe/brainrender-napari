@@ -93,7 +93,7 @@ ignore = [
   "tests/test_integration/",
   "docs/",
   "docs/source/",
-  "blog/",
+  "blog/**",
 ]
 
 [tool.ruff]
