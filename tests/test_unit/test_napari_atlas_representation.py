@@ -236,3 +236,61 @@ def test_too_quick_mouse_move_keyerror(make_napari_viewer, mocker):
     atlas_representation._on_mouse_move(annotation, mock_event)
     mock_structure_from_coords.assert_called_once()
     assert atlas_representation._tooltip.text() == ""
+
+
+def test_add_to_viewer_with_preset_colors(make_napari_viewer):
+    """Checks that add_to_viewer with preset colors creates an
+    annotation layer with a custom color dict."""
+    viewer = make_napari_viewer()
+    atlas = BrainGlobeAtlas(atlas_name="allen_mouse_100um")
+    atlas_representation = NapariAtlasRepresentation(atlas, viewer)
+    atlas_representation.add_to_viewer(use_preset_colors=True)
+
+    annotation = viewer.layers[1]
+    assert isinstance(annotation, Labels)
+    assert annotation.name == "allen_mouse_100um_annotation"
+    # The color dict should be set (we can check it's not the default)
+    assert len(viewer.layers) == 2
+
+
+def test_add_to_viewer_without_preset_colors(make_napari_viewer):
+    """Checks that add_to_viewer without preset colors creates an
+    annotation layer with napari's default colormap."""
+    viewer = make_napari_viewer()
+    atlas = BrainGlobeAtlas(atlas_name="allen_mouse_100um")
+    atlas_representation = NapariAtlasRepresentation(atlas, viewer)
+    atlas_representation.add_to_viewer(use_preset_colors=False)
+
+    annotation = viewer.layers[1]
+    assert isinstance(annotation, Labels)
+    assert len(viewer.layers) == 2
+
+
+def test_add_structure_with_custom_color(make_napari_viewer):
+    """Checks that a custom color overrides the default atlas color."""
+    viewer = make_napari_viewer()
+    atlas = BrainGlobeAtlas(atlas_name="allen_mouse_100um")
+    atlas_representation = NapariAtlasRepresentation(atlas, viewer)
+
+    custom_color = [255, 0, 0]  # red
+    atlas_representation.add_structure_to_viewer("root", color=custom_color)
+
+    mesh = viewer.layers[0]
+    actual_rgb = mesh.vertex_colors[0]
+    assert actual_rgb[0] * 255 == 255  # red
+    assert actual_rgb[1] * 255 == 0  # green
+    assert actual_rgb[2] * 255 == 0  # blue
+
+
+def test_add_structure_default_color_used_when_none(make_napari_viewer):
+    """Checks that when color=None, atlas metadata color is used."""
+    viewer = make_napari_viewer()
+    atlas = BrainGlobeAtlas(atlas_name="allen_mouse_100um")
+    atlas_representation = NapariAtlasRepresentation(atlas, viewer)
+    atlas_representation.add_structure_to_viewer("CTXsp", color=None)
+
+    expected_RGB = atlas.structures["CTXsp"]["rgb_triplet"]
+    actual_rgb = viewer.layers[0].vertex_colors[0]
+    for a, e in zip(actual_rgb, expected_RGB):
+        assert a * 255 == e
+

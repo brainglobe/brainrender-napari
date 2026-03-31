@@ -12,7 +12,7 @@ from typing import Tuple
 from brainglobe_atlasapi.list_atlases import (
     get_downloaded_atlases,
 )
-from qtpy.QtCore import QModelIndex, Qt, Signal
+from qtpy.QtCore import QModelIndex, QSortFilterProxyModel, Qt, Signal
 from qtpy.QtWidgets import QMenu, QTableView, QWidget
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
@@ -36,9 +36,14 @@ class AtlasViewerView(QTableView):
         """
         super().__init__(parent)
 
-        self.setModel(AtlasTableModel(AtlasViewerView))
+        self.source_model = AtlasTableModel(AtlasViewerView)
+        self.proxy_model = QSortFilterProxyModel()
+        self.proxy_model.setSourceModel(self.source_model)
+        self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.setModel(self.proxy_model)
 
         self.setEnabled(True)
+        self.setSortingEnabled(True)
         self.verticalHeader().hide()
         self.resizeColumnsToContents()
 
@@ -52,18 +57,28 @@ class AtlasViewerView(QTableView):
         self.doubleClicked.connect(self._on_row_double_clicked)
         self.selectionModel().currentChanged.connect(self._on_current_changed)
 
-        for column_header in ["Raw name", "Local version", "Latest version"]:
-            index_to_hide = self.model().column_headers.index(column_header)
+        self.hidden_columns = [
+            "Raw name",
+            "Local version",
+            "Latest version",
+        ]
+        for column_header in self.hidden_columns:
+            index_to_hide = self.source_model.column_headers.index(
+                column_header
+            )
             self.hideColumn(index_to_hide)
 
         if len(get_downloaded_atlases()) == 0:
             self.no_atlas_available.emit()
 
         # hide atlases not available locally
-        for row_index in range(self.model().rowCount()):
-            index = self.model().index(row_index, 0)
-            if self.model().data(index) not in get_downloaded_atlases():
-                self.hideRow(row_index)
+        for row_index in range(self.source_model.rowCount()):
+            source_index = self.source_model.index(row_index, 0)
+            atlas_name = self.source_model.data(source_index)
+            if atlas_name not in get_downloaded_atlases():
+                proxy_index = self.proxy_model.mapFromSource(source_index)
+                if proxy_index.isValid():
+                    self.hideRow(proxy_index.row())
 
     def selected_atlas_name(self) -> str:
         """A single place to get a valid selected atlas name."""
@@ -72,7 +87,9 @@ class AtlasViewerView(QTableView):
         selected_atlas_name_index: QModelIndex = (
             selected_index.siblingAtColumn(0)
         )
-        selected_atlas_name = self.model().data(selected_atlas_name_index)
+        selected_atlas_name = self.proxy_model.data(
+            selected_atlas_name_index
+        )
         assert selected_atlas_name in get_downloaded_atlases()
         return selected_atlas_name
 

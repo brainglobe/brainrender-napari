@@ -41,9 +41,54 @@ class AtlasManagerFilter(QWidget):
         self.layout.addWidget(QLabel("Column:"))
         self.layout.addWidget(self.column_field)
 
+        # Species filter
+        self.species_field = QComboBox()
+        self.species_field.setToolTip("Filter atlases by species")
+        self._populate_species()
+        self.species_field.currentTextChanged.connect(
+            self._on_species_changed
+        )
+
+        self.layout.addWidget(QLabel("Species:"))
+        self.layout.addWidget(self.species_field)
+
+    def _populate_species(self) -> None:
+        """Populate species combo from the source model."""
+        self.species_field.clear()
+        self.species_field.addItem("All Species")
+        if hasattr(
+            self.atlas_manager_view.source_model, "get_unique_species"
+        ):
+            species_list = (
+                self.atlas_manager_view.source_model.get_unique_species()
+            )
+            self.species_field.addItems(species_list)
+
+    def _on_species_changed(self, species: str) -> None:
+        """Apply species filter when species combo changes."""
+        if species == "All Species":
+            # Reset to the current text query filter
+            self.apply()
+        else:
+            species_col = (
+                self.atlas_manager_view.source_model.column_headers.index(
+                    "Species"
+                )
+            )
+            self.atlas_manager_view.proxy_model.setFilterKeyColumn(
+                species_col
+            )
+            self.atlas_manager_view.proxy_model.setFilterFixedString(species)
+
     def apply(self) -> None:
         """Updates proxy's internal state based on input and
         applies filter."""
+        # Reset species combo if user types a query
+        if self.species_field.currentText() != "All Species":
+            self.species_field.blockSignals(True)
+            self.species_field.setCurrentIndex(0)
+            self.species_field.blockSignals(False)
+
         query = self.query_field.text()
         column = self.column_field.currentText()
 

@@ -11,6 +11,38 @@ from qtpy.QtWidgets import QTableView
 from brainrender_napari.utils.formatting import format_atlas_name
 
 
+def _extract_species_from_name(atlas_name: str) -> str:
+    """Heuristically extract species from an atlas name.
+
+    Atlas names follow the convention: source_species_resolution
+    e.g. 'allen_mouse_100um' -> 'Mouse'
+         'mpin_zfish_1um' -> 'Zfish'
+         'kim_unified_25um' -> 'Unified'
+    """
+    parts = atlas_name.split("_")
+    if len(parts) >= 3:
+        # species is typically the second token
+        # but some atlases like 'kim_dev_mouse_25um' have extra tokens
+        # attempt to find common species keywords
+        species_keywords = {
+            "mouse": "Mouse",
+            "rat": "Rat",
+            "zfish": "Zebrafish",
+            "zebrafish": "Zebrafish",
+            "human": "Human",
+            "axolotl": "Axolotl",
+            "prairie_vole": "Prairie vole",
+            "bluebrain_barrels": "Mouse",
+        }
+        name_lower = atlas_name.lower()
+        for keyword, species in species_keywords.items():
+            if keyword in name_lower:
+                return species
+        # fallback: capitalize second token
+        return parts[1].capitalize()
+    return "Unknown"
+
+
 class AtlasTableModel(QAbstractTableModel):
     """A table data model for atlases."""
 
@@ -21,6 +53,7 @@ class AtlasTableModel(QAbstractTableModel):
             "Atlas",
             "Local version",
             "Latest version",
+            "Species",
         ]
         assert hasattr(view_type, "get_tooltip_text"), (
             "Views for this model must implement"
@@ -35,18 +68,52 @@ class AtlasTableModel(QAbstractTableModel):
         local_atlases = get_atlases_lastversions().keys()
         data = []
         for name, latest_version in all_atlases.items():
+            species = _extract_species_from_name(name)
+
             if name in local_atlases:
+                # Try to read species from metadata for accuracy
+                try:
+                    from brainrender_napari.utils.load_user_data import (
+                        read_atlas_metadata_from_file,
+                    )
+
+                    metadata = read_atlas_metadata_from_file(
+                        atlas_name=name
+                    )
+                    if "species" in metadata:
+                        # metadata species is like "Mus musculus"
+                        # use common name from it
+                        species_map = {
+                            "Mus musculus": "Mouse",
+                            "Rattus norvegicus": "Rat",
+                            "Danio rerio": "Zebrafish",
+                            "Homo sapiens": "Human",
+                            "Ambystoma mexicanum": "Axolotl",
+                            "Microtus ochrogaster": "Prairie vole",
+                        }
+                        latin = metadata["species"]
+                        species = species_map.get(latin, latin)
+                except Exception:
+                    pass  # keep heuristic species
+
                 data.append(
                     [
                         name,
                         format_atlas_name(name),
                         get_local_atlas_version(name),
                         latest_version,
+                        species,
                     ]
                 )
             else:
                 data.append(
-                    [name, format_atlas_name(name), "n/a", latest_version]
+                    [
+                        name,
+                        format_atlas_name(name),
+                        "n/a",
+                        latest_version,
+                        species,
+                    ]
                 )
 
         self._data = data
@@ -96,3 +163,11 @@ class AtlasTableModel(QAbstractTableModel):
                 raise ValueError("Unexpected horizontal header value.")
         else:
             return super().headerData(section, orientation, role)
+
+    def get_unique_species(self) -> list[str]:
+        """Returns a sorted list of unique species in the data."""
+        species_set = set()
+        species_col = self.column_headers.index("Species")
+        for row in self._data:
+            species_set.add(row[species_col])
+        return sorted(species_set)

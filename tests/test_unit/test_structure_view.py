@@ -87,3 +87,77 @@ def test_double_click_on_structure_row(
         double_click_on_view(structure_view, vs_mesh_index)
 
     assert add_structure_requested_signal.args == ["VS"]
+
+
+def test_context_menu_default_color(structure_view, qtbot, mocker):
+    """Checks that selecting 'Add mesh (default color)' from context
+    menu emits add_structure_requested signal."""
+    structure_view.refresh("allen_mouse_100um", True)
+
+    root_index = structure_view.rootIndex()
+    root_mesh_index = structure_view.model().index(0, 0, root_index)
+    vs_mesh_index = structure_view.model().index(0, 0, root_mesh_index)
+    structure_view.setCurrentIndex(vs_mesh_index)
+
+    from qtpy.QtCore import QPoint
+    from qtpy.QtWidgets import QAction
+
+    x = structure_view.visualRect(vs_mesh_index).center().x()
+    y = structure_view.visualRect(vs_mesh_index).center().y()
+    position = QPoint(x, y)
+
+    # Mock QMenu.exec to return the "Add mesh (default color)" action
+    mock_action = QAction("Add mesh (default color)")
+    qmenu_exec_mock = mocker.patch(
+        "brainrender_napari.widgets.structure_view.QMenu.exec"
+    )
+    qmenu_exec_mock.return_value = mock_action
+
+    with qtbot.waitSignal(
+        structure_view.add_structure_requested
+    ) as signal:
+        structure_view._on_context_menu_requested(position)
+
+    assert signal.args == ["VS"]
+
+
+def test_context_menu_custom_color(structure_view, qtbot, mocker):
+    """Checks that selecting 'Add mesh with custom color...'
+    emits add_structure_with_color_requested signal."""
+    structure_view.refresh("allen_mouse_100um", True)
+
+    root_index = structure_view.rootIndex()
+    root_mesh_index = structure_view.model().index(0, 0, root_index)
+    vs_mesh_index = structure_view.model().index(0, 0, root_mesh_index)
+    structure_view.setCurrentIndex(vs_mesh_index)
+
+    from qtpy.QtCore import QPoint
+    from qtpy.QtGui import QColor
+    from qtpy.QtWidgets import QAction
+
+    x = structure_view.visualRect(vs_mesh_index).center().x()
+    y = structure_view.visualRect(vs_mesh_index).center().y()
+    position = QPoint(x, y)
+
+    # Mock QMenu.exec to return the "custom color" action
+    custom_action = QAction("Add mesh with custom color...")
+    qmenu_exec_mock = mocker.patch(
+        "brainrender_napari.widgets.structure_view.QMenu.exec"
+    )
+    qmenu_exec_mock.return_value = custom_action
+
+    # Mock QColorDialog.getColor to return red
+    mock_color = QColor(255, 0, 0)
+    mocker.patch(
+        "brainrender_napari.widgets.structure_view.QColorDialog.getColor",
+        return_value=mock_color,
+    )
+
+    with qtbot.waitSignal(
+        structure_view.add_structure_with_color_requested
+    ) as signal:
+        structure_view._on_context_menu_requested(position)
+
+    assert signal.args[0] == "VS"
+    assert signal.args[1] == [255, 0, 0]
+

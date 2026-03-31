@@ -19,6 +19,17 @@ def viewer_widget(make_napari_viewer) -> BrainrenderViewerWidget:
     return BrainrenderViewerWidget(viewer)
 
 
+def _select_atlas_in_viewer(viewer_widget, atlas_name):
+    """Helper to find and select an atlas by name in the viewer."""
+    view = viewer_widget.atlas_viewer_view
+    for row in range(view.proxy_model.rowCount()):
+        index = view.proxy_model.index(row, 0)
+        if view.proxy_model.data(index) == atlas_name:
+            view.selectRow(row)
+            return row
+    return None
+
+
 @pytest.mark.parametrize(
     "expected_visibility, atlas",
     [
@@ -33,7 +44,7 @@ def test_checkbox_visibility(
         "brainrender_napari.brainrender_viewer_widget.QCheckBox.setVisible"
     )
     viewer_widget._on_atlas_selection_changed(atlas)
-    checkbox_visibility_mock.assert_called_once_with(expected_visibility)
+    checkbox_visibility_mock.assert_called_with(expected_visibility)
 
 
 @pytest.mark.parametrize(
@@ -54,7 +65,9 @@ def test_double_click_on_locally_available_atlas_row(
         "brainrender_napari.brainrender_viewer_widget"
         ".NapariAtlasRepresentation.add_to_viewer"
     )
-    with qtbot.waitSignal(viewer_widget.atlas_viewer_view.add_atlas_requested):
+    with qtbot.waitSignal(
+        viewer_widget.atlas_viewer_view.add_atlas_requested
+    ):
         viewer_widget.atlas_viewer_view.add_atlas_requested.emit(
             expected_atlas_name
         )
@@ -70,12 +83,31 @@ def test_structure_row_double_clicked(viewer_widget, mocker):
         "brainrender_napari.brainrender_viewer_widget"
         ".NapariAtlasRepresentation.add_structure_to_viewer"
     )
-    viewer_widget.atlas_viewer_view.selectRow(
-        4
-    )  # allen_mouse_100um is in row 4
+    row = _select_atlas_in_viewer(viewer_widget, "allen_mouse_100um")
+    assert row is not None
 
     viewer_widget.structure_view.add_structure_requested.emit("VS")
     add_structure_to_viewer_mock.assert_called_once_with("VS")
+
+
+def test_structure_row_double_clicked_with_custom_color(
+    viewer_widget, mocker
+):
+    """Checks that the custom color signal forwards correctly."""
+    add_structure_to_viewer_mock = mocker.patch(
+        "brainrender_napari.brainrender_viewer_widget"
+        ".NapariAtlasRepresentation.add_structure_to_viewer"
+    )
+    row = _select_atlas_in_viewer(viewer_widget, "allen_mouse_100um")
+    assert row is not None
+
+    custom_color = [255, 0, 0]
+    viewer_widget.structure_view.add_structure_with_color_requested.emit(
+        "VS", custom_color
+    )
+    add_structure_to_viewer_mock.assert_called_once_with(
+        "VS", color=custom_color
+    )
 
 
 def test_add_additional_reference_selected(viewer_widget, mocker):
@@ -86,9 +118,8 @@ def test_add_additional_reference_selected(viewer_widget, mocker):
         "brainrender_napari.brainrender_viewer_widget"
         ".NapariAtlasRepresentation.add_additional_reference"
     )
-    viewer_widget.atlas_viewer_view.selectRow(
-        0
-    )  # # example atlas + mock additional reference is in row 0
+    row = _select_atlas_in_viewer(viewer_widget, "example_mouse_100um")
+    assert row is not None
     assert (
         viewer_widget.atlas_viewer_view.selected_atlas_name()
         == "example_mouse_100um"
@@ -106,16 +137,17 @@ def test_show_structures_checkbox(viewer_widget, mocker):
     structure_view_refresh_mock = mocker.patch(
         "brainrender_napari.brainrender_viewer_widget.StructureView.refresh"
     )
-    viewer_widget.atlas_viewer_view.selectRow(
-        0
-    )  # example_mouse_100um is in row 0
+    row = _select_atlas_in_viewer(viewer_widget, "example_mouse_100um")
+    assert row is not None
     structure_view_refresh_mock.assert_called_with(
         "example_mouse_100um", False
     )
 
     viewer_widget.show_structure_names.click()
     assert structure_view_refresh_mock.call_count == 2
-    structure_view_refresh_mock.assert_called_with("example_mouse_100um", True)
+    structure_view_refresh_mock.assert_called_with(
+        "example_mouse_100um", True
+    )
 
 
 def test_structure_view_tooltip(viewer_widget):
@@ -148,3 +180,47 @@ def test_atlas_viewer_view_tooltip(viewer_widget):
             expected_keyword
             in viewer_widget.atlas_viewer_group.toolTip().lower()
         )
+
+
+def test_preset_colors_checkbox_exists(viewer_widget):
+    """Check that the preset colors checkbox exists and is checked."""
+    assert viewer_widget.use_preset_colors is not None
+    assert viewer_widget.use_preset_colors.isChecked()
+    assert "preset" in viewer_widget.use_preset_colors.text().lower()
+
+
+def test_species_filter_exists(viewer_widget):
+    """Check that the species filter widget exists in the viewer."""
+    assert viewer_widget.species_filter is not None
+
+
+def test_add_atlas_with_preset_colors(viewer_widget, mocker, qtbot):
+    """Check that add_to_viewer gets called with use_preset_colors=True."""
+    add_mock = mocker.patch(
+        "brainrender_napari.brainrender_viewer_widget"
+        ".NapariAtlasRepresentation.add_to_viewer"
+    )
+    viewer_widget.use_preset_colors.setChecked(True)
+    with qtbot.waitSignal(
+        viewer_widget.atlas_viewer_view.add_atlas_requested
+    ):
+        viewer_widget.atlas_viewer_view.add_atlas_requested.emit(
+            "example_mouse_100um"
+        )
+    add_mock.assert_called_once_with(use_preset_colors=True)
+
+
+def test_add_atlas_without_preset_colors(viewer_widget, mocker, qtbot):
+    """Check that add_to_viewer gets called with use_preset_colors=False."""
+    add_mock = mocker.patch(
+        "brainrender_napari.brainrender_viewer_widget"
+        ".NapariAtlasRepresentation.add_to_viewer"
+    )
+    viewer_widget.use_preset_colors.setChecked(False)
+    with qtbot.waitSignal(
+        viewer_widget.atlas_viewer_view.add_atlas_requested
+    ):
+        viewer_widget.atlas_viewer_view.add_atlas_requested.emit(
+            "example_mouse_100um"
+        )
+    add_mock.assert_called_once_with(use_preset_colors=False)

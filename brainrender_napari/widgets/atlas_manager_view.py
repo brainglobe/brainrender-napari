@@ -52,6 +52,7 @@ class AtlasManagerView(QTableView):
         self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
 
         self.setEnabled(True)
+        self.setSortingEnabled(True)
         self.verticalHeader().hide()
         self.resizeColumnsToContents()
 
@@ -59,7 +60,7 @@ class AtlasManagerView(QTableView):
         self.setSelectionMode(QTableView.SelectionMode.SingleSelection)
 
         self.doubleClicked.connect(self._on_row_double_clicked)
-        self.hidden_columns = ["Raw name"]  # hide raw name
+        self.hidden_columns = ["Raw name", "Species"]  # hide raw name + species
         for col in self.hidden_columns:
             self.hideColumn(self.source_model.column_headers.index(col))
 

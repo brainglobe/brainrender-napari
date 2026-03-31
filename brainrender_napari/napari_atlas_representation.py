@@ -1,15 +1,20 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 from brainglobe_atlasapi import BrainGlobeAtlas
 from meshio import Mesh
 from napari.settings import get_settings
+from napari.utils.colormaps import DirectLabelColormap
 from napari.utils.notifications import show_info
 from napari.viewer import Viewer
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QLabel
+
+from brainrender_napari.utils.color_utils import (
+    build_colormap_from_structures,
+)
 
 
 @dataclass
@@ -33,11 +38,18 @@ class NapariAtlasRepresentation:
         napari_settings = get_settings()
         napari_settings.appearance.layer_tooltip_visibility = True
 
-    def add_to_viewer(self) -> None:
+    def add_to_viewer(self, use_preset_colors: bool = True) -> None:
         """Adds the reference and annotation images as layers to the viewer.
 
         The layers are connected to the mouse move callback to set tooltip.
         The reference image's visibility is off, the annotation's is on.
+
+        Parameters
+        ----------
+        use_preset_colors : bool, optional
+            If True, annotations are displayed with colors from the atlas
+            metadata. If False, napari's default colormap is used.
+            Default is True.
         """
         reference = self.viewer.add_image(
             self.bg_atlas.reference,
@@ -45,26 +57,49 @@ class NapariAtlasRepresentation:
             visible=False,
         )
 
+        labels_kwargs: dict[str, Any] = {
+            "name": f"{self.bg_atlas.atlas_name}_annotation",
+        }
+
+        if use_preset_colors:
+            color_dict = build_colormap_from_structures(self.bg_atlas)
+            labels_kwargs["colormap"] = DirectLabelColormap(
+                color_dict=color_dict
+            )
+
         annotation = self.viewer.add_labels(
             self.bg_atlas.annotation,
-            name=f"{self.bg_atlas.atlas_name}_annotation",
+            **labels_kwargs,
         )
 
         annotation.mouse_move_callbacks.append(self._on_mouse_move)
         reference.mouse_move_callbacks.append(self._on_mouse_move)
 
-    def add_structure_to_viewer(self, structure_name: str) -> None:
+    def add_structure_to_viewer(
+        self,
+        structure_name: str,
+        color: Optional[list] = None,
+    ) -> None:
         """Adds the mesh of a structure to the viewer.
         The mesh will be rescaled to pixel space.
 
-        structure_name: the id or acronym of the structure.
+        Parameters
+        ----------
+        structure_name : str
+            The id or acronym of the structure.
+        color : list, optional
+            RGB values (0-255) as a list to colour mesh with.
+            If None, uses the default color from atlas metadata.
         """
         if self.viewer.dims.ndisplay == 2:
             show_info("Meshes will only show if the display is set to 3D.")
 
         mesh = self.bg_atlas.mesh_from_structure(structure_name)
         scale = [1.0 / resolution for resolution in self.bg_atlas.resolution]
-        color = self.bg_atlas.structures[structure_name]["rgb_triplet"]
+
+        if color is None:
+            color = self.bg_atlas.structures[structure_name]["rgb_triplet"]
+
         self._add_mesh(
             mesh,
             scale,

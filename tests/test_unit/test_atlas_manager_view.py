@@ -263,3 +263,17 @@ def test_apply_in_thread(qtbot, mocker):
 
     # Restore the original _apply_in_thread
     atlas_manager_view._apply_in_thread = original_apply_in_thread
+
+
+def test_sorting_enabled(atlas_manager_view):
+    """Check that sorting is enabled on the manager view."""
+    assert atlas_manager_view.isSortingEnabled()
+
+
+def test_species_column_hidden(atlas_manager_view):
+    """Check that the Species column is hidden in the manager view."""
+    species_col = atlas_manager_view.source_model.column_headers.index(
+        "Species"
+    )
+    assert atlas_manager_view.isColumnHidden(species_col)
+

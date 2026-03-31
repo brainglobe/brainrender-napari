@@ -53,3 +53,35 @@ def test_filter_and_selected_name(atlas_manager_view):
     atlas_manager_view.proxy_model.setFilterKeyColumn(-1)
     atlas_manager_view.selectRow(0)
     assert "kim_dev_mouse" in atlas_manager_view.selected_atlas_name()
+
+
+def test_species_filter_in_manager_filter(atlas_manager_view, qtbot):
+    """Check that filtering by species via the manager filter works."""
+    from brainrender_napari.widgets.atlas_manager_filter import (
+        AtlasManagerFilter,
+    )
+
+    manager_filter = AtlasManagerFilter(
+        atlas_manager_view=atlas_manager_view
+    )
+    qtbot.addWidget(manager_filter)
+
+    # Check species combo exists and has "All Species"
+    assert manager_filter.species_field.itemText(0) == "All Species"
+
+    # Filter by Mouse
+    mouse_idx = manager_filter.species_field.findText("Mouse")
+    if mouse_idx >= 0:
+        manager_filter.species_field.setCurrentIndex(mouse_idx)
+        # All visible rows should be Mouse
+        species_col = (
+            atlas_manager_view.source_model.column_headers.index("Species")
+        )
+        for row in range(atlas_manager_view.proxy_model.rowCount()):
+            index = atlas_manager_view.proxy_model.index(
+                row, species_col
+            )
+            assert (
+                atlas_manager_view.proxy_model.data(index) == "Mouse"
+            )
+

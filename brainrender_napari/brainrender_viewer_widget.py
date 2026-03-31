@@ -23,6 +23,9 @@ from brainrender_napari.napari_atlas_representation import (
     NapariAtlasRepresentation,
 )
 from brainrender_napari.widgets.atlas_viewer_view import AtlasViewerView
+from brainrender_napari.widgets.species_filter_widget import (
+    SpeciesFilterWidget,
+)
 from brainrender_napari.widgets.structure_view import StructureView
 
 
@@ -54,6 +57,21 @@ class BrainrenderViewerWidget(QWidget):
         # create widgets
         self.atlas_viewer_view = AtlasViewerView(parent=self)
 
+        self.species_filter = SpeciesFilterWidget(
+            proxy_model=self.atlas_viewer_view.proxy_model,
+            source_model=self.atlas_viewer_view.source_model,
+            parent=self,
+        )
+
+        self.use_preset_colors = QCheckBox()
+        self.use_preset_colors.setChecked(True)
+        self.use_preset_colors.setText("Use preset annotation colors")
+        self.use_preset_colors.setToolTip(
+            "When checked, atlas annotations are displayed with\n"
+            "colors defined in the atlas metadata.\n"
+            "When unchecked, napari's default colormap is used."
+        )
+
         self.show_structure_names = QCheckBox()
         self.show_structure_names.setChecked(False)
         self.show_structure_names.setText("Show region names")
@@ -71,7 +89,9 @@ class BrainrenderViewerWidget(QWidget):
             "Right-click to add additional reference images (if any exist)"
         )
         self.atlas_viewer_group.setLayout(QVBoxLayout())
+        self.atlas_viewer_group.layout().addWidget(self.species_filter)
         self.atlas_viewer_group.layout().addWidget(self.atlas_viewer_view)
+        self.atlas_viewer_group.layout().addWidget(self.use_preset_colors)
         self.layout().addWidget(self.atlas_viewer_group)
 
         self.structure_tree_group = QGroupBox("3D Atlas region meshes")
@@ -107,6 +127,9 @@ class BrainrenderViewerWidget(QWidget):
         self.structure_view.add_structure_requested.connect(
             self._on_add_structure_requested
         )
+        self.structure_view.add_structure_with_color_requested.connect(
+            self._on_add_structure_with_color_requested
+        )
 
     def _on_add_structure_requested(self, structure_name: str) -> None:
         """Add given structure as napari atlas representation"""
@@ -117,6 +140,20 @@ class BrainrenderViewerWidget(QWidget):
             bg_atlas=selected_atlas, viewer=self._viewer
         )
         selected_atlas_representation.add_structure_to_viewer(structure_name)
+
+    def _on_add_structure_with_color_requested(
+        self, structure_name: str, color: list
+    ) -> None:
+        """Add given structure with a custom color."""
+        selected_atlas = BrainGlobeAtlas(
+            atlas_name=self.atlas_viewer_view.selected_atlas_name()
+        )
+        selected_atlas_representation = NapariAtlasRepresentation(
+            bg_atlas=selected_atlas, viewer=self._viewer
+        )
+        selected_atlas_representation.add_structure_to_viewer(
+            structure_name, color=color
+        )
 
     def _on_additional_reference_requested(
         self, additional_reference_name: str
@@ -146,7 +183,10 @@ class BrainrenderViewerWidget(QWidget):
         selected_atlas_representation = NapariAtlasRepresentation(
             bg_atlas=selected_atlas, viewer=self._viewer
         )
-        selected_atlas_representation.add_to_viewer()
+        use_preset = self.use_preset_colors.isChecked()
+        selected_atlas_representation.add_to_viewer(
+            use_preset_colors=use_preset
+        )
 
     def _on_show_structure_names_clicked(self) -> None:
         atlas_name: str = self.atlas_viewer_view.selected_atlas_name()
