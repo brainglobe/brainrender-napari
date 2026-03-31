@@ -61,7 +61,6 @@ def test_atlas_view_not_downloaded_selection(qtbot, atlas_viewer_view):
     non_downloaded_row = None
     for row in range(atlas_viewer_view.proxy_model.rowCount()):
         index = atlas_viewer_view.proxy_model.index(row, 0)
-        name = atlas_viewer_view.proxy_model.data(index)
         source_index = atlas_viewer_view.proxy_model.mapToSource(index)
         local_ver_index = source_index.siblingAtColumn(2)
         local_ver = atlas_viewer_view.source_model.data(local_ver_index)
