@@ -2,7 +2,7 @@ import pytest
 from brainglobe_atlasapi import BrainGlobeAtlas
 from napari.layers import Image, Labels
 from numpy import all, allclose
-from qtpy.QtCore import QEvent, QPoint, Qt
+from qtpy.QtCore import QEvent, QPointF, Qt
 from qtpy.QtGui import QMouseEvent
 
 from brainrender_napari.napari_atlas_representation import (
@@ -188,8 +188,8 @@ def test_viewer_tooltip(
     annotation = viewer.layers[1]
 
     event = QMouseEvent(
-        QEvent.MouseMove,
-        QPoint(0, 0),  # any pos will do to check text
+        QEvent.Type.MouseMove,
+        QPointF(0, 0),  # any pos will do to check text
         Qt.MouseButton.NoButton,
         Qt.MouseButton.NoButton,
         Qt.KeyboardModifier.NoModifier,
@@ -214,8 +214,8 @@ def test_too_quick_mouse_move_keyerror(make_napari_viewer, mocker):
     annotation = viewer.layers[1]
 
     event = QMouseEvent(
-        QEvent.MouseMove,
-        QPoint(0, 0),  # any pos will do to check text
+        QEvent.Type.MouseMove,
+        QPointF(0, 0),  # any pos will do to check text
         Qt.MouseButton.NoButton,
         Qt.MouseButton.NoButton,
         Qt.KeyboardModifier.NoModifier,
