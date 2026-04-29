@@ -1,6 +1,7 @@
 import traceback
 
 import pytest
+from brainglobe_atlasapi.list_atlases import get_all_atlases_lastversions
 from qtpy.QtCore import QModelIndex, Qt
 
 from brainrender_napari.utils.formatting import format_atlas_name
@@ -72,21 +73,31 @@ def test_hover_atlas_viewer_view(atlas_viewer_view, mocker):
 
 
 @pytest.mark.parametrize(
-    "row,expected_atlas_name",
+    "expected_atlas_name",
     [
-        (0, "example_mouse_100um"),
-        (4, "allen_mouse_100um"),
-        (14, "osten_mouse_100um"),
+        ("example_mouse_100um"),
+        ("allen_mouse_100um"),
+        ("osten_mouse_100um"),
     ],
 )
 def test_double_click_on_locally_available_atlas_row(
-    atlas_viewer_view, double_click_on_view, qtbot, row, expected_atlas_name
+    atlas_viewer_view, double_click_on_view, qtbot, expected_atlas_name
 ):
     """Check for a few locally available low-res atlases that double-clicking
     them on the atlas table view emits a signal with their expected names.
     """
-    model_index = atlas_viewer_view.model().index(row, 1)
-    atlas_viewer_view.setCurrentIndex(model_index)
+
+    last_versions = get_all_atlases_lastversions()
+    expected_row = list(last_versions.keys()).index(expected_atlas_name)
+
+    model_index = atlas_viewer_view.model().index(expected_row, 0)
+    actual_atlas_name = atlas_viewer_view.model().data(model_index)
+
+    assert actual_atlas_name == expected_atlas_name, (
+        f"Expected {expected_atlas_name} at row {expected_row}, "
+        f"but found {actual_atlas_name}. "
+        f"Model ordering does not match brainglobe-atlasapi ordering."
+    )
 
     with qtbot.waitSignal(
         atlas_viewer_view.add_atlas_requested
