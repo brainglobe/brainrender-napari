@@ -22,7 +22,8 @@ from brainrender_napari.napari_atlas_representation import (
 def test_add_to_viewer(make_napari_viewer, expected_atlas_name, anisotropic):
     """Checks that calling add_to_viewer() adds the expected number of
     layers, of the expected type and with the expected name.
-    Also checks that reference and annotation image have the same extents.
+    Also checks that reference and annotation image have the same extents,
+    and layers have the expected visibility and opacity.
     """
     viewer = make_napari_viewer()
     atlas = BrainGlobeAtlas(atlas_name=expected_atlas_name)
@@ -50,7 +51,12 @@ def test_add_to_viewer(make_napari_viewer, expected_atlas_name, anisotropic):
     assert reference.name == f"{expected_atlas_name}_reference"
 
     assert isinstance(annotation, Labels)
+    assert annotation.visible
+    assert annotation.opacity == 0.33
+
     assert isinstance(reference, Image)
+    assert reference.visible
+    assert reference.opacity == 1.0
 
     assert (
         atlas_representation._on_mouse_move in annotation.mouse_move_callbacks
