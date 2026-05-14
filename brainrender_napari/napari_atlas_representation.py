@@ -36,18 +36,20 @@ class NapariAtlasRepresentation:
     def add_to_viewer(self) -> None:
         """Adds the reference and annotation images as layers to the viewer.
 
-        The layers are connected to the mouse move callback to set tooltip.
-        The reference image's visibility is off, the annotation's is on.
+        The annotation layer is partially transparent.
+        The annotation layer is displayed above the reference layer.
+
+        The layers are connected to the mouse move callback to setup tooltip.
         """
         reference = self.viewer.add_image(
             self.bg_atlas.reference,
             name=f"{self.bg_atlas.atlas_name}_reference",
-            visible=False,
         )
 
         annotation = self.viewer.add_labels(
             self.bg_atlas.annotation,
             name=f"{self.bg_atlas.atlas_name}_annotation",
+            opacity=0.33,
         )
 
         annotation.mouse_move_callbacks.append(self._on_mouse_move)
