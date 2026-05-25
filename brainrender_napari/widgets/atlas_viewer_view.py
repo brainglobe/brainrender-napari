@@ -9,6 +9,7 @@ that interested observers can connect to.
 
 from typing import Tuple
 
+from brainglobe_atlasapi import BrainGlobeAtlas
 from brainglobe_atlasapi.list_atlases import (
     get_downloaded_atlases,
 )
@@ -17,9 +18,6 @@ from qtpy.QtWidgets import QMenu, QTableView, QWidget
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
 from brainrender_napari.utils.formatting import format_atlas_name
-from brainrender_napari.utils.load_user_data import (
-    read_atlas_metadata_from_file,
-)
 
 
 class AtlasViewerView(QTableView):
@@ -73,7 +71,9 @@ class AtlasViewerView(QTableView):
             selected_index.siblingAtColumn(0)
         )
         selected_atlas_name = self.model().data(selected_atlas_name_index)
-        assert selected_atlas_name in get_downloaded_atlases()
+        assert (
+            selected_atlas_name in get_downloaded_atlases()
+        ), f"{selected_atlas_name} is not in {get_downloaded_atlases()}"
         return selected_atlas_name
 
     def _on_context_menu_requested(self, position: Tuple[float]) -> None:
@@ -82,9 +82,7 @@ class AtlasViewerView(QTableView):
         of the additional references, this is signalled.
         """
         selected_atlas_name: str = self.selected_atlas_name()
-        metadata = read_atlas_metadata_from_file(
-            atlas_name=selected_atlas_name
-        )
+        metadata = BrainGlobeAtlas(selected_atlas_name).metadata
         if (
             "additional_references" in metadata.keys()
             and metadata["additional_references"]
@@ -114,7 +112,7 @@ class AtlasViewerView(QTableView):
         """Returns the atlas metadata as a formatted string,
         as well as instructions on how to interact with the atlas."""
         if atlas_name in get_downloaded_atlases():
-            metadata = read_atlas_metadata_from_file(atlas_name=atlas_name)
+            metadata = BrainGlobeAtlas(atlas_name=atlas_name).metadata
             metadata_as_string = ""
             for key, value in metadata.items():
                 metadata_as_string += f"{key}:\t{value}\n"

@@ -4,15 +4,12 @@ The view is only visible if the atlas is downloaded."""
 
 from typing import Dict, List
 
+from brainglobe_atlasapi import BrainGlobeAtlas
 from brainglobe_atlasapi.list_atlases import get_downloaded_atlases
 from brainglobe_atlasapi.structure_tree_util import get_structures_tree
 from qtpy.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
 from qtpy.QtGui import QStandardItem
 from qtpy.QtWidgets import QTreeView, QWidget
-
-from brainrender_napari.utils.load_user_data import (
-    read_atlas_structures_from_file,
-)
 
 
 class StructureTreeItem(QStandardItem):
@@ -176,7 +173,9 @@ class StructureView(QTreeView):
         Resets the current index either way.
         """
         if selected_atlas_name in get_downloaded_atlases():
-            structures = read_atlas_structures_from_file(selected_atlas_name)
+            structures = BrainGlobeAtlas(
+                atlas_name=selected_atlas_name
+            ).structures_list
             region_model = StructureTreeModel(structures)
             self.setModel(region_model)
             if show_structure_names:
