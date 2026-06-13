@@ -81,11 +81,12 @@ def test_double_click_on_not_yet_downloaded_atlas_row(
     model_index = atlas_manager_view.model().index(row, 1)
     atlas_manager_view.setCurrentIndex(model_index)
 
-    dialog_exec_mock = mocker.patch(
-        "brainrender_napari.widgets.atlas_manager_view.AtlasManagerDialog.exec"
+    display_warning_mock = mocker.patch(
+        "brainrender_napari.widgets.atlas_manager_view.display_warning",
+        return_value=False,
     )
     double_click_on_view(atlas_manager_view, model_index)
-    dialog_exec_mock.assert_called_once()
+    display_warning_mock.assert_called_once()
 
 
 def test_download_confirmed_callback(atlas_manager_view, qtbot, mocker):
@@ -143,11 +144,12 @@ def test_double_click_on_outdated_atlas_row(
     outdated_atlas_index = atlas_manager_view.model().index(0, 1)
     atlas_manager_view.setCurrentIndex(outdated_atlas_index)
 
-    dialog_exec_mock = mocker.patch(
-        "brainrender_napari.widgets.atlas_manager_view.AtlasManagerDialog.exec"
+    display_warning_mock = mocker.patch(
+        "brainrender_napari.widgets.atlas_manager_view.display_warning",
+        return_value=False,
     )
     double_click_on_view(atlas_manager_view, outdated_atlas_index)
-    dialog_exec_mock.assert_called_once()
+    display_warning_mock.assert_called_once()
 
 
 def test_hover_atlas_manager_view(atlas_manager_view, mocker):
