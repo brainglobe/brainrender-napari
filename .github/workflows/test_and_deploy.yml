@@ -44,12 +44,8 @@ jobs:
           python-version: "3.13"
 
     steps:
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      # these libraries enable testing on Qt on linux
+      # Needed for Qt on Linux — done here in the workflow so the display
+      # is already up when the test action's uv run pytest executes
       - uses: pyvista/setup-headless-display-action@v3
         with:
           qt: true
@@ -57,7 +53,7 @@ jobs:
       # cache atlases needed by the tests
       - name: Cache Atlases
         id: atlas-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: | # ensure we don't cache any interrupted atlas download and extraction!
             ~/.brainglobe/*
@@ -70,20 +66,22 @@ jobs:
         run: |
           ls -af ~/.brainglobe/
 
-      # Run tests
-      - uses: neuroinformatics-unit/actions/test@v2
+      - name: Run tests
+        uses: neuroinformatics-unit/actions/test-uv@test-uv-prototype
         with:
           python-version: ${{ matrix.python-version }}
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
-      # Run tests on napari main if this is a scheduled run
-      - name: Run tests on napari main
+      # On scheduled runs, re-run tests against napari's main branch.
+      # Replaces the old tox -e napari-dev environment: we reinstall napari
+      # from source by passing it as an extra dependency.
+      - name: Run tests against napari main
         if: github.event_name == 'schedule'
-        uses: neuroinformatics-unit/actions/test@v2
+        uses: neuroinformatics-unit/actions/test-uv@test-uv-prototype
         with:
           python-version: ${{ matrix.python-version }}
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
-          tox-args: '-e napari-dev'
+          extra-dependencies: 'git+https://github.com/napari/napari'
 
       - name: Notify slack on scheduled failure
         if: failure() && github.event_name == 'schedule'
