@@ -67,7 +67,7 @@ jobs:
           ls -af ~/.brainglobe/
 
       - name: Run tests
-        uses: neuroinformatics-unit/actions/test-uv@test-uv-prototype
+        uses: AlgoFoe/actions/test-uv@test-uv-prototype
         with:
           python-version: ${{ matrix.python-version }}
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
@@ -77,7 +77,7 @@ jobs:
       # from source by passing it as an extra dependency.
       - name: Run tests against napari main
         if: github.event_name == 'schedule'
-        uses: neuroinformatics-unit/actions/test-uv@test-uv-prototype
+        uses: AlgoFoe/actions/test-uv@test-uv-prototype
         with:
           python-version: ${{ matrix.python-version }}
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
