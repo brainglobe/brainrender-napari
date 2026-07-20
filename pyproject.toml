@@ -28,6 +28,7 @@ dependencies = [
     "meshio",
     "napari>=0.6.1",
     "numpy",
+    "qt-niu",
     "qtpy",
 ]
 
