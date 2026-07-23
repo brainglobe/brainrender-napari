@@ -19,16 +19,17 @@ def atlas_viewer_view(qtbot) -> AtlasViewerView:
 
 
 @pytest.mark.parametrize(
-    "row, expected_atlas_name",
+    "expected_atlas_name",
     [
-        (0, "example_mouse_100um"),
-        (4, "allen_mouse_100um"),
+        "example_mouse_100um",
+        "allen_mouse_100um",
     ],
 )
 def test_atlas_view_valid_selection(
-    row, expected_atlas_name, atlas_viewer_view
+    expected_atlas_name, atlas_viewer_view, atlas_row
 ):
     """Checks selected_atlas_name for valid current indices"""
+    row = atlas_row(atlas_viewer_view.model(), expected_atlas_name)
     model_index = atlas_viewer_view.model().index(row, 0)
     atlas_viewer_view.setCurrentIndex(model_index)
     assert atlas_viewer_view.selected_atlas_name() == expected_atlas_name
@@ -42,14 +43,16 @@ def test_atlas_view_invalid_selection(atlas_viewer_view):
         atlas_viewer_view.selected_atlas_name()
 
 
-def test_atlas_view_not_downloaded_selection(qtbot, atlas_viewer_view):
+def test_atlas_view_not_downloaded_selection(
+    qtbot, atlas_viewer_view, atlas_row
+):
     """Checks that selected_atlas_name raises an assertion error
     if current index is valid, but not a downloaded atlas.
     """
+    # human atlas is not part of the downloaded test data
+    row = atlas_row(atlas_viewer_view.model(), "allen_human_500um")
     with qtbot.capture_exceptions() as exceptions:
-        # should raise because human atlas (row 6) is not available
-        # exception raised within qt loop in this case.
-        model_index = atlas_viewer_view.model().index(6, 0)
+        model_index = atlas_viewer_view.model().index(row, 0)
         atlas_viewer_view.setCurrentIndex(model_index)
     assert len(exceptions) == 1
     _, exception, collected_traceback = exceptions[0]  # ignore type
@@ -72,19 +75,24 @@ def test_hover_atlas_viewer_view(atlas_viewer_view, mocker):
 
 
 @pytest.mark.parametrize(
-    "row,expected_atlas_name",
+    "expected_atlas_name",
     [
-        (0, "example_mouse_100um"),
-        (4, "allen_mouse_100um"),
-        (14, "osten_mouse_100um"),
+        "example_mouse_100um",
+        "allen_mouse_100um",
+        "osten_mouse_100um",
     ],
 )
 def test_double_click_on_locally_available_atlas_row(
-    atlas_viewer_view, double_click_on_view, qtbot, row, expected_atlas_name
+    atlas_viewer_view,
+    double_click_on_view,
+    qtbot,
+    expected_atlas_name,
+    atlas_row,
 ):
     """Check for a few locally available low-res atlases that double-clicking
     them on the atlas table view emits a signal with their expected names.
     """
+    row = atlas_row(atlas_viewer_view.model(), expected_atlas_name)
     model_index = atlas_viewer_view.model().index(row, 1)
     atlas_viewer_view.setCurrentIndex(model_index)
 
@@ -96,16 +104,18 @@ def test_double_click_on_locally_available_atlas_row(
     assert add_atlas_requested_signal.args == [expected_atlas_name]
 
 
-def test_additional_reference_menu(atlas_viewer_view, qtbot, mocker):
+def test_additional_reference_menu(
+    atlas_viewer_view, qtbot, mocker, atlas_row
+):
     """Checks callback to additional reference menu calls QMenu exec
     and emits expected signal"""
-    atlas_viewer_view.selectRow(
-        0
-    )  # example atlas + mock additional reference is in row 0
+    # example atlas has a mock additional reference set up in conftest
+    row = atlas_row(atlas_viewer_view.model(), "example_mouse_100um")
+    atlas_viewer_view.selectRow(row)
     from qtpy.QtCore import QPoint
     from qtpy.QtWidgets import QAction
 
-    x = atlas_viewer_view.rowViewportPosition(0)
+    x = atlas_viewer_view.rowViewportPosition(row)
     y = atlas_viewer_view.columnViewportPosition(1)
     position = QPoint(x, y)
     qmenu_exec_mock = mocker.patch(

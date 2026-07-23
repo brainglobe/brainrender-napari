@@ -10,6 +10,17 @@ def atlas_manager_view(qtbot):
     return AtlasManagerView()
 
 
+@pytest.fixture(autouse=True)
+def mock_download_atlas_images(mocker):
+    """Don't pull image data for real after a (mocked) download/update.
+
+    Downloading/updating is always mocked here, so the atlas the prefetch
+    step is given may not exist at all; letting it run raises inside the
+    thread worker and leaks into the next test's Qt event loop.
+    """
+    return mocker.patch.object(AtlasManagerView, "_download_atlas_images")
+
+
 def test_update_atlas_confirmed(
     qtbot,
     mocker,
@@ -27,26 +38,26 @@ def test_update_atlas_confirmed(
         return_value="example_mouse_100um",
     )
 
-    mocker.patch(
+    update_atlas_mock = mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.update_atlas",
-        return_value="example_mouse_100um",
     )
 
     with qtbot.waitSignal(
         atlas_manager_view.update_atlas_confirmed,
         timeout=300000,  # assumes atlas can be updated in 5 minutes!
-    ) as update_atlas_confirmed_signal:
+    ):
         atlas_manager_view._on_update_atlas_confirmed()
 
-    assert update_atlas_confirmed_signal.args == ["example_mouse_100um"]
+    assert update_atlas_mock.call_args.args == ("example_mouse_100um",)
 
 
 def test_progress_signal_emission(atlas_manager_view, qtbot, mocker):
     """Test that progress_updated signal is emitted with correct parameters."""
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.update_atlas",
-        side_effect=lambda atlas_name, fn_update: fn_update(50, 100)
-        or atlas_name,
+        side_effect=lambda atlas_name, fn_update: (
+            fn_update(50, 100) or atlas_name
+        ),
     )
 
     mocker.patch.object(
@@ -88,18 +99,14 @@ def test_double_click_on_not_yet_downloaded_atlas_row(
     dialog_exec_mock.assert_called_once()
 
 
-def test_download_confirmed_callback(atlas_manager_view, qtbot, mocker):
-    """Checks that confirming atlas download creates local copy of
-    example atlas files and emits expected signal.
-
-    Test setup consists of remembering the expected files and folders
-    of a preexisting atlas and then removing them. This allows checking
-    that the function triggers the creation of the same local copy
-    of the atlas as the `brainglobe_atlasapi` itself.
+def test_download_confirmed_callback(
+    atlas_manager_view, qtbot, mocker, mock_download_atlas_images
+):
+    """Checks that confirming atlas download installs the atlas, pulls its
+    image data and emits the expected signal.
     """
-    mocker.patch(
+    install_atlas_mock = mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.install_atlas",
-        return_value="example_mouse_100um",
     )
 
     # Mock selected_atlas_name to ensure consistent return value
@@ -112,11 +119,12 @@ def test_download_confirmed_callback(atlas_manager_view, qtbot, mocker):
     with qtbot.waitSignal(
         atlas_manager_view.download_atlas_confirmed,
         timeout=300000,  # assumes atlas can be installed in 5 minutes!
-    ) as download_atlas_confirmed_signal:
+    ):
         # Directly call the download confirmation method
         atlas_manager_view._on_download_atlas_confirmed()
 
-    assert download_atlas_confirmed_signal.args == ["example_mouse_100um"]
+    assert install_atlas_mock.call_args.args == ("example_mouse_100um",)
+    mock_download_atlas_images.assert_called_once_with("example_mouse_100um")
 
 
 def test_double_click_on_outdated_atlas_row(
