@@ -42,7 +42,7 @@ class NapariAtlasRepresentation:
         The layers are connected to the mouse move callback to setup tooltip.
         """
         reference = self.viewer.add_image(
-            self.bg_atlas.reference,
+            self.bg_atlas.template,
             name=f"{self.bg_atlas.atlas_name}_reference",
         )
 

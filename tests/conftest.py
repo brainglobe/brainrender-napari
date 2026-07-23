@@ -1,11 +1,36 @@
 import json
 import os
-import shutil
 from pathlib import Path
 
 import pytest
-from brainglobe_atlasapi import BrainGlobeAtlas, config, list_atlases
+from brainglobe_atlasapi import (
+    BrainGlobeAtlas,
+    config,
+    descriptors,
+    list_atlases,
+)
+from brainglobe_atlasapi.list_atlases import (
+    get_downloaded_atlases,
+    get_local_atlas_version,
+)
 from qtpy.QtCore import Qt
+
+
+def _local_atlas_version_dir(atlas_name, version=None):
+    """Local directory holding a specific version of a downloaded atlas.
+
+    Mirrors the layout the atlas API uses on disk. If ``version`` is None the
+    currently downloaded version (folder form, e.g. ``3_0``) is used.
+    """
+    if version is None:
+        version = get_local_atlas_version(atlas_name).replace(".", "_")
+    return (
+        config.get_brainglobe_dir()
+        / "brainglobe-atlasapi"
+        / descriptors.V3_ATLAS_ROOTDIR
+        / atlas_name
+        / version
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -56,26 +81,41 @@ def setup_preexisting_local_atlases():
     """Automatically setup all tests to have three downloaded atlases
     in the test user data."""
     preexisting_atlases = [
-        ("example_mouse_100um", "v1.2"),
-        ("allen_mouse_100um", "v1.2"),
-        ("osten_mouse_100um", "v1.1"),
+        "example_mouse_100um",
+        "allen_mouse_100um",
+        "osten_mouse_100um",
     ]
-    for atlas_name, version in preexisting_atlases:
-        if not Path.exists(
-            Path.home() / f".brainglobe/{atlas_name}_{version}"
-        ):
+    downloaded_atlases = get_downloaded_atlases()
+    for atlas_name in preexisting_atlases:
+        if atlas_name not in downloaded_atlases:
             _ = BrainGlobeAtlas(atlas_name)
 
-    # mock an additional reference for the example mouse
-    atlas_path = Path.home() / ".brainglobe" / "example_mouse_100um_v1.2"
-    metadata_path = atlas_path / "metadata.json"
-    if metadata_path.exists():
-        with open(metadata_path, "r") as f:
-            metadata = f.read()
-            metadata_dict = json.loads(metadata)
-            metadata_dict["additional_references"] = ["reference"]
-            with open(metadata_path, "w") as f:
-                json.dump(metadata_dict, f, indent=4)
+    # Mock an additional reference for the example mouse.
+    manifest_path = (
+        _local_atlas_version_dir("example_mouse_100um") / "manifest.json"
+    )
+    if manifest_path.exists():
+        with open(manifest_path, "r") as f:
+            metadata_dict = json.loads(f.read())
+        metadata_dict["additional_references"] = [
+            {
+                "name": "reference",
+                "location": metadata_dict["template"]["location"],
+            }
+        ]
+        with open(manifest_path, "w") as f:
+            json.dump(metadata_dict, f, indent=4)
+
+
+@pytest.fixture
+def atlas_row():
+    """Look up a model row by atlas name."""
+
+    def _atlas_row(model, atlas_name):
+        names = [model.index(row, 0).data() for row in range(model.rowCount())]
+        return names.index(atlas_name)
+
+    return _atlas_row
 
 
 @pytest.fixture
@@ -104,24 +144,32 @@ def double_click_on_view(qtbot):
 
 @pytest.fixture
 def mock_newer_atlas_version_available():
-    current_version_path = Path.home() / ".brainglobe/example_mouse_100um_v1.2"
-    older_version_path = Path.home() / ".brainglobe/example_mouse_100um_v1.1"
+    """Simulate a locally downloaded atlas being out of date."""
+    assert (
+        list_atlases.folder_version_to_dotted(
+            list_atlases.get_local_atlas_version("example_mouse_100um")
+        )
+        == list_atlases.get_atlases_lastversions()["example_mouse_100um"][
+            "latest_version"
+        ]
+    ), "example_mouse_100um is expected to be up to date before mocking"
+
+    older_version = "2_0"
+    current_version_path = _local_atlas_version_dir("example_mouse_100um")
+    older_version_path = _local_atlas_version_dir(
+        "example_mouse_100um", older_version
+    )
     assert current_version_path.exists() and not older_version_path.exists()
 
     current_version_path.rename(older_version_path)
     assert older_version_path.exists() and not current_version_path.exists()
-    assert (
-        list_atlases.get_atlases_lastversions()["example_mouse_100um"][
-            "latest_version"
-        ]
-        == "1.2"
-    )
-    assert list_atlases.get_local_atlas_version("example_mouse_100um") == "1.1"
+    assert list_atlases.get_local_atlas_version(
+        "example_mouse_100um"
+    ) == older_version.replace("_", ".")
 
     yield  # run test with outdated version
 
     # cleanup: ensure version is up-to-date again
     if older_version_path.exists():
-        shutil.rmtree(path=older_version_path)
-        _ = BrainGlobeAtlas("example_mouse_100um")
+        older_version_path.rename(current_version_path)
     assert current_version_path.exists() and not older_version_path.exists()

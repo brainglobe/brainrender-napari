@@ -60,15 +60,20 @@ def test_model_header_invalid_view():
     ],
 )
 def test_background_color_for_outdated_atlas(
-    atlas_table_model, theme, expected_rgb, mock_newer_atlas_version_available
+    atlas_table_model,
+    theme,
+    expected_rgb,
+    mock_newer_atlas_version_available,
+    atlas_row,
 ):
     """
-    For out-of-date atlas (local_version=“1.1”, latest_version=“1.2”),
-    Test to verify that the amber color is returned according to the theme.
+    For an out-of-date atlas (local version older than the latest version),
+    test to verify that the amber color is returned according to the theme.
     """
     get_settings().appearance.theme = theme
 
-    index = atlas_table_model.index(0, 0)
+    row = atlas_row(atlas_table_model, "example_mouse_100um")
+    index = atlas_table_model.index(row, 0)
     brush = atlas_table_model.data(index, role=Qt.BackgroundRole)
     assert isinstance(brush, QBrush)
 
@@ -78,3 +83,17 @@ def test_background_color_for_outdated_atlas(
     assert (
         actual_rgb == expected_rgb
     ), f"Expected RGB {expected_rgb}, but got {actual_rgb}"
+
+
+def test_no_background_color_for_up_to_date_atlas(mocker, atlas_row):
+    """A downloaded atlas that is up to date should have no special
+    background. This guards against the local version (folder form, e.g.
+    "3_0") failing to compare equal to the latest version (dotted, "3.0").
+    """
+    mock_view = mocker.Mock(spec=["get_tooltip_text"])
+    model = AtlasTableModel(view_type=mock_view)
+
+    # allen_mouse_100um is downloaded and at the latest version
+    row = atlas_row(model, "allen_mouse_100um")
+    index = model.index(row, 0)
+    assert model.data(index, role=Qt.BackgroundRole) is None
