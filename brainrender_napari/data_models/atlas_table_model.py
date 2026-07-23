@@ -1,4 +1,5 @@
 from brainglobe_atlasapi.list_atlases import (
+    folder_version_to_dotted,
     get_all_atlases_lastversions,
     get_atlases_lastversions,
     get_local_atlas_version,
@@ -40,7 +41,9 @@ class AtlasTableModel(QAbstractTableModel):
                     [
                         name,
                         format_atlas_name(name),
-                        get_local_atlas_version(name),
+                        folder_version_to_dotted(
+                            get_local_atlas_version(name)
+                        ),
                         latest_version,
                     ]
                 )
