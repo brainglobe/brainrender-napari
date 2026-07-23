@@ -41,9 +41,7 @@ class AtlasTableModel(QAbstractTableModel):
                     [
                         name,
                         format_atlas_name(name),
-                        folder_version_to_dotted(
-                            get_local_atlas_version(name)
-                        ),
+                        get_local_atlas_version(name),
                         latest_version,
                     ]
                 )
