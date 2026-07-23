@@ -6,7 +6,18 @@ from brainglobe_atlasapi import BrainGlobeAtlas
 @lru_cache(maxsize=32)
 def read_atlas_metadata_from_file(atlas_name: str):
     """Reads atlas metadata from the local manifest in the BrainGlobe
-    directory.
+    directory. Removes nested keys that are not relevant for the user.
+    Converts the additional_references list of dicts to a list of names.
+
+    Parameters
+    ----------
+    atlas_name : str
+        Name of the atlas to read metadata for.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the atlas metadata.
     """
     atlas = BrainGlobeAtlas(atlas_name=atlas_name, check_latest=False)
 
@@ -33,6 +44,16 @@ def read_atlas_metadata_from_file(atlas_name: str):
 def read_atlas_structures_from_file(atlas_name: str):
     """Reads atlas structure info from the local terminology file in the
     BrainGlobe directory.
+
+    Parameters
+    ----------
+    atlas_name : str
+        Name of the atlas to read structure info for.
+
+    Returns
+    -------
+    list
+        A list of dictionaries containing the structure info
     """
     atlas = BrainGlobeAtlas(atlas_name=atlas_name, check_latest=False)
 
