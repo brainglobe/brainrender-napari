@@ -1,5 +1,4 @@
 from brainglobe_atlasapi.list_atlases import (
-    folder_version_to_dotted,
     get_all_atlases_lastversions,
     get_atlases_lastversions,
     get_local_atlas_version,
