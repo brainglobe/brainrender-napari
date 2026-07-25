@@ -44,16 +44,10 @@ jobs:
           python-version: "3.13"
 
     steps:
-      # Needed for Qt on Linux — done here in the workflow so the display
-      # is already up when the test action's uv run pytest executes
-      - uses: pyvista/setup-headless-display-action@v3
-        with:
-          qt: true
-
       # cache atlases needed by the tests
       - name: Cache Atlases
         id: atlas-cache
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 #v4.2.0
         with:
           path: | # ensure we don't cache any interrupted atlas download and extraction!
             ~/.brainglobe/*
@@ -67,21 +61,20 @@ jobs:
           ls -af ~/.brainglobe/
 
       - name: Run tests
-        uses: AlgoFoe/actions/test-uv@test-uv-prototype
+        uses: neuroinformatics-unit/actions/test-uv@main
         with:
           python-version: ${{ matrix.python-version }}
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
+          use-headless: 'true'
 
-      # On scheduled runs, re-run tests against napari's main branch.
-      # Replaces the old tox -e napari-dev environment: we reinstall napari
-      # from source by passing it as an extra dependency.
       - name: Run tests against napari main
-        if: github.event_name == 'schedule'
-        uses: AlgoFoe/actions/test-uv@test-uv-prototype
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        uses: neuroinformatics-unit/actions/test-uv@main
         with:
           python-version: ${{ matrix.python-version }}
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
-          extra-dependencies: 'git+https://github.com/napari/napari'
+          use-headless: 'true'
+          install-main-branch: 'napari/napari'
 
       - name: Notify slack on scheduled failure
         if: failure() && github.event_name == 'schedule'
