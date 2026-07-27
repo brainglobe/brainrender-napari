@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from brainglobe_atlasapi import BrainGlobeAtlas
 from brainglobe_atlasapi.descriptors import (
@@ -280,6 +282,58 @@ def test_apply_in_thread(qtbot, mocker):
 
     # Restore the original _apply_in_thread
     atlas_manager_view._apply_in_thread = original_apply_in_thread
+
+
+def test_download_atlas_install(qtbot, mock_brainglobe_dir):
+    """Check that downloading an atlas installs it in the correct location."""
+    atlas_manager_view = AtlasManagerView()
+
+    atlas_path = (
+        mock_brainglobe_dir
+        / "brainglobe-atlasapi"
+        / "atlases"
+        / "example_mouse_100um"
+    )
+    assert not atlas_path.exists(), "Atlas should not exist before download"
+
+    atlas_manager_view._download_atlas_install("example_mouse_100um")
+
+    assert atlas_path.exists(), "Atlas should exist after download"
+
+
+def test_download_atlas_update(qtbot, mock_brainglobe_dir):
+    """Check that updating an atlas updates it in the correct location."""
+    atlas_manager_view = AtlasManagerView()
+
+    atlas = BrainGlobeAtlas("example_mouse_100um")
+
+    # Simulate an older version of the atlas
+    current_version = atlas.local_version
+    current_version_str = "_".join([str(ver) for ver in atlas.local_version])
+    old_version = "1_0"
+    atlas_dir = atlas.brainglobe_dir / atlas.metadata["location"][1:]
+
+    atlas.metadata["version"] = old_version.replace("_", ".")
+
+    # Overwrite the manifest.json to reflect the old version
+    with open(atlas_dir / "manifest.json", "w") as f:
+        json.dump(atlas.metadata, f, indent=4)
+
+    atlas_dir.rename(atlas_dir.parent / old_version)
+
+    assert not (
+        atlas_dir.parent / current_version_str
+    ).exists(), "current version should not exist before update"
+
+    atlas_manager_view._download_atlas_update("example_mouse_100um")
+
+    # Check that the version has been updated
+    assert (
+        atlas_dir.parent / current_version_str
+    ).exists(), "current version should exist after update"
+
+    atlas = BrainGlobeAtlas("example_mouse_100um")
+    assert atlas.local_version == current_version
 
 
 def test_download_atlas_images(mock_brainglobe_dir, qtbot):
