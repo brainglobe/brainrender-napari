@@ -4,6 +4,10 @@ from qtpy.QtCore import Qt
 from qtpy.QtGui import QBrush
 
 from brainrender_napari.data_models.atlas_table_model import AtlasTableModel
+from brainrender_napari.utils.load_user_data import (
+    read_atlas_metadata_from_file,
+    read_atlas_structures_from_file,
+)
 
 
 @pytest.fixture
@@ -97,3 +101,19 @@ def test_no_background_color_for_up_to_date_atlas(mocker, atlas_row):
     row = atlas_row(model, "allen_mouse_100um")
     index = model.index(row, 0)
     assert model.data(index, role=Qt.BackgroundRole) is None
+
+
+def test_refresh_data_clears_atlas_read_caches(mocker):
+    """A refresh follows a download or update, so the cached metadata and
+    structure reads must not survive it."""
+    model = AtlasTableModel(view_type=mocker.Mock(spec=["get_tooltip_text"]))
+
+    read_atlas_metadata_from_file("example_mouse_100um")
+    read_atlas_structures_from_file("example_mouse_100um")
+    assert read_atlas_metadata_from_file.cache_info().currsize == 1
+    assert read_atlas_structures_from_file.cache_info().currsize == 1
+
+    model.refresh_data()
+
+    assert read_atlas_metadata_from_file.cache_info().currsize == 0
+    assert read_atlas_structures_from_file.cache_info().currsize == 0

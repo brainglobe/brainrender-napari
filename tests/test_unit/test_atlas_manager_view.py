@@ -1,4 +1,9 @@
 import pytest
+from brainglobe_atlasapi import BrainGlobeAtlas
+from brainglobe_atlasapi.descriptors import (
+    V3_ANNOTATION_NAME,
+    V3_TEMPLATE_NAME,
+)
 from qtpy.QtCore import Qt
 
 from brainrender_napari.utils.formatting import format_atlas_name
@@ -10,7 +15,7 @@ def atlas_manager_view(qtbot):
     return AtlasManagerView()
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def mock_download_atlas_images(mocker):
     """Don't pull image data for real after a (mocked) download/update.
 
@@ -26,6 +31,7 @@ def test_update_atlas_confirmed(
     mocker,
     atlas_manager_view,
     mock_newer_atlas_version_available,
+    mock_download_atlas_images,
 ):
     """
     Test that confirming atlas update triggers the correct actions
@@ -49,9 +55,12 @@ def test_update_atlas_confirmed(
         atlas_manager_view._on_update_atlas_confirmed()
 
     assert update_atlas_mock.call_args.args == ("example_mouse_100um",)
+    mock_download_atlas_images.assert_called_once_with("example_mouse_100um")
 
 
-def test_progress_signal_emission(atlas_manager_view, qtbot, mocker):
+def test_progress_signal_emission(
+    atlas_manager_view, qtbot, mocker, mock_download_atlas_images
+):
     """Test that progress_updated signal is emitted with correct parameters."""
     mocker.patch(
         "brainrender_napari.widgets.atlas_manager_view.update_atlas",
@@ -271,3 +280,32 @@ def test_apply_in_thread(qtbot, mocker):
 
     # Restore the original _apply_in_thread
     atlas_manager_view._apply_in_thread = original_apply_in_thread
+
+
+def test_download_atlas_images(mock_brainglobe_dir, qtbot):
+    """Downloading an atlas only fetches its metadata; the image chunks are
+    pulled lazily on first access. Check `_download_atlas_images` actually
+    pulls them, so the atlas is usable offline afterwards.
+    """
+    atlas_manager_view = AtlasManagerView()
+
+    atlas = BrainGlobeAtlas("example_mouse_100um", check_latest=False)
+    template_zarr = (
+        atlas.root_dir
+        / atlas.metadata["annotation_set"]["template"]["location"][1:]
+        / V3_TEMPLATE_NAME
+    )
+    annotation_zarr = (
+        atlas.root_dir
+        / atlas.metadata["annotation_set"]["location"][1:]
+        / V3_ANNOTATION_NAME
+    )
+
+    # chunks live in a `c` directory under the resolution level in use
+    assert not any(template_zarr.glob("*/c")), "template chunks pre-exist"
+    assert not any(annotation_zarr.glob("*/c")), "annotation chunks pre-exist"
+
+    atlas_manager_view._download_atlas_images("example_mouse_100um")
+
+    assert any(template_zarr.glob("*/c")), "template chunks not downloaded"
+    assert any(annotation_zarr.glob("*/c")), "annotation chunks not downloaded"

@@ -15,6 +15,11 @@ from brainglobe_atlasapi.list_atlases import (
 )
 from qtpy.QtCore import Qt
 
+from brainrender_napari.utils.load_user_data import (
+    read_atlas_metadata_from_file,
+    read_atlas_structures_from_file,
+)
+
 
 def _local_atlas_version_dir(atlas_name, version=None):
     """Local directory holding a specific version of a downloaded atlas.
@@ -105,6 +110,42 @@ def setup_preexisting_local_atlases():
         ]
         with open(manifest_path, "w") as f:
             json.dump(metadata_dict, f, indent=4)
+
+
+@pytest.fixture(autouse=True)
+def clear_atlas_read_caches():
+    """Drop the `lru_cache`s on the atlas readers between tests.
+
+    They are keyed on the atlas name alone, so a value cached before a
+    fixture rearranges the atlas folder would otherwise leak into the next
+    test.
+    """
+    read_atlas_metadata_from_file.cache_clear()
+    read_atlas_structures_from_file.cache_clear()
+    yield
+    read_atlas_metadata_from_file.cache_clear()
+    read_atlas_structures_from_file.cache_clear()
+
+
+@pytest.fixture
+def mock_brainglobe_dir(tmp_path, monkeypatch):
+    """Point the atlas API's default brainglobe directory at an empty
+    `tmp_path`, so tests that fetch real atlas data neither benefit from nor
+    disturb the shared (test) installation."""
+    monkeypatch.setattr(
+        config, "CONFIG_PATH", tmp_path / config.CONFIG_FILENAME
+    )
+    monkeypatch.setattr(
+        config,
+        "TEMPLATE_CONF_DICT",
+        {
+            "default_dirs": {
+                "brainglobe_dir": tmp_path,
+                "interm_download_dir": tmp_path,
+            }
+        },
+    )
+    return tmp_path
 
 
 @pytest.fixture

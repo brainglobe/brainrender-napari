@@ -1,7 +1,9 @@
+import pytest
 from brainglobe_atlasapi import BrainGlobeAtlas
 
 from brainrender_napari.utils.load_user_data import (
     read_atlas_metadata_from_file,
+    read_atlas_structures_from_file,
 )
 
 
@@ -45,3 +47,33 @@ def test_additional_references_are_flattened_to_names():
 
     file_metadata = read_atlas_metadata_from_file(atlas.atlas_name)
     assert file_metadata["additional_references"] == expected_names
+
+
+def test_structures_reading():
+    """Structures are read via the atlas API and passed through as-is."""
+    atlas = BrainGlobeAtlas("example_mouse_100um")
+    assert (
+        read_atlas_structures_from_file(atlas.atlas_name)
+        == atlas.structures_list
+    )
+
+
+@pytest.mark.parametrize(
+    "read_from_file",
+    [read_atlas_metadata_from_file, read_atlas_structures_from_file],
+)
+def test_reads_are_cached(mocker, read_from_file):
+    """Both readers instantiate a `BrainGlobeAtlas`, which is expensive, so
+    repeated reads of the same atlas should be served from the cache."""
+    atlas_mock = mocker.patch(
+        "brainrender_napari.utils.load_user_data.BrainGlobeAtlas"
+    )
+    atlas_mock.return_value.metadata = {"name": "example_mouse_100um"}
+    atlas_mock.return_value.structures_list = []
+
+    read_from_file("example_mouse_100um")
+    read_from_file("example_mouse_100um")
+
+    atlas_mock.assert_called_once_with(
+        atlas_name="example_mouse_100um", check_latest=False
+    )

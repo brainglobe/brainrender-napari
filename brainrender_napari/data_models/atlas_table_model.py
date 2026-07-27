@@ -32,11 +32,13 @@ class AtlasTableModel(QAbstractTableModel):
         )
         self.view_type: QTableView = view_type
         self.refresh_data()
-        read_atlas_metadata_from_file.cache_clear()
-        read_atlas_structures_from_file.cache_clear()
 
     def refresh_data(self):
         """Refresh model data by calling atlas API"""
+        # atlases may have been downloaded or updated since the last refresh
+        read_atlas_metadata_from_file.cache_clear()
+        read_atlas_structures_from_file.cache_clear()
+
         all_atlases: dict[str, str] = get_all_atlases_lastversions()
         local_atlases = get_atlases_lastversions().keys()
         data = []
