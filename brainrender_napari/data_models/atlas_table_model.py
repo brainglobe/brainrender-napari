@@ -9,6 +9,10 @@ from qtpy.QtGui import QBrush, QColor
 from qtpy.QtWidgets import QTableView
 
 from brainrender_napari.utils.formatting import format_atlas_name
+from brainrender_napari.utils.load_user_data import (
+    read_atlas_metadata_from_file,
+    read_atlas_structures_from_file,
+)
 
 
 class AtlasTableModel(QAbstractTableModel):
@@ -31,6 +35,10 @@ class AtlasTableModel(QAbstractTableModel):
 
     def refresh_data(self):
         """Refresh model data by calling atlas API"""
+        # atlases may have been downloaded or updated since the last refresh
+        read_atlas_metadata_from_file.cache_clear()
+        read_atlas_structures_from_file.cache_clear()
+
         all_atlases: dict[str, str] = get_all_atlases_lastversions()
         local_atlases = get_atlases_lastversions().keys()
         data = []

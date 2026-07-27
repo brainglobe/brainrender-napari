@@ -11,6 +11,7 @@ that any interested observers can connect to.
 
 from typing import Callable
 
+from brainglobe_atlasapi import BrainGlobeAtlas
 from brainglobe_atlasapi.list_atlases import (
     get_all_atlases_lastversions,
     get_atlases_lastversions,
@@ -30,8 +31,8 @@ from brainrender_napari.widgets.atlas_manager_dialog import AtlasManagerDialog
 
 
 class AtlasManagerView(QTableView):
-    download_atlas_confirmed = Signal(str)
-    update_atlas_confirmed = Signal(str)
+    download_atlas_confirmed = Signal()
+    update_atlas_confirmed = Signal()
     progress_updated = Signal(
         int, int, str, object
     )  # completed, total, atlas_name, operation_type
@@ -87,38 +88,54 @@ class AtlasManagerView(QTableView):
         atlas_name: str = self.selected_atlas_name()
 
         worker = self._apply_in_thread(
-            install_atlas,
+            self._download_atlas_install, atlas_name
+        )
+        worker.returned.connect(
+            lambda: [
+                self.download_atlas_confirmed.emit(),
+                self.source_model.refresh_data(),
+            ]
+        )
+        worker.start()
+
+    def _download_atlas_install(self, atlas_name: str) -> None:
+        install_atlas(
             atlas_name,
             fn_update=lambda completed, total: self.progress_updated.emit(
                 completed, total, atlas_name, "Downloading"
             ),
         )
-        worker.returned.connect(
-            lambda result: [
-                self.download_atlas_confirmed.emit(result),
-                self.source_model.refresh_data(),
-            ]
-        )
-        worker.start()
+        self._download_atlas_images(atlas_name)
+
+    def _download_atlas_images(self, atlas_name: str) -> None:
+        """Downloads the images for the specified atlas."""
+        atlas = BrainGlobeAtlas(atlas_name, check_latest=False)
+        _ = atlas.template
+        _ = atlas.annotation
+        _ = atlas.hemispheres
 
     def _on_update_atlas_confirmed(self) -> None:
         """Updates the currently selected atlas and signals this."""
         atlas_name = self.selected_atlas_name()
 
-        worker = self._apply_in_thread(
-            update_atlas,
+        worker = self._apply_in_thread(self._download_atlas_update, atlas_name)
+        worker.returned.connect(
+            lambda: [
+                self.update_atlas_confirmed.emit(),
+                self.source_model.refresh_data(),
+            ]
+        )
+        worker.start()
+
+    def _download_atlas_update(self, atlas_name: str) -> None:
+        """Updates the specified atlas."""
+        update_atlas(
             atlas_name,
             fn_update=lambda completed, total: self.progress_updated.emit(
                 completed, total, atlas_name, "Updating"
             ),
         )
-        worker.returned.connect(
-            lambda result: [
-                self.update_atlas_confirmed.emit(result),
-                self.source_model.refresh_data(),
-            ]
-        )
-        worker.start()
+        self._download_atlas_images(atlas_name)
 
     def selected_atlas_name(self) -> str:
         """A single place to get a valid selected atlas name."""

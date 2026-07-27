@@ -35,8 +35,8 @@ def test_add_to_viewer(make_napari_viewer, expected_atlas_name, anisotropic):
         atlas._annotation = atlas.annotation[
             0 : len(atlas.annotation) : 3, 0 : len(atlas.annotation[0]) : 2, :
         ]
-        atlas._reference = atlas.reference[
-            0 : len(atlas.reference) : 3, 0 : len(atlas.reference[0]) : 2, :
+        atlas._template = atlas.template[
+            0 : len(atlas.template) : 3, 0 : len(atlas.template[0]) : 2, :
         ]
 
     atlas_representation = NapariAtlasRepresentation(atlas, viewer)
@@ -194,7 +194,7 @@ def test_viewer_tooltip(
     annotation = viewer.layers[1]
 
     event = QMouseEvent(
-        QEvent.Type.MouseMove,
+        QEvent.MouseMove,
         QPointF(0, 0),  # any pos will do to check text
         Qt.MouseButton.NoButton,
         Qt.MouseButton.NoButton,
@@ -220,7 +220,7 @@ def test_too_quick_mouse_move_keyerror(make_napari_viewer, mocker):
     annotation = viewer.layers[1]
 
     event = QMouseEvent(
-        QEvent.Type.MouseMove,
+        QEvent.MouseMove,
         QPointF(0, 0),  # any pos will do to check text
         Qt.MouseButton.NoButton,
         Qt.MouseButton.NoButton,

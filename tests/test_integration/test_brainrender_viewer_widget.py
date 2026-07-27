@@ -61,7 +61,7 @@ def test_double_click_on_locally_available_atlas_row(
     add_atlas_to_viewer_mock.assert_called_once()
 
 
-def test_structure_row_double_clicked(viewer_widget, mocker):
+def test_structure_row_double_clicked(viewer_widget, mocker, atlas_row):
     """Checks that when the structure view widgets emit "VS" and
     the allen_mouse_100um atlas is selected, the NapariAtlasRepresentation
     function is called in the expected way.
@@ -70,15 +70,16 @@ def test_structure_row_double_clicked(viewer_widget, mocker):
         "brainrender_napari.brainrender_viewer_widget"
         ".NapariAtlasRepresentation.add_structure_to_viewer"
     )
-    viewer_widget.atlas_viewer_view.selectRow(
-        4
-    )  # allen_mouse_100um is in row 4
+    row = atlas_row(
+        viewer_widget.atlas_viewer_view.model(), "allen_mouse_100um"
+    )
+    viewer_widget.atlas_viewer_view.selectRow(row)
 
     viewer_widget.structure_view.add_structure_requested.emit("VS")
     add_structure_to_viewer_mock.assert_called_once_with("VS")
 
 
-def test_add_additional_reference_selected(viewer_widget, mocker):
+def test_add_additional_reference_selected(viewer_widget, mocker, atlas_row):
     """Checks that when the atlas viewer view requests an additional
     reference, the NapariAtlasRepresentation function is called in
     the expected way."""
@@ -86,9 +87,11 @@ def test_add_additional_reference_selected(viewer_widget, mocker):
         "brainrender_napari.brainrender_viewer_widget"
         ".NapariAtlasRepresentation.add_additional_reference"
     )
-    viewer_widget.atlas_viewer_view.selectRow(
-        0
-    )  # # example atlas + mock additional reference is in row 0
+    # example atlas has a mock additional reference set up in conftest
+    row = atlas_row(
+        viewer_widget.atlas_viewer_view.model(), "example_mouse_100um"
+    )
+    viewer_widget.atlas_viewer_view.selectRow(row)
     assert (
         viewer_widget.atlas_viewer_view.selected_atlas_name()
         == "example_mouse_100um"
@@ -102,13 +105,14 @@ def test_add_additional_reference_selected(viewer_widget, mocker):
     )
 
 
-def test_show_structures_checkbox(viewer_widget, mocker):
+def test_show_structures_checkbox(viewer_widget, mocker, atlas_row):
     structure_view_refresh_mock = mocker.patch(
         "brainrender_napari.brainrender_viewer_widget.StructureView.refresh"
     )
-    viewer_widget.atlas_viewer_view.selectRow(
-        0
-    )  # example_mouse_100um is in row 0
+    row = atlas_row(
+        viewer_widget.atlas_viewer_view.model(), "example_mouse_100um"
+    )
+    viewer_widget.atlas_viewer_view.selectRow(row)
     structure_view_refresh_mock.assert_called_with(
         "example_mouse_100um", False
     )
