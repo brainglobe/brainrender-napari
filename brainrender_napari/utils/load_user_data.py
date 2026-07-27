@@ -3,7 +3,7 @@ from functools import lru_cache
 from brainglobe_atlasapi import BrainGlobeAtlas
 
 
-@lru_cache(maxsize=32)
+@lru_cache()
 def read_atlas_metadata_from_file(atlas_name: str):
     """Reads atlas metadata from the local manifest in the BrainGlobe
     directory. Removes nested keys that are not relevant for the user.
@@ -40,7 +40,7 @@ def read_atlas_metadata_from_file(atlas_name: str):
     return metadata_dict
 
 
-@lru_cache(maxsize=32)
+@lru_cache()
 def read_atlas_structures_from_file(atlas_name: str):
     """Reads atlas structure info from the local terminology file in the
     BrainGlobe directory.
