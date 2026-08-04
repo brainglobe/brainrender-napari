@@ -8,7 +8,7 @@ from brainglobe_atlasapi.list_atlases import get_downloaded_atlases
 from brainglobe_atlasapi.structure_tree_util import get_structures_tree
 from qtpy.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
 from qtpy.QtGui import QStandardItem
-from qtpy.QtWidgets import QTreeView, QWidget
+from qtpy.QtWidgets import QMenu, QTreeView, QWidget
 
 from brainrender_napari.utils.load_user_data import (
     read_atlas_structures_from_file,
@@ -158,10 +158,16 @@ class StructureTreeModel(QAbstractItemModel):
 
 class StructureView(QTreeView):
     add_structure_requested = Signal(str)
+    add_structure_with_color_requested = Signal(str)
 
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
         self.doubleClicked.connect(self._on_row_double_clicked)
+
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(
+            self._on_context_menu_requested
+        )
 
         def resize_acronym_column():
             self.resizeColumnToContents(0)
@@ -200,6 +206,27 @@ class StructureView(QTreeView):
         acronym_index = selected_index.siblingAtColumn(0)
         selected_structure_acronym = self.model().data(acronym_index)
         return selected_structure_acronym
+
+    def _on_context_menu_requested(self, position) -> None:
+        """Shows a context menu to add the currently selected structure
+        with a user-defined colour. Does nothing if no valid structure
+        is selected.
+        """
+        selected_index = self.selectionModel().currentIndex()
+        if not selected_index.isValid():
+            return
+
+        global_position = self.viewport().mapToGlobal(position)
+        context_menu = QMenu()
+        add_with_color_action = context_menu.addAction(
+            "Add region with custom colour…"
+        )
+
+        selected_action = context_menu.exec(global_position)
+        if selected_action == add_with_color_action:
+            self.add_structure_with_color_requested.emit(
+                self.selected_structure_acronym()
+            )
 
     def _on_row_double_clicked(self):
         self.add_structure_requested.emit(self.selected_structure_acronym())

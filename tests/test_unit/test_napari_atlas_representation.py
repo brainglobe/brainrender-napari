@@ -153,6 +153,26 @@ def test_structure_color(make_napari_viewer):
         assert a * 255 == e
 
 
+def test_structure_color_override(make_napari_viewer):
+    """Checks that a user-supplied colour overrides the atlas default
+    and is propagated to the corresponding napari layer.
+    """
+    viewer = make_napari_viewer()
+    atlas = BrainGlobeAtlas(atlas_name="example_mouse_100um")
+
+    atlas_representation = NapariAtlasRepresentation(atlas, viewer)
+    custom_RGB = [10, 20, 30]
+    # sanity check: the custom colour differs from the atlas default,
+    # so the test genuinely exercises the override
+    assert atlas.structures["root"]["rgb_triplet"] != custom_RGB
+
+    atlas_representation.add_structure_to_viewer("root", color=custom_RGB)
+    actual_rgb = viewer.layers[0].vertex_colors[0]
+
+    for a, e in zip(actual_rgb, custom_RGB):
+        assert a * 255 == e
+
+
 def test_add_additional_reference(make_napari_viewer):
     viewer = make_napari_viewer()
     atlas_name = "example_mouse_100um"
