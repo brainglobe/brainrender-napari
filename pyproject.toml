@@ -49,7 +49,6 @@ dev = [
   "pytest-mock",
   "pytest-qt",
   "coverage",
-  "tox",
   "black",
   "mypy",
   "pre-commit",
@@ -73,9 +72,8 @@ include-package-data = true
 include = ["brainrender_napari*"]
 exclude = ["tests", "docs*"]
 
-
 [tool.pytest.ini_options]
-addopts = "--cov=brainrender_napari"
+addopts = "--cov=brainrender_napari --cov-report=xml --color=yes -vv"
 
 [tool.black]
 target-version = ['py311', 'py312', 'py313']
@@ -100,31 +98,3 @@ line-length = 79
 exclude = ["__init__.py","build",".eggs"]
 lint.select = ["I", "E", "F"]
 fix = true
-
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py{311,312,313}, napari-dev
-isolated_build = True
-
-[gh-actions]
-python =
-    3.11: py311
-    3.12: py312
-    3.13: py313
-
-[testenv]
-extras =
-    dev
-commands =
-    pytest -v --color=yes --cov=brainrender_napari --cov-report=xml
-passenv =
-    CI
-    GITHUB_ACTIONS
-    DISPLAY
-    XAUTHORITY
-    NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
-    PYVISTA_OFF_SCREEN
-deps =
-    napari-dev: git+https://github.com/napari/napari
-"""
