@@ -14,6 +14,7 @@ from brainglobe_utils.qtpy.logo import header_widget
 from napari.viewer import Viewer
 from qtpy.QtWidgets import (
     QCheckBox,
+    QColorDialog,
     QGroupBox,
     QVBoxLayout,
     QWidget,
@@ -77,6 +78,7 @@ class BrainrenderViewerWidget(QWidget):
         self.structure_tree_group = QGroupBox("3D Atlas region meshes")
         self.structure_tree_group.setToolTip(
             "Double-click on an atlas region to add its mesh to the viewer.\n"
+            "Right-click a region to add it with a custom colour.\n"
             "Meshes will only show if the display is set to 3D.\n"
             "Toggle 2D/3D display using the square/cube icon on the\n"
             "lower left of the napari window."
@@ -107,28 +109,50 @@ class BrainrenderViewerWidget(QWidget):
         self.structure_view.add_structure_requested.connect(
             self._on_add_structure_requested
         )
+        self.structure_view.add_structure_with_color_requested.connect(
+            self._on_add_structure_with_color_requested
+        )
 
-    def _on_add_structure_requested(self, structure_name: str) -> None:
-        """Add given structure as napari atlas representation"""
+    def _selected_atlas_representation(self) -> NapariAtlasRepresentation:
+        """Build a representation for the currently selected atlas."""
         selected_atlas = BrainGlobeAtlas(
             atlas_name=self.atlas_viewer_view.selected_atlas_name()
         )
-        selected_atlas_representation = NapariAtlasRepresentation(
+        return NapariAtlasRepresentation(
             bg_atlas=selected_atlas, viewer=self._viewer
         )
-        selected_atlas_representation.add_structure_to_viewer(structure_name)
+
+    def _on_add_structure_requested(self, structure_name: str) -> None:
+        """Add given structure as napari atlas representation"""
+        self._selected_atlas_representation().add_structure_to_viewer(
+            structure_name
+        )
+
+    def _on_add_structure_with_color_requested(
+        self, structure_name: str
+    ) -> None:
+        """Add given structure with a user-chosen colour.
+
+        Opens a colour picker; if the user confirms a colour, the structure
+        mesh is added with that colour. If the user cancels, nothing happens
+        and the structure is not added.
+        """
+        chosen_color = QColorDialog.getColor()
+        if chosen_color.isValid():
+            self._selected_atlas_representation().add_structure_to_viewer(
+                structure_name,
+                color=[
+                    chosen_color.red(),
+                    chosen_color.green(),
+                    chosen_color.blue(),
+                ],
+            )
 
     def _on_additional_reference_requested(
         self, additional_reference_name: str
     ) -> None:
         """Add additional reference as napari atlas representation"""
-        atlas = BrainGlobeAtlas(
-            atlas_name=self.atlas_viewer_view.selected_atlas_name()
-        )
-        atlas_representation = NapariAtlasRepresentation(
-            bg_atlas=atlas, viewer=self._viewer
-        )
-        atlas_representation.add_additional_reference(
+        self._selected_atlas_representation().add_additional_reference(
             additional_reference_name
         )
 
