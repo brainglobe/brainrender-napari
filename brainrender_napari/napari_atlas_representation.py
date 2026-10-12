@@ -29,7 +29,6 @@ class NapariAtlasRepresentation:
         )
         self._tooltip.setAttribute(Qt.WA_ShowWithoutActivating)
         self._tooltip.setAlignment(Qt.AlignCenter)
-        self._tooltip.setStyleSheet("color: black")
         napari_settings = get_settings()
         napari_settings.appearance.layer_tooltip_visibility = True
 
