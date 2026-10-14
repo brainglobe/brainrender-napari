@@ -55,18 +55,21 @@ class NapariAtlasRepresentation:
         annotation.mouse_move_callbacks.append(self._on_mouse_move)
         reference.mouse_move_callbacks.append(self._on_mouse_move)
 
-    def add_structure_to_viewer(self, structure_name: str) -> None:
+    def add_structure_to_viewer(self, structure_name: str, color=None) -> None:
         """Adds the mesh of a structure to the viewer.
         The mesh will be rescaled to pixel space.
 
         structure_name: the id or acronym of the structure.
+        color: RGB values (0-255) as a list to colour the mesh with.
+            If None, the atlas' default colour for the structure is used.
         """
         if self.viewer.dims.ndisplay == 2:
             show_info("Meshes will only show if the display is set to 3D.")
 
         mesh = self.bg_atlas.mesh_from_structure(structure_name)
         scale = [1.0 / resolution for resolution in self.bg_atlas.resolution]
-        color = self.bg_atlas.structures[structure_name]["rgb_triplet"]
+        if color is None:
+            color = self.bg_atlas.structures[structure_name]["rgb_triplet"]
         self._add_mesh(
             mesh,
             scale,
